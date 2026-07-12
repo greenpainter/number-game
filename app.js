@@ -103,7 +103,7 @@ let explosionParticles = [];
 let confetti = [];
 let drawingParticles = [];
 
-// 3. 한국어 TTS 설정 (Siri 여성 음성 우선 선택)
+// 3. 한국어 TTS 설정 (Siri 여성 및 여성 보이스 우선 매칭)
 let koVoice = null;
 
 function loadVoices() {
@@ -113,14 +113,32 @@ function loadVoices() {
     // 한국어 목소리 필터링
     const koVoices = voices.filter(voice => voice.lang === 'ko-KR' || voice.lang.startsWith('ko'));
     
-    // Siri 또는 Yuna(Apple 고품질 여성 음성) 이름이 포함된 목소리 우선 매칭
-    let selectedVoice = koVoices.find(voice => 
-        voice.name.includes('Siri') || 
-        voice.name.includes('Yuna') || 
-        voice.name.includes('yuna')
-    );
+    let selectedVoice = null;
     
-    // 없으면 기본 한국어 목소리 적용
+    // 1. Siri 여성 또는 Siri 1 (Apple 기기의 여성 음성)
+    selectedVoice = koVoices.find(v => v.name.includes('Siri') && (v.name.includes('여성') || v.name.includes('Female') || v.name.includes('1')));
+    
+    // 2. Yuna (Apple 고품질 여성)
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => v.name.includes('Yuna') || v.name.includes('yuna'));
+    }
+    
+    // 3. 혜현 (Google / MS 여성)
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => v.name.includes('Hye-hyeon') || v.name.includes('Hyehyeon') || v.name.includes('혜현'));
+    }
+    
+    // 4. 일반 Google 한국어 (기본 여성 보이스)
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => v.name.includes('Google') || v.name.includes('google'));
+    }
+    
+    // 5. 남성 및 로봇(남성, Male, 2) 음성 피하기
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => !v.name.includes('남성') && !v.name.includes('Male') && !v.name.includes('2'));
+    }
+    
+    // 6. 그래도 없으면 첫 번째 한국어 음성 사용
     if (!selectedVoice && koVoices.length > 0) {
         selectedVoice = koVoices[0];
     }
@@ -727,41 +745,74 @@ function resizeCanvas() {
 // 리사이즈 리스너 등록
 window.addEventListener('resize', resizeCanvas);
 
-// 14. 전체화면 제어 로직
+// 14. 전체화면 제어 로직 (iOS/iPad 크롬 가상 전체화면 지원)
 const fullscreenBtn = document.getElementById('fullscreenBtn');
+const sketchbook = document.querySelector('.sketchbook');
 
 function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.error(`전체화면 활성화 오류: ${err.message}`);
-        });
+    // A. 네이티브 전체화면을 지원하는 브라우저인 경우 (PC, 안드로이드 등)
+    if (document.documentElement.requestFullscreen) {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.warn("네이티브 전체화면 활성화 실패, 가상 전체화면으로 전환합니다:", err);
+                toggleVirtualFullscreen();
+            });
+        } else {
+            document.exitFullscreen();
+        }
     } else {
-        document.exitFullscreen();
+        // B. iOS Safari/Chrome 등 네이티브 전체화면 API가 없는 경우 가상 전체화면 작동
+        toggleVirtualFullscreen();
     }
+}
+
+function toggleVirtualFullscreen() {
+    const isVirtual = sketchbook.classList.toggle('virtual-fullscreen');
+    if (isVirtual) {
+        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 원래대로';
+    } else {
+        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 전체화면';
+    }
+    // 레이아웃 변경 완료 후 캔버스 리사이즈
+    setTimeout(resizeCanvas, 150);
 }
 
 fullscreenBtn.addEventListener('click', toggleFullscreen);
 
-// 전체화면 상태 감지 및 버튼 레이블 업데이트
+// 네이티브 전체화면 상태 감지 및 버튼 레이블 업데이트
 document.addEventListener('fullscreenchange', () => {
     if (document.fullscreenElement) {
         fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 원래대로';
     } else {
         fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 전체화면';
     }
+    setTimeout(resizeCanvas, 150);
 });
 
-// 15. 모바일/태블릿 핀치 줌(확대/축소) 강제 방지 로직
+// 15. 모바일/태블릿 핀치 줌 및 더블 탭 확대 강제 방지 로직
 document.addEventListener('touchmove', (e) => {
+    // 두 손가락 이상 핀치 제스처 방지
     if (e.touches.length > 1 || (e.scale !== undefined && e.scale !== 1)) {
         e.preventDefault();
     }
 }, { passive: false });
 
+let lastTouchTime = 0;
 document.addEventListener('touchstart', (e) => {
+    // 핀치 줌 제스처 차단
     if (e.touches.length > 1) {
         e.preventDefault();
+        return;
     }
+    
+    // 더블 탭 확대 방지 (더블 클릭 간격이 300ms 이내일 때 버튼/링크가 아닌 곳은 줌 이벤트 차단)
+    const now = Date.now();
+    if (now - lastTouchTime <= 300) {
+        if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.num-btn')) {
+            e.preventDefault();
+        }
+    }
+    lastTouchTime = now;
 }, { passive: false });
 
 // 최초 캔버스 사이즈 설정 및 렌더링 엔진 가동
