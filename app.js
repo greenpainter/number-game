@@ -103,13 +103,30 @@ let explosionParticles = [];
 let confetti = [];
 let drawingParticles = [];
 
-// 3. 한국어 TTS 설정
+// 3. 한국어 TTS 설정 (Siri 여성 음성 우선 선택)
 let koVoice = null;
 
 function loadVoices() {
     if (!window.speechSynthesis) return;
     const voices = window.speechSynthesis.getVoices();
-    koVoice = voices.find(voice => voice.lang === 'ko-KR' || voice.lang.startsWith('ko'));
+    
+    // 한국어 목소리 필터링
+    const koVoices = voices.filter(voice => voice.lang === 'ko-KR' || voice.lang.startsWith('ko'));
+    
+    // Siri 또는 Yuna(Apple 고품질 여성 음성) 이름이 포함된 목소리 우선 매칭
+    let selectedVoice = koVoices.find(voice => 
+        voice.name.includes('Siri') || 
+        voice.name.includes('Yuna') || 
+        voice.name.includes('yuna')
+    );
+    
+    // 없으면 기본 한국어 목소리 적용
+    if (!selectedVoice && koVoices.length > 0) {
+        selectedVoice = koVoices[0];
+    }
+    
+    koVoice = selectedVoice;
+    console.log("선택된 한국어 음성:", koVoice ? koVoice.name : "없음 (기본값 사용)");
 }
 
 if (window.speechSynthesis) {
@@ -126,8 +143,8 @@ function speak(text) {
         utterance.voice = koVoice;
     }
     utterance.lang = 'ko-KR';
-    utterance.pitch = 1.35; // 조금 높고 명랑한 아동용 피치
-    utterance.rate = 0.85;  // 어린이가 잘 들을 수 있게 약간 느리게 설정
+    utterance.pitch = 1.0; // 시리 여성 본연의 자연스러운 음높이 적용
+    utterance.rate = 0.9;  // 어린이가 잘 들을 수 있게 표준보다 약간만 느리게 설정
     window.speechSynthesis.speak(utterance);
 }
 
