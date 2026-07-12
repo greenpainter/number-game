@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>아들을 위한 재미있는 숫자 놀이! ✏️🎨</title>
+    <!-- 귀여운 한글 폰트 추가 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 스케치북 테두리 및 종이 질감 효과를 줄 컨테이너 -->
+        <main class="sketchbook">
+            <!-- 스프링 제본 디자인을 시각화할 요소들 -->
+            <div class="sketchbook-springs">
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+                <span class="spring"></span>
+            </div>
+
+            <header class="sketchbook-header">
+                <h1>✏️ 아들을 위한 숫자 놀이! 🎨</h1>
+                <p class="subtitle">숫자를 손가락이나 펜으로 따라 그려보아요!</p>
+            </header>
+
+            <!-- 숫자 선택판 (0~9) -->
+            <section class="number-selector" id="numberSelector">
+                <button class="num-btn active" data-num="1">1</button>
+                <button class="num-btn" data-num="2">2</button>
+                <button class="num-btn" data-num="3">3</button>
+                <button class="num-btn" data-num="4">4</button>
+                <button class="num-btn" data-num="5">5</button>
+                <button class="num-btn" data-num="6">6</button>
+                <button class="num-btn" data-num="7">7</button>
+                <button class="num-btn" data-num="8">8</button>
+                <button class="num-btn" data-num="9">9</button>
+                <button class="num-btn" data-num="0">0</button>
+            </section>
+
+            <!-- 캔버스 영역 -->
+            <section class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
+                <!-- 첫 터치 유도를 위한 안내 모달 (iPad 오디오 잠금 해제 목적 겸용) -->
+                <div class="start-overlay" id="startOverlay">
+                    <div class="start-box">
+                        <h2>🎨 스케치북을 눌러서<br>숫자 놀이를 시작해요!</h2>
+                        <button class="start-btn" id="startBtn">시작하기 ⭐️</button>
+                    </div>
+                </div>
+                <!-- 성공 시 축하 메시지 레이어 -->
+                <div class="success-message" id="successMessage">
+                    <div class="badge">참 잘했어요! 👍</div>
+                </div>
+            </section>
+
+            <!-- 컨트롤 버튼 패널 -->
+            <section class="control-panel">
+                <button class="ctrl-btn clear-btn" id="clearBtn">
+                    <span class="icon">🧹</span> 다시 그리기
+                </button>
+                <button class="ctrl-btn speech-btn" id="speechBtn">
+                    <span class="icon">🔊</span> 소리 듣기
+                </button>
+                <button class="ctrl-btn pen-mode-btn" id="penModeBtn">
+                    <span class="icon">🌈</span> 무지개 펜
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

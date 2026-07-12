@@ -1,0 +1,410 @@
+/* 디자인 시스템 변수 설정 */
+:root {
+    --bg-color: #f7ede2; /* 따뜻한 크림빛 책상 배경 */
+    --sketchbook-bg: #ffffff; /* 도화지 흰색 */
+    --primary-color: #f28482; /* 산호색 - 메인 포인트 */
+    --accent-color: #84a59d; /* 부드러운 민트색 */
+    --text-color: #3d5a80; /* 남색 계열 글씨색 */
+    --grid-line-color: rgba(180, 210, 230, 0.35); /* 연한 격자선 */
+    --font-main: 'Gaegu', cursive, sans-serif;
+}
+
+/* 글로벌 Reset 및 터치 방지 설정 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    font-family: var(--font-main);
+    color: var(--text-color);
+}
+
+/* 앱 전체 감싸기 */
+.app-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    background: radial-gradient(circle, #f7ede2 60%, #eed7c5 100%);
+}
+
+/* 스케치북 메인 판 */
+.sketchbook {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    height: 92vh;
+    background-color: var(--sketchbook-bg);
+    border-radius: 24px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12), 0 5px 15px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    padding: 30px 40px 20px 40px;
+    border: 8px solid #ffffff; /* 스케치북 외곽 흰 프레임 */
+    
+    /* 모눈종이 격자 무늬 배경 */
+    background-image: 
+        linear-gradient(var(--grid-line-color) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, var(--grid-line-color) 1.5px, transparent 1.5px);
+    background-size: 30px 30px;
+}
+
+/* 스케치북 스프링 디자인 */
+.sketchbook-springs {
+    position: absolute;
+    top: -22px;
+    left: 8%;
+    right: 8%;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.spring {
+    width: 24px;
+    height: 40px;
+    background: linear-gradient(135deg, #e0e0e0 0%, #b3b3b3 50%, #8c8c8c 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+/* 스프링 구멍 시각화 */
+.spring::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 4px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--bg-color);
+    border-radius: 50%;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 스케치북 헤더 */
+.sketchbook-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.sketchbook-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #f28482;
+    text-shadow: 2px 2px 0px rgba(245, 202, 195, 0.5);
+    letter-spacing: 1px;
+}
+
+.sketchbook-header .subtitle {
+    font-size: 1.2rem;
+    color: #84a59d;
+    margin-top: 4px;
+    font-weight: 700;
+}
+
+/* 숫자 선택 바 (0~9) */
+.number-selector {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.num-btn {
+    flex: 1;
+    min-width: 50px;
+    height: 55px;
+    font-family: var(--font-main);
+    font-size: 1.8rem;
+    font-weight: 700;
+    background-color: #f5cac3;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 6px 0px #e09f96;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.num-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0px #e09f96;
+}
+
+.num-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0px #e09f96;
+}
+
+/* 활성화된 숫자 버튼 색상 */
+.num-btn.active {
+    background-color: #f28482;
+    box-shadow: 0 6px 0px #c55755;
+    transform: translateY(2px);
+}
+
+/* 숫자별 다른 예쁜 파스텔 배경 지정 */
+.num-btn[data-num="1"] { background-color: #ff9f1c; box-shadow: 0 6px 0px #cc7a00; }
+.num-btn[data-num="2"] { background-color: #ffbf69; box-shadow: 0 6px 0px #cc934d; }
+.num-btn[data-num="3"] { background-color: #ffd166; box-shadow: 0 6px 0px #cca03d; }
+.num-btn[data-num="4"] { background-color: #06d6a0; box-shadow: 0 6px 0px #04a57b; }
+.num-btn[data-num="5"] { background-color: #118ab2; box-shadow: 0 6px 0px #0d6e8e; }
+.num-btn[data-num="6"] { background-color: #8338ec; box-shadow: 0 6px 0px #611ec5; }
+.num-btn[data-num="7"] { background-color: #3a86c8; box-shadow: 0 6px 0px #296090; }
+.num-btn[data-num="8"] { background-color: #ff006e; box-shadow: 0 6px 0px #cc0055; }
+.num-btn[data-num="9"] { background-color: #38b000; box-shadow: 0 6px 0px #2a8000; }
+.num-btn[data-num="0"] { background-color: #f77f00; box-shadow: 0 6px 0px #b35c00; }
+
+.num-btn.active[data-num="1"] { transform: translateY(4px); box-shadow: 0 2px 0px #cc7a00; }
+.num-btn.active[data-num="2"] { transform: translateY(4px); box-shadow: 0 2px 0px #cc934d; }
+.num-btn.active[data-num="3"] { transform: translateY(4px); box-shadow: 0 2px 0px #cca03d; }
+.num-btn.active[data-num="4"] { transform: translateY(4px); box-shadow: 0 2px 0px #04a57b; }
+.num-btn.active[data-num="5"] { transform: translateY(4px); box-shadow: 0 2px 0px #0d6e8e; }
+.num-btn.active[data-num="6"] { transform: translateY(4px); box-shadow: 0 2px 0px #611ec5; }
+.num-btn.active[data-num="7"] { transform: translateY(4px); box-shadow: 0 2px 0px #296090; }
+.num-btn.active[data-num="8"] { transform: translateY(4px); box-shadow: 0 2px 0px #cc0055; }
+.num-btn.active[data-num="9"] { transform: translateY(4px); box-shadow: 0 2px 0px #2a8000; }
+.num-btn.active[data-num="0"] { transform: translateY(4px); box-shadow: 0 2px 0px #b35c00; }
+
+/* 캔버스 도화지 틀 */
+.canvas-container {
+    position: relative;
+    flex: 1;
+    background-color: #fdfaf6; /* 약간의 미색 도화지 느낌 */
+    border: 4px dashed #dbcdb8;
+    border-radius: 16px;
+    box-shadow: inset 0 4px 10px rgba(0,0,0,0.03);
+    overflow: hidden;
+}
+
+#drawingCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none; /* 브라우저 스크롤 및 핀치 줌 방지 */
+}
+
+/* 터치 유도 시작 오버레이 */
+.start-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(247, 237, 226, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    transition: opacity 0.5s ease;
+}
+
+.start-box {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 28px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 4px solid #f28482;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.start-box h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+.start-btn {
+    font-family: var(--font-main);
+    font-size: 1.6rem;
+    font-weight: 700;
+    background-color: #f28482;
+    color: white;
+    padding: 12px 35px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 6px 0px #c55755;
+    transition: all 0.15s ease;
+    animation: pulse 1.5s infinite;
+}
+
+.start-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0px #c55755;
+}
+
+/* 참 잘했어요 오버레이 */
+.success-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 50;
+    transition: opacity 0.3s ease;
+}
+
+.success-message.show {
+    opacity: 1;
+}
+
+.badge {
+    background-color: #f28482;
+    color: white;
+    font-size: 3rem;
+    font-weight: 700;
+    padding: 20px 45px;
+    border-radius: 30px;
+    box-shadow: 0 10px 25px rgba(242, 132, 130, 0.4);
+    border: 6px solid white;
+    transform: scale(0);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-message.show .badge {
+    transform: scale(1);
+    animation: wiggle 0.6s infinite ease-in-out alternate;
+    animation-delay: 0.5s;
+}
+
+/* 하단 제어판 */
+.control-panel {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.ctrl-btn {
+    font-family: var(--font-main);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 10px 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+}
+
+.clear-btn {
+    background-color: #f28482;
+    box-shadow: 0 5px 0px #c55755;
+}
+
+.clear-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0px #c55755; }
+.clear-btn:active { transform: translateY(3px); box-shadow: 0 2px 0px #c55755; }
+
+.speech-btn {
+    background-color: #84a59d;
+    box-shadow: 0 5px 0px #5c7872;
+}
+
+.speech-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0px #5c7872; }
+.speech-btn:active { transform: translateY(3px); box-shadow: 0 2px 0px #5c7872; }
+
+/* 무지개 펜 버튼 특수 스타일 */
+.pen-mode-btn {
+    background: linear-gradient(45deg, #ff9f1c, #ffd166, #06d6a0, #118ab2, #ff006e);
+    background-size: 300% 300%;
+    animation: rainbowBg 5s ease infinite;
+    box-shadow: 0 5px 0px #b05c10;
+}
+
+.pen-mode-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0px #b05c10; }
+.pen-mode-btn:active { transform: translateY(3px); box-shadow: 0 2px 0px #b05c10; }
+
+.pen-mode-btn.rainbow-active {
+    outline: 4px solid #f28482;
+    animation: rainbowBg 2s linear infinite, bounceSmooth 1s infinite alternate;
+}
+
+/* 애니메이션 키프레임 정의 */
+@keyframes popIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+@keyframes wiggle {
+    0% { transform: rotate(-5deg) scale(1); }
+    100% { transform: rotate(5deg) scale(1.05); }
+}
+
+@keyframes rainbowBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes bounceSmooth {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-4px); }
+}
+
+/* 모바일 기기 대응 (미디어 쿼리) */
+@media (max-width: 768px) {
+    .sketchbook {
+        height: 96vh;
+        padding: 20px 20px 15px 20px;
+    }
+    
+    .sketchbook-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .sketchbook-header .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .num-btn {
+        min-width: 36px;
+        height: 44px;
+        font-size: 1.3rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 0px rgba(0,0,0,0.15);
+    }
+    
+    .ctrl-btn {
+        font-size: 1.1rem;
+        padding: 8px 16px;
+        border-radius: 12px;
+    }
+}
