@@ -26,6 +26,7 @@ html, body {
     background-color: var(--bg-color);
     font-family: var(--font-main);
     color: var(--text-color);
+    touch-action: manipulation; /* 더블 탭 확대 방지 */
 }
 
 /* 앱 전체 감싸기 */
@@ -350,6 +351,16 @@ html, body {
     outline: 4px solid #f28482;
     animation: rainbowBg 2s linear infinite, bounceSmooth 1s infinite alternate;
 }
+
+/* 전체화면 버튼 스타일 */
+.fullscreen-btn {
+    background-color: #3d5a80;
+    box-shadow: 0 5px 0px #2a3e59;
+}
+
+.fullscreen-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0px #2a3e59; }
+.fullscreen-btn:active { transform: translateY(3px); box-shadow: 0 2px 0px #2a3e59; }
+
 
 /* 애니메이션 키프레임 정의 */
 @keyframes popIn {

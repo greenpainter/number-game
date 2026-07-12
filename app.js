@@ -727,6 +727,43 @@ function resizeCanvas() {
 // 리사이즈 리스너 등록
 window.addEventListener('resize', resizeCanvas);
 
+// 14. 전체화면 제어 로직
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`전체화면 활성화 오류: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+// 전체화면 상태 감지 및 버튼 레이블 업데이트
+document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) {
+        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 원래대로';
+    } else {
+        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 전체화면';
+    }
+});
+
+// 15. 모바일/태블릿 핀치 줌(확대/축소) 강제 방지 로직
+document.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 1 || (e.scale !== undefined && e.scale !== 1)) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
 // 최초 캔버스 사이즈 설정 및 렌더링 엔진 가동
 resizeCanvas();
 requestAnimationFrame(animate);
