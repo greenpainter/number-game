@@ -268,8 +268,7 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
-    pointer-events: auto;
-    cursor: pointer;
+    pointer-events: none;
     opacity: 0;
     z-index: 50;
     transition: opacity 0.3s ease;
@@ -277,6 +276,8 @@ html, body {
 
 .success-message.show {
     opacity: 1;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .badge {
