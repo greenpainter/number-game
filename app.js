@@ -96,6 +96,7 @@ let isRainbowMode = false;
 let rainbowHue = 0;
 
 let successActive = false;
+let successTimer = null;
 
 // 파티클 시스템 변수
 let fireworks = [];
@@ -171,6 +172,11 @@ function initNumber(num) {
     currentNumber = num;
     const numberData = numberPaths[num];
     checkpoints = [];
+    
+    if (successTimer) {
+        clearTimeout(successTimer);
+        successTimer = null;
+    }
     
     // 다중 획을 포함한 모든 좌표를 검증 리스트로 직렬화
     numberData.paths.forEach((path, pathIndex) => {
@@ -436,6 +442,31 @@ canvas.addEventListener('touchend', (e) => {
 }, { passive: false });
 
 // 9. 성공 애니메이션 및 오디오 재생
+function goToNextNumber() {
+    if (!successActive) return;
+    
+    if (successTimer) {
+        clearTimeout(successTimer);
+        successTimer = null;
+    }
+    
+    const numOrder = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    const currentIdx = numOrder.indexOf(currentNumber);
+    const nextIdx = (currentIdx + 1) % numOrder.length;
+    const nextNum = numOrder[nextIdx];
+    
+    // 상단 네비게이션 액티브 갱신
+    document.querySelectorAll('.num-btn').forEach(btn => {
+        if (btn.getAttribute('data-num') === nextNum) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    initNumber(nextNum);
+}
+
 function triggerSuccess() {
     successActive = true;
     
@@ -443,10 +474,8 @@ function triggerSuccess() {
     const successMsg = document.getElementById('successMessage');
     successMsg.classList.add('show');
     
-    // 축하 멘트 출력 ("1은 하나~", "2는 둘~")
-    const speakNum = currentNumber === '0' ? '영' : currentNumber;
-    const desc = numberPaths[currentNumber].label;
-    speak(`${speakNum}은 ${desc}`);
+    // 축하 멘트 출력 ("참 잘했어요!"로 음성 통일)
+    speak("참 잘했어요!");
     
     // 폭죽(Fireworks) 사방 발포
     for (let i = 0; i < 5; i++) {
@@ -462,24 +491,8 @@ function triggerSuccess() {
     }
     
     // 4.5초 뒤 자동 다음 숫자로 이동
-    setTimeout(() => {
-        if (!successActive) return; // 중간에 숫자가 수동 클릭되면 작동 중지
-        
-        const numOrder = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
-        const currentIdx = numOrder.indexOf(currentNumber);
-        const nextIdx = (currentIdx + 1) % numOrder.length;
-        const nextNum = numOrder[nextIdx];
-        
-        // 상단 네비게이션 액티브 갱신
-        document.querySelectorAll('.num-btn').forEach(btn => {
-            if (btn.getAttribute('data-num') === nextNum) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-        
-        initNumber(nextNum);
+    successTimer = setTimeout(() => {
+        goToNextNumber();
     }, 4500);
 }
 
@@ -698,10 +711,23 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 });
 
 document.getElementById('speechBtn').addEventListener('click', () => {
-    const speakNum = currentNumber === '0' ? '영' : currentNumber;
-    const desc = numberPaths[currentNumber].label;
-    speak(`${speakNum}은 ${desc}`);
+    speak("참 잘했어요!");
 });
+
+// 성공 화면 클릭/터치 시 다음 숫자로 넘어가기
+const successMsgElement = document.getElementById('successMessage');
+successMsgElement.addEventListener('click', () => {
+    if (successActive) {
+        goToNextNumber();
+    }
+});
+
+successMsgElement.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (successActive) {
+        goToNextNumber();
+    }
+}, { passive: false });
 
 const penModeBtn = document.getElementById('penModeBtn');
 penModeBtn.addEventListener('click', () => {
