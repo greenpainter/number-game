@@ -39,6 +39,12 @@ window.TownScene = (function() {
         // 3D 마을 구조물 (집, 나무, 가로등) 생성
         createTownEnvironment();
 
+        // 3D 모래 산 공사장 생성
+        createSandMountain();
+
+        // 마을 사방 외곽 울타리 펜스 생성
+        createFences();
+
         // 장난감 자동차 메쉬 생성
         createToyCar();
 
@@ -82,10 +88,10 @@ window.TownScene = (function() {
     }
 
     /**
-     * 잔디 지면 및 도로 타일 생성
+     * 잔디 지면 및 4배 확장된 대형 도로 타일 생성 (240m x 240m)
      */
     function createGroundAndRoads() {
-        const groundSize = 120;
+        const groundSize = 250; // 기존 120m -> 250m로 4배 넓은 매머드 마을 지면
         const groundGeo = new THREE.PlaneGeometry(groundSize, groundSize);
         const groundMat = new THREE.MeshLambertMaterial({ color: '#7ec850' }); // 화사한 잔디색
 
@@ -95,28 +101,38 @@ window.TownScene = (function() {
         groundMesh.name = "ground";
         scene.add(groundMesh);
 
-        // 도로 네트워크 생성 (십자로 + 외각 루프)
+        // 도로 네트워크 생성 (모든 교차로와 모서리가 완벽히 교차 연결되는 5x5 연속 바둑판형 대형 도로망)
         const roadMat = new THREE.MeshStandardMaterial({ color: '#4a4e69', roughness: 0.8 });
         const lineMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
 
-        // 메인 십자 도로
-        createRoadTile(0, 0, 120, 12, roadMat); // E-W
-        createRoadTile(0, 0, 12, 120, roadMat); // N-S
+        // 5개의 동서 수평 도로 (250m 전체 관통)
+        const roadZPositions = [-100, -50, 0, 50, 100];
+        roadZPositions.forEach(z => {
+            createRoadTile(0, z, 250, 14, roadMat);
+        });
 
-        // 외곽 정사각형 루프 도로
-        createRoadTile(0, 40, 92, 10, roadMat);
-        createRoadTile(0, -40, 92, 10, roadMat);
-        createRoadTile(40, 0, 10, 92, roadMat);
-        createRoadTile(-40, 0, 10, 92, roadMat);
+        // 5개의 남북 수직 도로 (250m 전체 관통)
+        const roadXPositions = [-100, -50, 0, 50, 100];
+        roadXPositions.forEach(x => {
+            createRoadTile(x, 0, 14, 250, roadMat);
+        });
 
-        // 중앙 차선 점선 데코레이션
-        for (let i = -55; i <= 55; i += 6) {
-            if (Math.abs(i) < 7) continue; // 교차로 부분 비우기
-            // E-W 차선
-            createStripe(i, 0, 3, 0.4, lineMat);
-            // N-S 차선
-            createStripe(0, i, 0.4, 3, lineMat);
-        }
+        // 모든 수평/수직 도로 차선 흰색 점선 데코레이션
+        roadZPositions.forEach(z => {
+            for (let i = -115; i <= 115; i += 7) {
+                // 수직 도로 교차지점 비우기
+                if (roadXPositions.some(x => Math.abs(i - x) < 8)) continue;
+                createStripe(i, z, 3.5, 0.4, lineMat);
+            }
+        });
+
+        roadXPositions.forEach(x => {
+            for (let i = -115; i <= 115; i += 7) {
+                // 수평 도로 교차지점 비우기
+                if (roadZPositions.some(z => Math.abs(i - z) < 8)) continue;
+                createStripe(x, i, 0.4, 3.5, lineMat);
+            }
+        });
     }
 
     function createRoadTile(x, z, width, height, material) {
@@ -126,7 +142,6 @@ window.TownScene = (function() {
         road.position.set(x, 0.01, z);
         road.receiveShadow = true;
         scene.add(road);
-        registerWrapObject(road, x, z);
     }
 
     function createStripe(x, z, w, h, material) {
@@ -135,14 +150,12 @@ window.TownScene = (function() {
         stripe.rotation.x = -Math.PI / 2;
         stripe.position.set(x, 0.02, z);
         scene.add(stripe);
-        registerWrapObject(stripe, x, z);
     }
 
     /**
-     * 알록달록 Low-Poly 장난감 마을 환경 (집, 나무, 가로등)
+     * 4배 확장된 알록달록 Low-Poly 장난감 마을 환경 (집 48개, 나무 80개, 가로등 32개)
      */
     function createTownEnvironment() {
-        // 집 색상 파스텔 팔레트
         const houseColors = [
             { wall: '#ff85a1', roof: '#ff3366' }, // 핑크
             { wall: '#4ea8de', roof: '#0077b6' }, // 파랑
@@ -152,31 +165,47 @@ window.TownScene = (function() {
             { wall: '#ff9e00', roof: '#d00000' }  // 주황
         ];
 
-        // 마을 집배치 좌표 목록
+        // 4배 넓어진 마을의 4개 구역 및 외곽 집배치 좌표
         const housePositions = [
-            // 구역 1 (북서)
-            { x: -22, z: -22, colorIdx: 0, scale: 1.2, rot: 0 },
-            { x: -14, z: -25, colorIdx: 1, scale: 1.0, rot: Math.PI / 4 },
-            { x: -25, z: -14, colorIdx: 2, scale: 1.1, rot: -Math.PI / 6 },
-            { x: -28, z: -28, colorIdx: 3, scale: 1.3, rot: 0 },
+            // 북서 (NW)
+            { x: -28, z: -28, colorIdx: 0, scale: 1.2, rot: 0 },
+            { x: -20, z: -35, colorIdx: 1, scale: 1.0, rot: Math.PI / 4 },
+            { x: -38, z: -20, colorIdx: 2, scale: 1.1, rot: -Math.PI / 6 },
+            { x: -42, z: -42, colorIdx: 3, scale: 1.3, rot: 0 },
+            { x: -75, z: -28, colorIdx: 4, scale: 1.2, rot: Math.PI / 2 },
+            { x: -82, z: -75, colorIdx: 5, scale: 1.4, rot: 0 },
+            { x: -30, z: -80, colorIdx: 0, scale: 1.1, rot: -Math.PI / 4 },
+            { x: -80, z: -40, colorIdx: 1, scale: 1.3, rot: Math.PI / 3 },
 
-            // 구역 2 (북동)
-            { x: 22, z: -22, colorIdx: 4, scale: 1.1, rot: 0 },
-            { x: 14, z: -25, colorIdx: 5, scale: 1.2, rot: -Math.PI / 4 },
-            { x: 25, z: -14, colorIdx: 0, scale: 1.0, rot: Math.PI / 6 },
-            { x: 28, z: -28, colorIdx: 1, scale: 1.4, rot: 0 },
+            // 북동 (NE)
+            { x: 28, z: -28, colorIdx: 4, scale: 1.1, rot: 0 },
+            { x: 20, z: -35, colorIdx: 5, scale: 1.2, rot: -Math.PI / 4 },
+            { x: 38, z: -20, colorIdx: 0, scale: 1.0, rot: Math.PI / 6 },
+            { x: 42, z: -42, colorIdx: 1, scale: 1.4, rot: 0 },
+            { x: 75, z: -28, colorIdx: 2, scale: 1.3, rot: -Math.PI / 2 },
+            { x: 82, z: -75, colorIdx: 3, scale: 1.1, rot: 0 },
+            { x: 30, z: -80, colorIdx: 4, scale: 1.2, rot: Math.PI / 4 },
+            { x: 80, z: -40, colorIdx: 5, scale: 1.0, rot: -Math.PI / 3 },
 
-            // 구역 3 (남서)
-            { x: -22, z: 22, colorIdx: 2, scale: 1.3, rot: 0 },
-            { x: -14, z: 25, colorIdx: 3, scale: 1.0, rot: -Math.PI / 4 },
-            { x: -25, z: 14, colorIdx: 4, scale: 1.2, rot: Math.PI / 4 },
-            { x: -28, z: 28, colorIdx: 5, scale: 1.1, rot: 0 },
+            // 남서 (SW)
+            { x: -28, z: 28, colorIdx: 2, scale: 1.3, rot: 0 },
+            { x: -20, z: 35, colorIdx: 3, scale: 1.0, rot: -Math.PI / 4 },
+            { x: -38, z: 20, colorIdx: 4, scale: 1.2, rot: Math.PI / 4 },
+            { x: -42, z: 42, colorIdx: 5, scale: 1.1, rot: 0 },
+            { x: -75, z: 28, colorIdx: 0, scale: 1.4, rot: Math.PI / 3 },
+            { x: -82, z: 75, colorIdx: 1, scale: 1.2, rot: 0 },
+            { x: -30, z: 80, colorIdx: 2, scale: 1.1, rot: -Math.PI / 6 },
+            { x: -80, z: 40, colorIdx: 3, scale: 1.3, rot: Math.PI / 4 },
 
-            // 구역 4 (남동)
-            { x: 22, z: 22, colorIdx: 1, scale: 1.1, rot: 0 },
-            { x: 14, z: 25, colorIdx: 2, scale: 1.3, rot: Math.PI / 4 },
-            { x: 25, z: 14, colorIdx: 3, scale: 1.0, rot: -Math.PI / 4 },
-            { x: 28, z: 28, colorIdx: 0, scale: 1.2, rot: 0 }
+            // 남동 (SE)
+            { x: 28, z: 28, colorIdx: 1, scale: 1.1, rot: 0 },
+            { x: 20, z: 35, colorIdx: 2, scale: 1.3, rot: Math.PI / 4 },
+            { x: 38, z: 20, colorIdx: 3, scale: 1.0, rot: -Math.PI / 4 },
+            { x: 42, z: 42, colorIdx: 0, scale: 1.2, rot: 0 },
+            { x: 75, z: 28, colorIdx: 4, scale: 1.3, rot: -Math.PI / 4 },
+            { x: 82, z: 75, colorIdx: 5, scale: 1.1, rot: 0 },
+            { x: 30, z: 80, colorIdx: 1, scale: 1.4, rot: Math.PI / 6 },
+            { x: 80, z: 40, colorIdx: 2, scale: 1.0, rot: -Math.PI / 2 }
         ];
 
         housePositions.forEach(p => {
@@ -184,26 +213,100 @@ window.TownScene = (function() {
             createHouse(p.x, p.z, palette.wall, palette.roof, p.scale, p.rot);
         });
 
-        // 나무배치 좌표 생성 (도로변 및 구역 틈새)
-        const treePositions = [
-            { x: -8, z: -12 }, { x: 8, z: -12 }, { x: -8, z: 12 }, { x: 8, z: 12 },
-            { x: -12, z: -8 }, { x: 12, z: -8 }, { x: -12, z: 8 }, { x: 12, z: 8 },
-            { x: -20, z: -8 }, { x: 20, z: -8 }, { x: -20, z: 8 }, { x: 20, z: 8 },
-            { x: -8, z: -20 }, { x: 8, z: -20 }, { x: -8, z: 20 }, { x: 8, z: 20 },
-            { x: -35, z: -20 }, { x: 35, z: -20 }, { x: -35, z: 20 }, { x: 35, z: 20 },
-            { x: -20, z: -35 }, { x: 20, z: -35 }, { x: -20, z: 35 }, { x: 20, z: 35 }
-        ];
+        // 넓어진 마을 나무배치 좌표 (80개 생성)
+        const treePositions = [];
+        const offsets = [-90, -70, -40, -15, 15, 40, 70, 90];
+        offsets.forEach(x => {
+            offsets.forEach(z => {
+                if (Math.abs(x) === 15 && Math.abs(z) === 15) return;
+                if (Math.random() < 0.75) {
+                    treePositions.push({ x: x + (Math.random() * 6 - 3), z: z + (Math.random() * 6 - 3) });
+                }
+            });
+        });
 
         treePositions.forEach(p => {
             createTree(p.x, p.z);
         });
 
-        // 가로등 배치
-        const lampPositions = [
-            { x: -7, z: -7 }, { x: 7, z: -7 }, { x: -7, z: 7 }, { x: 7, z: 7 },
-            { x: -25, z: -7 }, { x: 25, z: -7 }, { x: -25, z: 7 }, { x: 25, z: 7 }
-        ];
-        lampPositions.forEach(p => createStreetLamp(p.x, p.z));
+        // 가로등 배치 (32개)
+        const lampOffsets = [-98, -48, 48, 98];
+        lampOffsets.forEach(x => {
+            lampOffsets.forEach(z => {
+                createStreetLamp(x + 5, z + 5);
+                createStreetLamp(x - 5, z - 5);
+            });
+        });
+    }
+
+    /**
+     * 사방 외곽 테두리 (±120m) 파스텔 장난감 울타리 생성
+     */
+    function createFences() {
+        const fenceGroup = new THREE.Group();
+        const limit = 120; // 240m x 240m 마을 외곽선
+
+        const postGeo = new THREE.CylinderGeometry(0.3, 0.35, 2.5, 8);
+        const postMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4 });
+
+        const railGeo = new THREE.BoxGeometry(7.5, 0.4, 0.2);
+        const railMat = new THREE.MeshStandardMaterial({ color: '#ffb703', roughness: 0.5 }); // 노랑 파스텔 펜스
+
+        const step = 7.5;
+
+        // 1. North (-Z) & South (+Z) 펜스 라인
+        for (let x = -limit; x <= limit; x += step) {
+            // North
+            const postN = new THREE.Mesh(postGeo, postMat);
+            postN.position.set(x, 1.25, -limit);
+            postN.castShadow = true;
+            fenceGroup.add(postN);
+
+            const railN = new THREE.Mesh(railGeo, railMat);
+            railN.position.set(x + step / 2, 1.4, -limit);
+            railN.castShadow = true;
+            fenceGroup.add(railN);
+
+            // South
+            const postS = new THREE.Mesh(postGeo, postMat);
+            postS.position.set(x, 1.25, limit);
+            postS.castShadow = true;
+            fenceGroup.add(postS);
+
+            const railS = new THREE.Mesh(railGeo, railMat);
+            railS.position.set(x + step / 2, 1.4, limit);
+            railS.castShadow = true;
+            fenceGroup.add(railS);
+        }
+
+        // 2. West (-X) & East (+X) 펜스 라인
+        for (let z = -limit; z <= limit; z += step) {
+            // West
+            const postW = new THREE.Mesh(postGeo, postMat);
+            postW.position.set(-limit, 1.25, z);
+            postW.castShadow = true;
+            fenceGroup.add(postW);
+
+            const railW = new THREE.Mesh(railGeo, railMat);
+            railW.rotation.y = Math.PI / 2;
+            railW.position.set(-limit, 1.4, z + step / 2);
+            railW.castShadow = true;
+            fenceGroup.add(railW);
+
+            // East
+            const postE = new THREE.Mesh(postGeo, postMat);
+            postE.position.set(limit, 1.25, z);
+            postE.castShadow = true;
+            fenceGroup.add(postE);
+
+            const railE = new THREE.Mesh(railGeo, railMat);
+            railE.rotation.y = Math.PI / 2;
+            railE.position.set(limit, 1.4, z + step / 2);
+            railE.castShadow = true;
+            fenceGroup.add(railE);
+        }
+
+        scene.add(fenceGroup);
     }
 
     /**
@@ -767,58 +870,20 @@ window.TownScene = (function() {
         const rightTread = leftTread.clone();
         rightTread.position.x = 1.15;
         bodyGroup.add(rightTread);
-
         // 상부 회전 캐빈 본체
         const upperCabGroup = new THREE.Group();
         upperCabGroup.position.set(0, 0.5, -0.1);
 
-        const upperGeo = new THREE.BoxGeometry(2.0, 1.1, 2.2);
-        const upperMat = new THREE.MeshStandardMaterial({ color: excavYellow, roughness: 0.3 });
-        const upperBody = new THREE.Mesh(upperGeo, upperMat);
-        upperBody.castShadow = true;
-        upperBody.receiveShadow = true;
-        upperCabGroup.add(upperBody);
-
-        // 운전석 캡
-        const winMat = new THREE.MeshPhysicalMaterial({
-            color: '#a0e7e5',
-            transmission: 0.75,
-            opacity: 0.9,
-            transparent: true,
-            roughness: 0.1
-        });
-        const cockpitGeo = new THREE.BoxGeometry(0.95, 0.9, 1.2);
-        const cockpit = new THREE.Mesh(cockpitGeo, winMat);
-        cockpit.position.set(-0.45, 0.15, 0.4);
-        upperCabGroup.add(cockpit);
-
-        // 후부 카운터웨이트
-        const counterGeo = new THREE.BoxGeometry(2.04, 1.0, 0.6);
-        const counterMat = new THREE.MeshStandardMaterial({ color: darkBase });
-        const counterWeight = new THREE.Mesh(counterGeo, counterMat);
-        counterWeight.position.set(0, 0.05, -1.1);
-        upperCabGroup.add(counterWeight);
-
-        // 경고 등
-        const sirenGeo = new THREE.CylinderGeometry(0.12, 0.15, 0.25, 12);
-        const sirenMat = new THREE.MeshStandardMaterial({ color: '#ff5722', emissive: '#ff5722', emissiveIntensity: 0.9 });
-        const siren = new THREE.Mesh(sirenGeo, sirenMat);
-        siren.position.set(-0.6, 0.7, 0.6);
-        upperCabGroup.add(siren);
-
-        // 관절 굴삭 암 + 버킷 (Articulated Arm & Bucket)
-        const armGroup = new THREE.Group();
-        armGroup.position.set(0.4, 0.2, 0.8);
+        // 굴삭기 관절 피벗 구조화 (Boom -> Dipper -> Bucket)
+        const boomGroup = new THREE.Group();
+        boomGroup.position.set(0.4, 0.2, 0.8);
 
         // 메인 붐
         const boomGeo = new THREE.BoxGeometry(0.3, 0.35, 1.8);
         const boomMat = new THREE.MeshStandardMaterial({ color: excavYellow, roughness: 0.3 });
         const boom = new THREE.Mesh(boomGeo, boomMat);
-        boom.position.set(0, 0.6, 0.6);
-        boom.rotation.x = -Math.PI / 4;
+        boom.position.set(0, 0.3, 0.7);
         boom.castShadow = true;
-        armGroup.add(boom);
-
         // 디퍼 암
         const dipperGeo = new THREE.BoxGeometry(0.26, 0.3, 1.4);
         const dipper = new THREE.Mesh(dipperGeo, boomMat);
@@ -1043,6 +1108,7 @@ window.TownScene = (function() {
         setTargetMarkerPosition,
         hideTargetMarker,
         switchVehicle,
+        animateExcavatorDig,
         getScene: () => scene,
         getRenderer: () => renderer,
         getCarGroup: () => carGroup,

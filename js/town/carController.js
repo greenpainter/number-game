@@ -29,6 +29,10 @@ window.CarController = (function() {
         bindEvents();
     }
 
+    let isDigging = false;
+    let digProgress = 0.0;
+    let isTargetingSand = false;
+
     /**
      * 터치/마우스 클릭 이벤트 바인딩
      */
@@ -37,6 +41,8 @@ window.CarController = (function() {
 
         // 마우스 및 터치 통합 핸들러
         const handlePointer = (e) => {
+            if (isDigging) return; // 굴착 동작 중 조종 차단
+
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -52,11 +58,23 @@ window.CarController = (function() {
 
             if (intersects.length > 0) {
                 const hitPoint = intersects[0].point;
-                targetPosition = new THREE.Vector3(hitPoint.x, 0, hitPoint.z);
+
+                // 모래 산 부근 클릭 감지 (x: 70~100, z: -100~-70)
+                if (hitPoint.x > 70 && hitPoint.x < 100 && hitPoint.z < -70 && hitPoint.z > -100) {
+                    isTargetingSand = true;
+                    // 모래 산 바로 앞 전방에 정차 좌표 지정
+                    targetPosition = new THREE.Vector3(85, 0, -72);
+                } else {
+                    isTargetingSand = false;
+                    const BOUNDARY_LIMIT = 115.0;
+                    const clampedX = Math.max(-BOUNDARY_LIMIT, Math.min(BOUNDARY_LIMIT, hitPoint.x));
+                    const clampedZ = Math.max(-BOUNDARY_LIMIT, Math.min(BOUNDARY_LIMIT, hitPoint.z));
+                    targetPosition = new THREE.Vector3(clampedX, 0, clampedZ);
+                }
 
                 // 씬 타겟 마커 위치 업데이트
                 if (window.TownScene) {
-                    window.TownScene.setTargetMarkerPosition(hitPoint.x, hitPoint.z);
+                    window.TownScene.setTargetMarkerPosition(targetPosition.x, targetPosition.z);
                 }
 
                 // 가이드 안내 텍스트 숨기기
@@ -76,9 +94,31 @@ window.CarController = (function() {
     }
 
     /**
-     * 프레임별 자동차 이동 및 회전 보간 연산
+     * 프레임별 자동차 이동, 굴삭기 굴착 동작 및 카메라 줌 보간 연산
      */
     function update(deltaTime) {
+        // 1. 굴착 동작 애니메이션 진행 중일 때
+        if (isDigging) {
+            digProgress += deltaTime * 0.45; // 약 2.2초 동안 굴착 실행
+            if (window.TownScene && typeof window.TownScene.animateExcavatorDig === 'function') {
+                window.TownScene.animateExcavatorDig(digProgress);
+            }
+
+            if (digProgress >= 1.0) {
+                // 굴착 완수 -> 줌아웃 복귀 및 동작 해제
+                isDigging = false;
+                digProgress = 0.0;
+                if (window.CameraFollow && typeof window.CameraFollow.setZoomMode === 'function') {
+                    window.CameraFollow.setZoomMode(false); // 스무스 줌아웃
+                }
+
+                // TTS 칭찬 안내
+                const speakMsg = "영차! 굴삭기로 모래를 펐어요!";
+                if (window.speak) window.speak(speakMsg);
+            }
+            return;
+        }
+
         if (!isMoving || !targetPosition || !carGroup) {
             currentSpeed = THREE.MathUtils.lerp(currentSpeed, 0, deltaTime * 8);
             if (window.TownScene) {
@@ -114,12 +154,16 @@ window.CarController = (function() {
             const moveX = Math.sin(carGroup.rotation.y) * step;
             const moveZ = Math.cos(carGroup.rotation.y) * step;
 
-            carGroup.position.x += moveX;
-            carGroup.position.z += moveZ;
+            // 울타리 경계선 내부로 이동 물리 강제 제한
+            const BOUNDARY_LIMIT = 115.0;
+            carGroup.position.x = Math.max(-BOUNDARY_LIMIT, Math.min(BOUNDARY_LIMIT, carGroup.position.x + moveX));
+            carGroup.position.z = Math.max(-BOUNDARY_LIMIT, Math.min(BOUNDARY_LIMIT, carGroup.position.z + moveZ));
 
             // 장난감 자동차 통통 튀는 움직임 묘사
             const time = Date.now() * 0.015;
-            carGroup.children[0].position.y = 0.7 + Math.sin(time) * 0.05;
+            if (carGroup.children[0]) {
+                carGroup.children[0].position.y = 0.7 + Math.sin(time) * 0.05;
+            }
 
         } else {
             // 목푯값 도착
@@ -129,6 +173,25 @@ window.CarController = (function() {
 
             if (window.TownScene) {
                 window.TownScene.hideTargetMarker();
+            }
+
+            // 모래 산 목표 도착 + 굴삭기일 때 굴착 동작 & 줌인 트리거 가동!
+            const currentVehicle = window.TownScene ? window.TownScene.getCurrentVehicleType() : 'bus';
+            if (isTargetingSand && currentVehicle === 'excavator') {
+                isTargetingSand = false;
+                isDigging = true;
+                digProgress = 0.0;
+
+                // 스무스 카메라 줌인 가동!
+                if (window.CameraFollow && typeof window.CameraFollow.setZoomMode === 'function') {
+                    window.CameraFollow.setZoomMode(true);
+                }
+
+                // 차체가 모래 산을 똑바로 바라보도록 조향
+                carGroup.rotation.y = -Math.PI / 4;
+            } else if (isTargetingSand) {
+                isTargetingSand = false;
+                if (window.speak) window.speak("굴삭기로 교체하고 모래를 퍼보아요!");
             }
 
             // 차체 가볍게 착지

@@ -6,7 +6,11 @@
 window.CameraFollow = (function() {
     let camera;
     let targetMesh;
-    let cameraOffset = new THREE.Vector3(22, 28, 25); // 조금 더 먼 범위의 Isometric 사선 시점 오프셋
+    const normalOffset = new THREE.Vector3(22, 28, 25); // 기본 시점 오프셋
+    const zoomOffset = new THREE.Vector3(9, 11, 10);     // 굴착 줌인 밀착 시점 오프셋
+    let targetOffset = normalOffset.clone();
+    let currentOffset = normalOffset.clone();
+
     let cameraLerpSpeed = 4.5; // 카메라 추적 속도
 
     /**
@@ -26,19 +30,29 @@ window.CameraFollow = (function() {
     }
 
     /**
-     * 자동차 위치를 화면 중앙에 오도록 선형 보간(Lerp) 추적
+     * 줌인/줌아웃 카메라 모드 설정
+     */
+    function setZoomMode(isZoomed) {
+        targetOffset = isZoomed ? zoomOffset.clone() : normalOffset.clone();
+    }
+
+    /**
+     * 자동차 위치를 화면 중앙에 오도록 선형 보간(Lerp) 추적 & 줌인 스무스 보간
      */
     function update(deltaTime, targetGroup) {
         if (!camera || !targetGroup) return;
+
+        // 오프셋 줌 스무스 보간
+        currentOffset.lerp(targetOffset, Math.min(1.0, deltaTime * 3.5));
 
         // 자동차의 현재 좌표
         const targetPos = targetGroup.position;
 
         // 카메라가 이동해야 할 목표 3D 좌표 (자동차 좌표 + 시점 오프셋)
         const desiredCameraPos = new THREE.Vector3(
-            targetPos.x + cameraOffset.x,
-            targetPos.y + cameraOffset.y,
-            targetPos.z + cameraOffset.z
+            targetPos.x + currentOffset.x,
+            targetPos.y + currentOffset.y,
+            targetPos.z + currentOffset.z
         );
 
         // 부드러운 위치 보간 (Smooth Follow Lerp)
@@ -63,6 +77,7 @@ window.CameraFollow = (function() {
         init,
         update,
         resize,
+        setZoomMode,
         getCamera: () => camera
     };
 })();

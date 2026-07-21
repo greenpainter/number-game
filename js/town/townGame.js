@@ -169,15 +169,10 @@ window.TownGame = (function() {
             window.CarController.update(deltaTime);
         }
 
-        // 2. 카메라 추적 및 무한 월드 래핑 업데이트
+        // 2. 카메라 추적 업데이트
         if (window.CameraFollow && window.TownScene) {
             const carGroup = window.TownScene.getCarGroup();
             window.CameraFollow.update(deltaTime, carGroup);
-
-            // [Infinitown 메커니즘] 무한 월드 타일 순환 (World Wrapping)
-            if (carGroup && typeof window.TownScene.updateWorldWrapping === 'function') {
-                window.TownScene.updateWorldWrapping(carGroup.position);
-            }
         }
 
         // 3. Three.js 씬 렌더링

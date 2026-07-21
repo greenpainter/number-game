@@ -962,8 +962,8 @@ function resizeCanvas() {
 // 리사이즈 리스너 등록
 window.addEventListener('resize', resizeCanvas);
 
-// 14. 전체화면 제어 로직 (iOS/iPad 크롬 가상 전체화면 지원)
-const fullscreenBtn = document.getElementById('fullscreenBtn');
+// 14. 전체화면 제어 로직 (모든 놀이에 전체화면 버튼 지원 & iOS/iPad 크롬 가상 전체화면 지원)
+const allFullscreenBtns = document.querySelectorAll('.fullscreen-btn');
 const sketchbook = document.querySelector('.sketchbook');
 
 function toggleFullscreen() {
@@ -985,24 +985,29 @@ function toggleFullscreen() {
 
 function toggleVirtualFullscreen() {
     const isVirtual = sketchbook.classList.toggle('virtual-fullscreen');
-    if (isVirtual) {
-        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 원래대로';
-    } else {
-        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 전체화면';
-    }
+    updateAllFullscreenBtnText(isVirtual);
     // 레이아웃 변경 완료 후 캔버스 리사이즈
     setTimeout(resizeCanvas, 150);
 }
 
-fullscreenBtn.addEventListener('click', toggleFullscreen);
+function updateAllFullscreenBtnText(isFullscreen) {
+    allFullscreenBtns.forEach(btn => {
+        if (isFullscreen) {
+            btn.innerHTML = '<span class="icon">🖥️</span> 원래대로';
+        } else {
+            btn.innerHTML = '<span class="icon">🖥️</span> 전체화면';
+        }
+    });
+}
+
+allFullscreenBtns.forEach(btn => {
+    btn.addEventListener('click', toggleFullscreen);
+});
 
 // 네이티브 전체화면 상태 감지 및 버튼 레이블 업데이트
 document.addEventListener('fullscreenchange', () => {
-    if (document.fullscreenElement) {
-        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 원래대로';
-    } else {
-        fullscreenBtn.innerHTML = '<span class="icon">🖥️</span> 전체화면';
-    }
+    const isFS = !!document.fullscreenElement;
+    updateAllFullscreenBtnText(isFS);
     setTimeout(resizeCanvas, 150);
 });
 
