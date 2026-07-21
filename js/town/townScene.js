@@ -240,68 +240,140 @@ window.TownScene = (function() {
     /**
      * 사방 외곽 테두리 (±120m) 파스텔 장난감 울타리 생성
      */
+    /**
+     * 사방 외곽 테두리 (±120m) 감성 3D 나무 판자 울타리 (Wooden Board Picket Fence) 생성
+     */
     function createFences() {
         const fenceGroup = new THREE.Group();
         const limit = 120; // 240m x 240m 마을 외곽선
 
-        const postGeo = new THREE.CylinderGeometry(0.3, 0.35, 2.5, 8);
-        const postMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4 });
+        // 우드 파스텔 컬러 팔레트
+        const postMat = new THREE.MeshStandardMaterial({ color: '#8b5a2b', roughness: 0.8 }); // 짙은 원목 기둥
+        const railMat = new THREE.MeshStandardMaterial({ color: '#d4a373', roughness: 0.7 }); // 가로 지지 목재
+        const boardMat1 = new THREE.MeshStandardMaterial({ color: '#faedcd', roughness: 0.7 }); // 세로 밝은 나무 판자
+        const boardMat2 = new THREE.MeshStandardMaterial({ color: '#e9c46a', roughness: 0.7 }); // 세로 따뜻한 나무 판자
 
-        const railGeo = new THREE.BoxGeometry(7.5, 0.4, 0.2);
-        const railMat = new THREE.MeshStandardMaterial({ color: '#ffb703', roughness: 0.5 }); // 노랑 파스텔 펜스
+        const step = 6.0; // 6m 간격 섹션
+        const numPickets = 4; // 섹션당 4개의 세로 판자
 
-        const step = 7.5;
+        // 세로 나무 판자 1개 생성 헬퍼 (위쪽 상단 산형 컷팅 연출)
+        function createWoodenBoard(mat) {
+            const boardGroup = new THREE.Group();
+            const bodyGeo = new THREE.BoxGeometry(0.55, 1.9, 0.12);
+            const body = new THREE.Mesh(bodyGeo, mat);
+            body.position.y = 1.0;
+            body.castShadow = true;
+            boardGroup.add(body);
+
+            // 판자 상단 삼각 캡
+            const topGeo = new THREE.ConeGeometry(0.38, 0.3, 4);
+            const topCap = new THREE.Mesh(topGeo, mat);
+            topCap.rotation.y = Math.PI / 4;
+            topCap.position.y = 2.05;
+            topCap.castShadow = true;
+            boardGroup.add(topCap);
+
+            return boardGroup;
+        }
 
         // 1. North (-Z) & South (+Z) 펜스 라인
         for (let x = -limit; x <= limit; x += step) {
-            // North
-            const postN = new THREE.Mesh(postGeo, postMat);
-            postN.position.set(x, 1.25, -limit);
+            // North 기둥
+            const postN = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.3, 0.45), postMat);
+            postN.position.set(x, 1.15, -limit);
             postN.castShadow = true;
             fenceGroup.add(postN);
 
-            const railN = new THREE.Mesh(railGeo, railMat);
-            railN.position.set(x + step / 2, 1.4, -limit);
-            railN.castShadow = true;
-            fenceGroup.add(railN);
+            // North 가로 지지대 2줄
+            const railN1 = new THREE.Mesh(new THREE.BoxGeometry(step, 0.22, 0.14), railMat);
+            railN1.position.set(x + step / 2, 0.7, -limit);
+            fenceGroup.add(railN1);
+            const railN2 = railN1.clone();
+            railN2.position.y = 1.5;
+            fenceGroup.add(railN2);
 
-            // South
-            const postS = new THREE.Mesh(postGeo, postMat);
-            postS.position.set(x, 1.25, limit);
+            // North 세로 판자들
+            for (let i = 1; i <= numPickets; i++) {
+                const px = x + (step / (numPickets + 1)) * i;
+                const mat = (i % 2 === 0) ? boardMat1 : boardMat2;
+                const board = createWoodenBoard(mat);
+                board.position.set(px, 0, -limit);
+                fenceGroup.add(board);
+            }
+
+            // South 기둥
+            const postS = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.3, 0.45), postMat);
+            postS.position.set(x, 1.15, limit);
             postS.castShadow = true;
             fenceGroup.add(postS);
 
-            const railS = new THREE.Mesh(railGeo, railMat);
-            railS.position.set(x + step / 2, 1.4, limit);
-            railS.castShadow = true;
-            fenceGroup.add(railS);
+            // South 가로 지지대 2줄
+            const railS1 = new THREE.Mesh(new THREE.BoxGeometry(step, 0.22, 0.14), railMat);
+            railS1.position.set(x + step / 2, 0.7, limit);
+            fenceGroup.add(railS1);
+            const railS2 = railS1.clone();
+            railS2.position.y = 1.5;
+            fenceGroup.add(railS2);
+
+            // South 세로 판자들
+            for (let i = 1; i <= numPickets; i++) {
+                const px = x + (step / (numPickets + 1)) * i;
+                const mat = (i % 2 === 0) ? boardMat1 : boardMat2;
+                const board = createWoodenBoard(mat);
+                board.position.set(px, 0, limit);
+                fenceGroup.add(board);
+            }
         }
 
         // 2. West (-X) & East (+X) 펜스 라인
         for (let z = -limit; z <= limit; z += step) {
-            // West
-            const postW = new THREE.Mesh(postGeo, postMat);
-            postW.position.set(-limit, 1.25, z);
+            // West 기둥
+            const postW = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.3, 0.45), postMat);
+            postW.position.set(-limit, 1.15, z);
             postW.castShadow = true;
             fenceGroup.add(postW);
 
-            const railW = new THREE.Mesh(railGeo, railMat);
-            railW.rotation.y = Math.PI / 2;
-            railW.position.set(-limit, 1.4, z + step / 2);
-            railW.castShadow = true;
-            fenceGroup.add(railW);
+            // West 가로 지지대 2줄
+            const railW1 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.22, step), railMat);
+            railW1.position.set(-limit, 0.7, z + step / 2);
+            fenceGroup.add(railW1);
+            const railW2 = railW1.clone();
+            railW2.position.y = 1.5;
+            fenceGroup.add(railW2);
 
-            // East
-            const postE = new THREE.Mesh(postGeo, postMat);
-            postE.position.set(limit, 1.25, z);
+            // West 세로 판자들
+            for (let i = 1; i <= numPickets; i++) {
+                const pz = z + (step / (numPickets + 1)) * i;
+                const mat = (i % 2 === 0) ? boardMat1 : boardMat2;
+                const board = createWoodenBoard(mat);
+                board.rotation.y = Math.PI / 2;
+                board.position.set(-limit, 0, pz);
+                fenceGroup.add(board);
+            }
+
+            // East 기둥
+            const postE = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.3, 0.45), postMat);
+            postE.position.set(limit, 1.15, z);
             postE.castShadow = true;
             fenceGroup.add(postE);
 
-            const railE = new THREE.Mesh(railGeo, railMat);
-            railE.rotation.y = Math.PI / 2;
-            railE.position.set(limit, 1.4, z + step / 2);
-            railE.castShadow = true;
-            fenceGroup.add(railE);
+            // East 가로 지지대 2줄
+            const railE1 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.22, step), railMat);
+            railE1.position.set(limit, 0.7, z + step / 2);
+            fenceGroup.add(railE1);
+            const railE2 = railE1.clone();
+            railE2.position.y = 1.5;
+            fenceGroup.add(railE2);
+
+            // East 세로 판자들
+            for (let i = 1; i <= numPickets; i++) {
+                const pz = z + (step / (numPickets + 1)) * i;
+                const mat = (i % 2 === 0) ? boardMat1 : boardMat2;
+                const board = createWoodenBoard(mat);
+                board.rotation.y = Math.PI / 2;
+                board.position.set(limit, 0, pz);
+                fenceGroup.add(board);
+            }
         }
 
         scene.add(fenceGroup);
@@ -705,16 +777,25 @@ window.TownScene = (function() {
         const bedYellow = '#ffd166';
         const chassisColor = '#3a3b3c';
 
-        // 하부 샤시 프레임
-        const chassisGeo = new THREE.BoxGeometry(1.8, 0.35, 4.4);
+        // Z-Fighting 방지용 polygonOffset 표준 재질
+        const bedMat = new THREE.MeshStandardMaterial({
+            color: bedYellow,
+            roughness: 0.3,
+            polygonOffset: true,
+            polygonOffsetFactor: 1,
+            polygonOffsetUnits: 1
+        });
+
+        // 하부 샤시 프레임 (이격 보정)
+        const chassisGeo = new THREE.BoxGeometry(1.76, 0.34, 4.36);
         const chassisMat = new THREE.MeshStandardMaterial({ color: chassisColor, roughness: 0.6 });
         const chassis = new THREE.Mesh(chassisGeo, chassisMat);
-        chassis.position.y = -0.15;
+        chassis.position.y = -0.17;
         chassis.castShadow = true;
         bodyGroup.add(chassis);
 
         // 운전석 캐빈
-        const cabinGeo = new THREE.BoxGeometry(2.2, 1.4, 1.6);
+        const cabinGeo = new THREE.BoxGeometry(2.18, 1.38, 1.58);
         const cabinMat = new THREE.MeshStandardMaterial({ color: cabinOrange, roughness: 0.3 });
         const cabin = new THREE.Mesh(cabinGeo, cabinMat);
         cabin.position.set(0, 0.6, 1.25);
@@ -723,7 +804,7 @@ window.TownScene = (function() {
         bodyGroup.add(cabin);
 
         // 캐빈 캡
-        const capGeo = new THREE.BoxGeometry(2.24, 0.2, 1.64);
+        const capGeo = new THREE.BoxGeometry(2.22, 0.18, 1.62);
         const cap = new THREE.Mesh(capGeo, cabinMat);
         cap.position.set(0, 1.35, 1.25);
         bodyGroup.add(cap);
@@ -737,12 +818,12 @@ window.TownScene = (function() {
             roughness: 0.1
         });
 
-        const frontWinGeo = new THREE.PlaneGeometry(1.9, 0.65);
+        const frontWinGeo = new THREE.PlaneGeometry(1.88, 0.63);
         const frontWin = new THREE.Mesh(frontWinGeo, winMat);
         frontWin.position.set(0, 0.8, 2.06);
         bodyGroup.add(frontWin);
 
-        const sideWinGeo = new THREE.PlaneGeometry(0.9, 0.55);
+        const sideWinGeo = new THREE.PlaneGeometry(0.88, 0.53);
         const sideWinLeft = new THREE.Mesh(sideWinGeo, winMat);
         sideWinLeft.position.set(-1.11, 0.8, 1.25);
         sideWinLeft.rotation.y = -Math.PI / 2;
@@ -764,7 +845,7 @@ window.TownScene = (function() {
         rightLight.position.x = 0.8;
         bodyGroup.add(rightLight);
 
-        const grillGeo = new THREE.BoxGeometry(1.4, 0.4, 0.06);
+        const grillGeo = new THREE.BoxGeometry(1.38, 0.38, 0.06);
         const grillMat = new THREE.MeshStandardMaterial({ color: '#2b2d42' });
         const grill = new THREE.Mesh(grillGeo, grillMat);
         grill.position.set(0, 0.2, 2.06);
@@ -777,37 +858,35 @@ window.TownScene = (function() {
         pipe.position.set(1.0, 1.2, 0.3);
         bodyGroup.add(pipe);
 
-        // 덤프 짐칸 (Dump Bed Container)
+        // 덤프 짐칸 (Dump Bed Container: 이격 정밀 배치로 Z-Fighting 100% 제거)
         const bedGroup = new THREE.Group();
         bedGroup.position.set(0, 0.6, -0.6);
 
-        const bedMat = new THREE.MeshStandardMaterial({ color: bedYellow, roughness: 0.3 });
-        
-        const bedBottomGeo = new THREE.BoxGeometry(2.2, 0.2, 2.4);
+        const bedBottomGeo = new THREE.BoxGeometry(2.16, 0.18, 2.36);
         const bedBottom = new THREE.Mesh(bedBottomGeo, bedMat);
-        bedBottom.position.y = -0.2;
+        bedBottom.position.y = -0.19;
         bedBottom.castShadow = true;
         bedGroup.add(bedBottom);
 
-        const sideWallGeo = new THREE.BoxGeometry(0.15, 0.9, 2.4);
+        const sideWallGeo = new THREE.BoxGeometry(0.14, 0.88, 2.36);
         const wallLeft = new THREE.Mesh(sideWallGeo, bedMat);
-        wallLeft.position.set(-1.025, 0.25, 0);
+        wallLeft.position.set(-1.01, 0.25, 0);
         wallLeft.castShadow = true;
         bedGroup.add(wallLeft);
 
         const wallRight = wallLeft.clone();
-        wallRight.position.x = 1.025;
+        wallRight.position.x = 1.01;
         bedGroup.add(wallRight);
 
-        const frontWallGeo = new THREE.BoxGeometry(2.2, 0.9, 0.15);
+        const frontWallGeo = new THREE.BoxGeometry(2.16, 0.88, 0.14);
         const wallFront = new THREE.Mesh(frontWallGeo, bedMat);
-        wallFront.position.set(0, 0.25, 1.125);
+        wallFront.position.set(0, 0.25, 1.11);
         wallFront.castShadow = true;
         bedGroup.add(wallFront);
 
-        const tailGateGeo = new THREE.BoxGeometry(2.2, 0.8, 0.15);
+        const tailGateGeo = new THREE.BoxGeometry(2.16, 0.78, 0.14);
         const tailGate = new THREE.Mesh(tailGateGeo, bedMat);
-        tailGate.position.set(0, 0.2, -1.125);
+        tailGate.position.set(0, 0.21, -1.16);
         tailGate.rotation.x = Math.PI / 12;
         tailGate.castShadow = true;
         bedGroup.add(tailGate);
@@ -855,7 +934,7 @@ window.TownScene = (function() {
     }
 
     /**
-     * 4) 대형 & 정교화된 노란 포크레인 굴삭기 메쉬 생성 (1.4배 웅장 스케일 + 유압 피스톤)
+     * 4) 대형 & 정교화된 노란 포크레인 굴착기 메쉬 생성 (1.4배 웅장 스케일 + 유압 피스톤)
      */
     function createExcavatorMesh(targetGroup) {
         const bodyGroup = new THREE.Group();
@@ -941,53 +1020,53 @@ window.TownScene = (function() {
         siren2.position.x = 0.6;
         upperCabGroup.add(siren2);
 
-        // 굴삭기 관절 피벗 구조화 (Boom -> Dipper -> Bucket)
+        // 굴착기 관절 피벗 구조화 (Boom -> Dipper -> Bucket 포크대 1.5배 대형화!)
         const boomGroup = new THREE.Group();
-        boomGroup.position.set(0.4, 0.2, 0.8);
+        boomGroup.position.set(0.45, 0.25, 0.9);
 
-        // 메인 붐
-        const boomGeo = new THREE.BoxGeometry(0.35, 0.4, 2.0);
+        // 메인 붐 (포크대 메인 붐 1.5배 굵고 길게 대형화)
+        const boomGeo = new THREE.BoxGeometry(0.52, 0.58, 2.7);
         const boomMat = new THREE.MeshStandardMaterial({ color: excavYellow, roughness: 0.3 });
         const boom = new THREE.Mesh(boomGeo, boomMat);
-        boom.position.set(0, 0.35, 0.8);
+        boom.position.set(0, 0.45, 1.1);
         boom.castShadow = true;
         boomGroup.add(boom);
 
-        // 은색 금속 유압 피스톤 실린더
-        const pistonGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 12);
+        // 은색 금속 유압 피스톤 실린더 (1.5배 대형 실린더)
+        const pistonGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.7, 12);
         const pistonMat = new THREE.MeshStandardMaterial({ color: '#e0e0e0', metalness: 0.9, roughness: 0.1 });
         const piston1 = new THREE.Mesh(pistonGeo, pistonMat);
-        piston1.position.set(0, 0.4, 0.6);
+        piston1.position.set(0, 0.55, 0.85);
         piston1.rotation.x = Math.PI / 3;
         boomGroup.add(piston1);
 
-        // 디퍼 암 피벗
+        // 디퍼 암 피벗 (포크대 디퍼 암 1.5배 굵고 길게 대형화)
         const dipperGroup = new THREE.Group();
-        dipperGroup.position.set(0, 0.35, 1.7);
+        dipperGroup.position.set(0, 0.45, 2.3);
 
-        const dipperGeo = new THREE.BoxGeometry(0.3, 0.35, 1.6);
+        const dipperGeo = new THREE.BoxGeometry(0.44, 0.52, 2.2);
         const dipper = new THREE.Mesh(dipperGeo, boomMat);
-        dipper.position.set(0, -0.35, 0.7);
+        dipper.position.set(0, -0.45, 0.95);
         dipper.castShadow = true;
         dipperGroup.add(dipper);
 
-        // 버킷 피벗
+        // 버킷 피벗 (흙 퍼는 대형 버킷 포크)
         const bucketGroup = new THREE.Group();
-        bucketGroup.position.set(0, -0.45, 1.4);
+        bucketGroup.position.set(0, -0.65, 1.85);
 
-        const bucketGeo = new THREE.BoxGeometry(0.65, 0.55, 0.65);
+        const bucketGeo = new THREE.BoxGeometry(0.98, 0.82, 0.98); // 1.5배 대형 버킷!
         const bucketMat = new THREE.MeshStandardMaterial({ color: darkBase, roughness: 0.4 });
         const bucketMesh = new THREE.Mesh(bucketGeo, bucketMat);
         bucketMesh.castShadow = true;
         bucketGroup.add(bucketMesh);
 
-        // 버킷 대형 톱니 6개
-        const teethGeo = new THREE.ConeGeometry(0.07, 0.25, 4);
+        // 버킷 대형 톱니 포크 6개 (1.5배 대형 포크!)
+        const teethGeo = new THREE.ConeGeometry(0.11, 0.38, 4);
         const teethMat = new THREE.MeshStandardMaterial({ color: '#ffd166' });
-        for (let i = -0.25; i <= 0.25; i += 0.1) {
+        for (let i = -0.38; i <= 0.38; i += 0.15) {
             const tooth = new THREE.Mesh(teethGeo, teethMat);
             tooth.rotation.x = -Math.PI / 2;
-            tooth.position.set(i, -0.18, 0.36);
+            tooth.position.set(i, -0.26, 0.54);
             bucketGroup.add(tooth);
         }
 
@@ -1094,7 +1173,7 @@ window.TownScene = (function() {
     }
 
     /**
-     * 굴삭기 굴착 및 덤프트럭 덤핑 적재 시네마틱 애니메이션 (progress: 0.0 ~ 1.0)
+     * 굴착기 굴착 및 덤프트럭 덤핑 적재 시네마틱 애니메이션 (progress: 0.0 ~ 1.0)
      */
     function animateExcavatorDig(progress) {
         if (!excavatorJoints || !excavatorJoints.boomGroup) return;
@@ -1153,8 +1232,8 @@ window.TownScene = (function() {
             createTruckMesh(helperTruckGroup, hasSand);
             scene.add(helperTruckGroup);
 
-            // 굴삭기 바로 오른쪽 덤프 짐칸 대기 위치 ($x: 82, z: -70$)
-            helperTruckGroup.position.set(82, 0, -70);
+            // 굴착기 버킷 덤핑 회전 궤적(-90도)에 맞춰 짐칸을 정확히 맞춘 대기 위치 ($x: 81, z: -68$)
+            helperTruckGroup.position.set(81, 0, -68);
             helperTruckGroup.rotation.y = -Math.PI / 4;
             helperTruckGroup.visible = true;
         } else {

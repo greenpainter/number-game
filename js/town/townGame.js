@@ -86,7 +86,7 @@ window.TownGame = (function() {
     }
 
     /**
-     * 차량 교체 TTS 음성 안내 ("신나는 꼬마 버스!", "빨간 승용차!", "신나는 덤프트럭!", "포크레인 굴삭기!")
+     * 차량 교체 TTS 음성 안내 ("신나는 꼬마 버스!", "빨간 승용차!", "신나는 덤프트럭!", "포크레인 굴착기!")
      */
     function speakVehicle(type) {
         let text = "";
@@ -101,7 +101,7 @@ window.TownGame = (function() {
                 text = "신나는 덤프트럭!";
                 break;
             case 'excavator':
-                text = "포크레인 굴삭기!";
+                text = "포크레인 굴착기!";
                 break;
             default:
                 text = "신나는 장난감 차!";

@@ -7,7 +7,7 @@ window.CameraFollow = (function() {
     let camera;
     let targetMesh;
     const normalOffset = new THREE.Vector3(22, 28, 25); // 기본 시점 오프셋
-    const zoomOffset = new THREE.Vector3(9, 11, 10);     // 굴착 줌인 밀착 시점 오프셋
+    const zoomOffset = new THREE.Vector3(12, 11, 14);    // 굴착 시 적당히 넉넉하고 넓은 줌인 시점 오프셋
     let targetOffset = normalOffset.clone();
     let currentOffset = normalOffset.clone();
 
@@ -19,8 +19,8 @@ window.CameraFollow = (function() {
     function init(scene, container) {
         const aspect = container.clientWidth / container.clientHeight;
         
-        // FOV 45도의 시원한 Isometric 시야각 (마을 전경 조망 극대화)
-        camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 500);
+        // FOV 45도의 시원한 Isometric 시야각 (Z-buffer 정밀도 최적화: near 1.0, far 350)
+        camera = new THREE.PerspectiveCamera(45, aspect, 1.0, 350);
 
         // 초기 카메라 위치 설정
         camera.position.set(22, 28, 25);

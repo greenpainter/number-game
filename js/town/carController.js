@@ -62,8 +62,8 @@ window.CarController = (function() {
                 // 모래 산 부근 클릭 감지 (x: 70~100, z: -100~-70)
                 if (hitPoint.x > 70 && hitPoint.x < 100 && hitPoint.z < -70 && hitPoint.z > -100) {
                     isTargetingSand = true;
-                    // 모래 산 바로 앞 전방(76, -76)에 정차 좌표 지정
-                    targetPosition = new THREE.Vector3(76, 0, -76);
+                    // 모래 산 봉우리 흙더미 안쪽(77, -73)에 정차 좌표 지정
+                    targetPosition = new THREE.Vector3(77, 0, -73);
                 } else {
                     isTargetingSand = false;
                     const BOUNDARY_LIMIT = 115.0;
@@ -94,7 +94,7 @@ window.CarController = (function() {
     }
 
     /**
-     * 프레임별 자동차 이동, 굴삭기 굴착 동작 및 카메라 줌 보간 연산
+     * 프레임별 자동차 이동, 굴착기 굴착 동작 및 카메라 줌 보간 연산
      */
     function update(deltaTime) {
         // 1. 굴착 동작 애니메이션 진행 중일 때
@@ -112,8 +112,10 @@ window.CarController = (function() {
                     window.CameraFollow.setZoomMode(false); // 스무스 줌아웃
                 }
 
-                // 헬퍼 트럭 지우기 & 모래 가득 실린 덤프트럭으로 자동 교체!
+                // 헬퍼 트럭 지우기 & 덤프트럭 대기 위치(81, -68)에서 덤프트럭으로 자연스럽게 전환!
                 if (window.TownScene) {
+                    carGroup.position.set(81, 0, -68);
+                    carGroup.rotation.y = -Math.PI / 4;
                     window.TownScene.showHelperTruck(false);
                     window.TownScene.switchVehicle('truck', true);
                 }
@@ -187,7 +189,7 @@ window.CarController = (function() {
                 window.TownScene.hideTargetMarker();
             }
 
-            // 모래 산 목표 도착 + 굴삭기일 때 굴착 동작 & 줌인 트리거 가동!
+            // 모래 산 목표 도착 + 굴착기일 때 굴착 동작 & 줌인 트리거 가동!
             const currentVehicle = window.TownScene ? window.TownScene.getCurrentVehicleType() : 'bus';
             if (isTargetingSand && currentVehicle === 'excavator') {
                 isTargetingSand = false;
@@ -203,7 +205,7 @@ window.CarController = (function() {
                 carGroup.rotation.y = Math.PI * 0.75;
             } else if (isTargetingSand) {
                 isTargetingSand = false;
-                if (window.speak) window.speak("굴삭기로 교체하고 모래를 퍼보아요!");
+                if (window.speak) window.speak("굴착기로 교체하고 모래를 퍼보아요!");
             }
 
             // 차체 가볍게 착지

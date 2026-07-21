@@ -114,38 +114,44 @@ function loadVoices() {
     // 한국어 목소리 필터링
     const koVoices = voices.filter(voice => voice.lang === 'ko-KR' || voice.lang.startsWith('ko'));
     
+    // 남성/중후한 음성 감지 필터
+    const isMaleVoice = (name) => {
+        const lower = name.toLowerCase();
+        return lower.includes('male') || lower.includes('남성') || lower.includes('minsu') || 
+               lower.includes('yuna') || lower.includes('voice 2') || lower.includes('보이스 2') || 
+               lower.includes('siri 2') || lower.includes('compact');
+    };
+
+    // 순수 여성/밝은 한국어 음성 후보군
+    const femaleVoices = koVoices.filter(v => !isMaleVoice(v.name));
+
     let selectedVoice = null;
     
-    // 1. Siri 여성 또는 Siri 1 (Apple 기기의 여성 음성)
-    selectedVoice = koVoices.find(v => v.name.includes('Siri') && (v.name.includes('여성') || v.name.includes('Female') || v.name.includes('1')));
+    // 1. Siri 여성 (Voice 1 / Siri 1 / Siri 여성)
+    selectedVoice = femaleVoices.find(v => v.name.includes('Siri') && (v.name.includes('1') || v.name.includes('여성') || v.name.includes('Female')));
     
-    // 2. Yuna (Apple 고품질 여성)
+    // 2. Google 한국어 여성 보资스
     if (!selectedVoice) {
-        selectedVoice = koVoices.find(v => v.name.includes('Yuna') || v.name.includes('yuna'));
+        selectedVoice = femaleVoices.find(v => v.name.toLowerCase().includes('google'));
+    }
+
+    // 3. MS/Apple 밝은 여성 보이스 (Sun-Hi, Heami, Hyehyeon)
+    if (!selectedVoice) {
+        selectedVoice = femaleVoices.find(v => v.name.includes('Sun') || v.name.includes('Heami') || v.name.includes('Hye'));
     }
     
-    // 3. 혜현 (Google / MS 여성)
-    if (!selectedVoice) {
-        selectedVoice = koVoices.find(v => v.name.includes('Hye-hyeon') || v.name.includes('Hyehyeon') || v.name.includes('혜현'));
+    // 4. 기타 여성 음성 중 첫 번째
+    if (!selectedVoice && femaleVoices.length > 0) {
+        selectedVoice = femaleVoices[0];
     }
-    
-    // 4. 일반 Google 한국어 (기본 여성 보이스)
-    if (!selectedVoice) {
-        selectedVoice = koVoices.find(v => v.name.includes('Google') || v.name.includes('google'));
-    }
-    
-    // 5. 남성 및 로봇(남성, Male, 2) 음성 피하기
-    if (!selectedVoice) {
-        selectedVoice = koVoices.find(v => !v.name.includes('남성') && !v.name.includes('Male') && !v.name.includes('2'));
-    }
-    
-    // 6. 그래도 없으면 첫 번째 한국어 음성 사용
+
+    // 5. 정 안되면 남성 음성이 아닌 한국어 음성
     if (!selectedVoice && koVoices.length > 0) {
-        selectedVoice = koVoices[0];
+        selectedVoice = koVoices.find(v => !isMaleVoice(v.name)) || koVoices[0];
     }
     
     koVoice = selectedVoice;
-    console.log("선택된 한국어 음성:", koVoice ? koVoice.name : "없음 (기본값 사용)");
+    console.log("아이패드 최적화 선택된 한국어 여성 음성:", koVoice ? koVoice.name : "기본 여성 음성");
 }
 
 if (window.speechSynthesis) {
@@ -161,9 +167,11 @@ function speak(text) {
     if (koVoice) {
         utterance.voice = koVoice;
     }
+    
     utterance.lang = 'ko-KR';
-    utterance.pitch = 1.0; // 시리 여성 본연의 자연스러운 음높이 적용
-    utterance.rate = 0.9;  // 어린이가 잘 들을 수 있게 표준보다 약간만 느리게 설정
+    utterance.rate = 0.95;  // 어린이가 잘 들을 수 있는 또박또박한 자연스러운 속도
+    utterance.pitch = 1.0;   // 깨짐 및 왜곡 없는 가장 맑고 깨끗한 표준 원음 높이 (1.0)
+    
     window.speechSynthesis.speak(utterance);
 }
 
