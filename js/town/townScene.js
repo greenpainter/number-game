@@ -165,7 +165,7 @@ window.TownScene = (function() {
             { wall: '#ff9e00', roof: '#d00000' }  // 주황
         ];
 
-        // 4배 넓어진 마을의 4개 구역 및 외곽 집배치 좌표
+        // 4배 넓어진 마을의 집배치 좌표 (모래 산 공사 구역 x>50, z<-50 부근 집 완전 제거)
         const housePositions = [
             // 북서 (NW)
             { x: -28, z: -28, colorIdx: 0, scale: 1.2, rot: 0 },
@@ -182,10 +182,6 @@ window.TownScene = (function() {
             { x: 20, z: -35, colorIdx: 5, scale: 1.2, rot: -Math.PI / 4 },
             { x: 38, z: -20, colorIdx: 0, scale: 1.0, rot: Math.PI / 6 },
             { x: 42, z: -42, colorIdx: 1, scale: 1.4, rot: 0 },
-            { x: 75, z: -28, colorIdx: 2, scale: 1.3, rot: -Math.PI / 2 },
-            { x: 82, z: -75, colorIdx: 3, scale: 1.1, rot: 0 },
-            { x: 30, z: -80, colorIdx: 4, scale: 1.2, rot: Math.PI / 4 },
-            { x: 80, z: -40, colorIdx: 5, scale: 1.0, rot: -Math.PI / 3 },
 
             // 남서 (SW)
             { x: -28, z: 28, colorIdx: 2, scale: 1.3, rot: 0 },
@@ -213,12 +209,14 @@ window.TownScene = (function() {
             createHouse(p.x, p.z, palette.wall, palette.roof, p.scale, p.rot);
         });
 
-        // 넓어진 마을 나무배치 좌표 (80개 생성)
+        // 넓어진 마을 나무배치 좌표 (모래 산 공사 구역 x>55, z<-55 구역 완전 배제)
         const treePositions = [];
         const offsets = [-90, -70, -40, -15, 15, 40, 70, 90];
         offsets.forEach(x => {
             offsets.forEach(z => {
                 if (Math.abs(x) === 15 && Math.abs(z) === 15) return;
+                // 모래 산 공사장 범위 (x > 50 && z < -50) 제외
+                if (x > 50 && z < -50) return;
                 if (Math.random() < 0.75) {
                     treePositions.push({ x: x + (Math.random() * 6 - 3), z: z + (Math.random() * 6 - 3) });
                 }
@@ -697,9 +695,9 @@ window.TownScene = (function() {
     }
 
     /**
-     * 3) 주황/노랑 덤프트럭 메쉬 생성 (짐칸 포함)
+     * 3) 주황/노랑 덤프트럭 메쉬 생성 (hasSand가 true일 때만 모래 자갈 짐칸 생성)
      */
-    function createTruckMesh(targetGroup) {
+    function createTruckMesh(targetGroup, hasSand = false) {
         const bodyGroup = new THREE.Group();
         bodyGroup.position.set(0, 0.7, 0);
 
@@ -814,18 +812,33 @@ window.TownScene = (function() {
         tailGate.castShadow = true;
         bedGroup.add(tailGate);
 
-        // 짐칸 속 자갈 블록
-        const cargoGeo = new THREE.DodecahedronGeometry(0.7);
-        const cargoMat = new THREE.MeshStandardMaterial({ color: '#8d5b4c', roughness: 0.9 });
-        const cargo1 = new THREE.Mesh(cargoGeo, cargoMat);
-        cargo1.position.set(-0.4, 0.1, 0.2);
-        cargo1.scale.set(1, 0.6, 1.2);
-        bedGroup.add(cargo1);
+        // [핵심 모래 조건] hasSand가 true일 때만 짐칸 속에 수북한 모래 언덕 & 자갈 블록 생성
+        if (hasSand) {
+            const sandCargoGroup = new THREE.Group();
+            sandCargoGroup.name = "sandCargo";
 
-        const cargo2 = cargo1.clone();
-        cargo2.position.set(0.3, 0.15, -0.3);
-        cargo2.scale.set(0.9, 0.7, 1);
-        bedGroup.add(cargo2);
+            // 수북한 모래 더미 본체
+            const moundGeo = new THREE.BoxGeometry(1.9, 0.5, 2.1);
+            const moundMat = new THREE.MeshStandardMaterial({ color: '#f4a261', roughness: 0.9 });
+            const mound = new THREE.Mesh(moundGeo, moundMat);
+            mound.position.set(0, 0.1, 0);
+            sandCargoGroup.add(mound);
+
+            // 자갈 파스텔 블록더미
+            const cargoGeo = new THREE.DodecahedronGeometry(0.6);
+            const cargoMat = new THREE.MeshStandardMaterial({ color: '#e76f51', roughness: 0.9 });
+            const cargo1 = new THREE.Mesh(cargoGeo, cargoMat);
+            cargo1.position.set(-0.35, 0.35, 0.2);
+            cargo1.scale.set(1, 0.6, 1.2);
+            sandCargoGroup.add(cargo1);
+
+            const cargo2 = cargo1.clone();
+            cargo2.position.set(0.35, 0.4, -0.3);
+            cargo2.scale.set(0.9, 0.7, 1);
+            sandCargoGroup.add(cargo2);
+
+            bedGroup.add(sandCargoGroup);
+        }
 
         bodyGroup.add(bedGroup);
         targetGroup.add(bodyGroup);
@@ -842,17 +855,18 @@ window.TownScene = (function() {
     }
 
     /**
-     * 4) 노란 포크레인 굴삭기 메쉬 생성 (관절 암 + 버킷 포함)
+     * 4) 대형 & 정교화된 노란 포크레인 굴삭기 메쉬 생성 (1.4배 웅장 스케일 + 유압 피스톤)
      */
     function createExcavatorMesh(targetGroup) {
         const bodyGroup = new THREE.Group();
         bodyGroup.position.set(0, 0.7, 0);
+        bodyGroup.scale.set(1.35, 1.35, 1.35); // 1.35배 대형 웅장 스케일업!
 
         const excavYellow = '#f7b801';
         const darkBase = '#2b2d42';
 
         // 하부 트랙 섀시
-        const trackBaseGeo = new THREE.BoxGeometry(2.2, 0.4, 3.2);
+        const trackBaseGeo = new THREE.BoxGeometry(2.3, 0.45, 3.4);
         const trackBaseMat = new THREE.MeshStandardMaterial({ color: darkBase, roughness: 0.8 });
         const trackBase = new THREE.Mesh(trackBaseGeo, trackBaseMat);
         trackBase.position.y = -0.15;
@@ -860,81 +874,294 @@ window.TownScene = (function() {
         bodyGroup.add(trackBase);
 
         // 좌/우 무한궤도 띠 표현
-        const treadGeo = new THREE.BoxGeometry(0.45, 0.55, 3.4);
+        const treadGeo = new THREE.BoxGeometry(0.5, 0.6, 3.6);
         const treadMat = new THREE.MeshStandardMaterial({ color: '#1e272e', roughness: 0.9 });
         const leftTread = new THREE.Mesh(treadGeo, treadMat);
-        leftTread.position.set(-1.15, -0.1, 0);
+        leftTread.position.set(-1.2, -0.1, 0);
         leftTread.castShadow = true;
         bodyGroup.add(leftTread);
 
         const rightTread = leftTread.clone();
-        rightTread.position.x = 1.15;
+        rightTread.position.x = 1.2;
         bodyGroup.add(rightTread);
+
+        // 무한궤도 롤러 바퀴 6개
+        const rollerGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.5, 12);
+        const rollerMat = new THREE.MeshStandardMaterial({ color: '#4a4e69' });
+        [-1.2, -0.4, 0.4, 1.2].forEach(zPos => {
+            const leftRoller = new THREE.Mesh(rollerGeo, rollerMat);
+            leftRoller.rotation.z = Math.PI / 2;
+            leftRoller.position.set(-1.2, -0.1, zPos);
+            bodyGroup.add(leftRoller);
+
+            const rightRoller = leftRoller.clone();
+            rightRoller.position.x = 1.2;
+            bodyGroup.add(rightRoller);
+        });
+
         // 상부 회전 캐빈 본체
         const upperCabGroup = new THREE.Group();
-        upperCabGroup.position.set(0, 0.5, -0.1);
+        upperCabGroup.position.set(0, 0.55, -0.1);
+
+        const upperGeo = new THREE.BoxGeometry(2.1, 1.2, 2.3);
+        const upperMat = new THREE.MeshStandardMaterial({ color: excavYellow, roughness: 0.3 });
+        const upperBody = new THREE.Mesh(upperGeo, upperMat);
+        upperBody.castShadow = true;
+        upperBody.receiveShadow = true;
+        upperCabGroup.add(upperBody);
+
+        // 운전석 캡
+        const winMat = new THREE.MeshPhysicalMaterial({
+            color: '#a0e7e5',
+            transmission: 0.75,
+            opacity: 0.9,
+            transparent: true,
+            roughness: 0.1
+        });
+        const cockpitGeo = new THREE.BoxGeometry(1.0, 1.0, 1.3);
+        const cockpit = new THREE.Mesh(cockpitGeo, winMat);
+        cockpit.position.set(-0.48, 0.18, 0.42);
+        upperCabGroup.add(cockpit);
+
+        // 후부 카운터웨이트
+        const counterGeo = new THREE.BoxGeometry(2.14, 1.1, 0.65);
+        const counterMat = new THREE.MeshStandardMaterial({ color: darkBase });
+        const counterWeight = new THREE.Mesh(counterGeo, counterMat);
+        counterWeight.position.set(0, 0.05, -1.15);
+        upperCabGroup.add(counterWeight);
+
+        // 경고 서치등 2개
+        const sirenGeo = new THREE.CylinderGeometry(0.12, 0.15, 0.25, 12);
+        const sirenMat = new THREE.MeshStandardMaterial({ color: '#ff5722', emissive: '#ff5722', emissiveIntensity: 0.9 });
+        const siren1 = new THREE.Mesh(sirenGeo, sirenMat);
+        siren1.position.set(-0.6, 0.75, 0.6);
+        upperCabGroup.add(siren1);
+
+        const siren2 = siren1.clone();
+        siren2.position.x = 0.6;
+        upperCabGroup.add(siren2);
 
         // 굴삭기 관절 피벗 구조화 (Boom -> Dipper -> Bucket)
         const boomGroup = new THREE.Group();
         boomGroup.position.set(0.4, 0.2, 0.8);
 
         // 메인 붐
-        const boomGeo = new THREE.BoxGeometry(0.3, 0.35, 1.8);
+        const boomGeo = new THREE.BoxGeometry(0.35, 0.4, 2.0);
         const boomMat = new THREE.MeshStandardMaterial({ color: excavYellow, roughness: 0.3 });
         const boom = new THREE.Mesh(boomGeo, boomMat);
-        boom.position.set(0, 0.3, 0.7);
+        boom.position.set(0, 0.35, 0.8);
         boom.castShadow = true;
-        // 디퍼 암
-        const dipperGeo = new THREE.BoxGeometry(0.26, 0.3, 1.4);
+        boomGroup.add(boom);
+
+        // 은색 금속 유압 피스톤 실린더
+        const pistonGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 12);
+        const pistonMat = new THREE.MeshStandardMaterial({ color: '#e0e0e0', metalness: 0.9, roughness: 0.1 });
+        const piston1 = new THREE.Mesh(pistonGeo, pistonMat);
+        piston1.position.set(0, 0.4, 0.6);
+        piston1.rotation.x = Math.PI / 3;
+        boomGroup.add(piston1);
+
+        // 디퍼 암 피벗
+        const dipperGroup = new THREE.Group();
+        dipperGroup.position.set(0, 0.35, 1.7);
+
+        const dipperGeo = new THREE.BoxGeometry(0.3, 0.35, 1.6);
         const dipper = new THREE.Mesh(dipperGeo, boomMat);
-        dipper.position.set(0, 1.05, 1.7);
-        dipper.rotation.x = Math.PI / 3;
+        dipper.position.set(0, -0.35, 0.7);
         dipper.castShadow = true;
-        armGroup.add(dipper);
+        dipperGroup.add(dipper);
 
-        // 버킷
+        // 버킷 피벗
         const bucketGroup = new THREE.Group();
-        bucketGroup.position.set(0, 0.55, 2.3);
+        bucketGroup.position.set(0, -0.45, 1.4);
 
-        const bucketGeo = new THREE.BoxGeometry(0.5, 0.45, 0.5);
-        const bucketMat = new THREE.MeshStandardMaterial({ color: darkBase, roughness: 0.5 });
+        const bucketGeo = new THREE.BoxGeometry(0.65, 0.55, 0.65);
+        const bucketMat = new THREE.MeshStandardMaterial({ color: darkBase, roughness: 0.4 });
         const bucketMesh = new THREE.Mesh(bucketGeo, bucketMat);
-        bucketMesh.rotation.x = Math.PI / 6;
         bucketMesh.castShadow = true;
         bucketGroup.add(bucketMesh);
 
-        // 버킷 톱니
-        const teethGeo = new THREE.ConeGeometry(0.06, 0.2, 4);
+        // 버킷 대형 톱니 6개
+        const teethGeo = new THREE.ConeGeometry(0.07, 0.25, 4);
         const teethMat = new THREE.MeshStandardMaterial({ color: '#ffd166' });
-        for (let i = -0.18; i <= 0.18; i += 0.12) {
+        for (let i = -0.25; i <= 0.25; i += 0.1) {
             const tooth = new THREE.Mesh(teethGeo, teethMat);
             tooth.rotation.x = -Math.PI / 2;
-            tooth.position.set(i, -0.15, 0.28);
+            tooth.position.set(i, -0.18, 0.36);
             bucketGroup.add(tooth);
         }
 
-        armGroup.add(bucketGroup);
+        dipperGroup.add(bucketGroup);
+        boomGroup.add(dipperGroup);
+        upperCabGroup.add(boomGroup);
 
-        // 유압 피스톤
-        const pistonGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.0, 8);
-        const pistonMat = new THREE.MeshStandardMaterial({ color: '#e0e0e0', metalness: 0.8, roughness: 0.2 });
-        const piston = new THREE.Mesh(pistonGeo, pistonMat);
-        piston.position.set(0, 0.45, 1.1);
-        piston.rotation.x = -Math.PI / 6;
-        armGroup.add(piston);
+        // 초기 관절 휴식 각도 설정
+        boomGroup.rotation.x = -Math.PI / 6;
+        dipperGroup.rotation.x = Math.PI / 2.5;
+        bucketGroup.rotation.x = Math.PI / 6;
 
-        upperCabGroup.add(armGroup);
+        // 관절 레퍼런스 보관
+        excavatorJoints = { upperCabGroup, boomGroup, dipperGroup, bucketGroup };
+
         bodyGroup.add(upperCabGroup);
-
         targetGroup.add(bodyGroup);
 
         // 바퀴 / 트랙 롤러 4개
         createWheels(targetGroup, [
-            { x: -1.2, y: 0.42, z: 1.1 },
-            { x: 1.2, y: 0.42, z: 1.1 },
-            { x: -1.2, y: 0.42, z: -1.1 },
-            { x: 1.2, y: 0.42, z: -1.1 }
-        ], 0.42, 0.4);
+            { x: -1.3, y: 0.45, z: 1.2 },
+            { x: 1.3, y: 0.45, z: 1.2 },
+            { x: -1.3, y: 0.45, z: -1.2 },
+            { x: 1.3, y: 0.45, z: -1.2 }
+        ], 0.45, 0.4);
+    }
+
+    let excavatorJoints = null;
+    let sandMountainGroup = null;
+    let helperTruckGroup = null;
+
+    /**
+     * 동북 공사 구역 (x: 85, z: -85) 3D 모래 산 및 안전 콘 생성
+     */
+    function createSandMountain() {
+        sandMountainGroup = new THREE.Group();
+        sandMountainGroup.position.set(85, 0, -85);
+
+        // 1. 대형 모래 언덕 본체
+        const sandGeo = new THREE.ConeGeometry(14, 8, 16);
+        const sandMat = new THREE.MeshStandardMaterial({
+            color: '#f4a261', // 따뜻한 파스텔 모래색
+            roughness: 0.95
+        });
+        const mainSand = new THREE.Mesh(sandGeo, sandMat);
+        mainSand.position.y = 4;
+        mainSand.castShadow = true;
+        mainSand.receiveShadow = true;
+        mainSand.name = "sandMountain";
+        sandMountainGroup.add(mainSand);
+
+        // 2. 주변 작은 흙더미 3개
+        const subSandMat = new THREE.MeshStandardMaterial({ color: '#e76f51', roughness: 0.9 });
+        const subPositions = [
+            { x: -9, z: 6, r: 6, h: 4 },
+            { x: 8, z: 7, r: 5, h: 3.5 },
+            { x: 5, z: -8, r: 7, h: 4.5 }
+        ];
+
+        subPositions.forEach(p => {
+            const subGeo = new THREE.ConeGeometry(p.r, p.h, 12);
+            const subSand = new THREE.Mesh(subGeo, subSandMat);
+            subSand.position.set(p.x, p.h / 2, p.z);
+            subSand.castShadow = true;
+            subSand.receiveShadow = true;
+            sandMountainGroup.add(subSand);
+        });
+
+        // 3. 공사장 주황색 파스텔 안전 콘 4개
+        const coneGeo = new THREE.ConeGeometry(0.5, 1.4, 8);
+        const coneMat = new THREE.MeshStandardMaterial({ color: '#ff5722', roughness: 0.3 });
+        const stripeMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+
+        const conePositions = [
+            { x: -14, z: -14 },
+            { x: 14, z: -14 },
+            { x: -14, z: 14 },
+            { x: 14, z: 14 }
+        ];
+
+        conePositions.forEach(cp => {
+            const coneGroup = new THREE.Group();
+            coneGroup.position.set(cp.x, 0, cp.z);
+
+            const baseGeo = new THREE.BoxGeometry(1.2, 0.1, 1.2);
+            const baseMat = new THREE.MeshStandardMaterial({ color: '#2b2d42' });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0.05;
+            coneGroup.add(base);
+
+            const cone = new THREE.Mesh(coneGeo, coneMat);
+            cone.position.y = 0.7;
+            cone.castShadow = true;
+            coneGroup.add(cone);
+
+            const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 0.3, 8), stripeMat);
+            stripe.position.y = 0.7;
+            coneGroup.add(stripe);
+
+            sandMountainGroup.add(coneGroup);
+        });
+
+        scene.add(sandMountainGroup);
+    }
+
+    /**
+     * 굴삭기 굴착 및 덤프트럭 덤핑 적재 시네마틱 애니메이션 (progress: 0.0 ~ 1.0)
+     */
+    function animateExcavatorDig(progress) {
+        if (!excavatorJoints || !excavatorJoints.boomGroup) return;
+
+        const { upperCabGroup, boomGroup, dipperGroup, bucketGroup } = excavatorJoints;
+
+        // 1. 0.0 ~ 0.3: 모래 산 속으로 붐/암을 깊숙이 숙여서 흙을 푹 파올리기
+        if (progress < 0.3) {
+            const p = progress / 0.3;
+            upperCabGroup.rotation.y = THREE.MathUtils.lerp(0, 0, p);
+            boomGroup.rotation.x = THREE.MathUtils.lerp(-Math.PI / 6, 0.35, p);
+            dipperGroup.rotation.x = THREE.MathUtils.lerp(Math.PI / 2.5, 0.9, p);
+            bucketGroup.rotation.x = THREE.MathUtils.lerp(Math.PI / 6, 1.35, p);
+
+            // 덤프트럭 대기 메쉬 보이기 (처음엔 빈 짐칸)
+            showHelperTruck(true, false);
+        } 
+        // 2. 0.3 ~ 0.6: 붐을 들어올린 후 상부 탑을 90도 회전시켜 덤프트럭 짐칸 위로 이동
+        else if (progress < 0.6) {
+            const p = (progress - 0.3) / 0.3;
+            upperCabGroup.rotation.y = THREE.MathUtils.lerp(0, -Math.PI / 2, p);
+            boomGroup.rotation.x = THREE.MathUtils.lerp(0.35, -Math.PI / 4, p);
+            dipperGroup.rotation.x = THREE.MathUtils.lerp(0.9, 0.4, p);
+            bucketGroup.rotation.x = THREE.MathUtils.lerp(1.35, 0.8, p);
+        }
+        // 3. 0.6 ~ 0.85: 버킷을 털어 덤프트럭 짐칸 속에 흙/자갈 쏟아붓기 (Dumping -> 모래 짐칸 촤르르 채워짐!)
+        else if (progress < 0.85) {
+            const p = (progress - 0.6) / 0.25;
+            upperCabGroup.rotation.y = -Math.PI / 2;
+            boomGroup.rotation.x = -Math.PI / 4;
+            dipperGroup.rotation.x = 0.4;
+            bucketGroup.rotation.x = THREE.MathUtils.lerp(0.8, -0.8, p); // 털어붓기
+
+            // 덤프트럭 짐칸 속에 모래 자갈이 촤르르 채워짐!
+            showHelperTruck(true, true);
+        }
+        // 4. 0.85 ~ 1.0: 원위치 복귀
+        else {
+            const p = (progress - 0.85) / 0.15;
+            upperCabGroup.rotation.y = THREE.MathUtils.lerp(-Math.PI / 2, 0, p);
+            boomGroup.rotation.x = THREE.MathUtils.lerp(-Math.PI / 4, -Math.PI / 6, p);
+            dipperGroup.rotation.x = THREE.MathUtils.lerp(0.4, Math.PI / 2.5, p);
+            bucketGroup.rotation.x = THREE.MathUtils.lerp(-0.8, Math.PI / 6, p);
+        }
+    }
+
+    /**
+     * 굴착 연출용 덤프트럭 헬퍼 생성/제어 (hasSand로 모래 채움 여부 결정)
+     */
+    function showHelperTruck(show, hasSand = false) {
+        if (show) {
+            if (helperTruckGroup) {
+                scene.remove(helperTruckGroup);
+            }
+            helperTruckGroup = new THREE.Group();
+            createTruckMesh(helperTruckGroup, hasSand);
+            scene.add(helperTruckGroup);
+
+            // 굴삭기 바로 오른쪽 덤프 짐칸 대기 위치 ($x: 82, z: -70$)
+            helperTruckGroup.position.set(82, 0, -70);
+            helperTruckGroup.rotation.y = -Math.PI / 4;
+            helperTruckGroup.visible = true;
+        } else {
+            if (helperTruckGroup) {
+                helperTruckGroup.visible = false;
+            }
+        }
     }
 
     /**
@@ -950,9 +1177,9 @@ window.TownScene = (function() {
     }
 
     /**
-     * 탈것 교체 (위치/방향 유지하며 3D 메쉬 교체)
+     * 탈것 교체 (위치/방향 유지하며 3D 메쉬 교체, hasSand 모래 적재 옵션 지원)
      */
-    function switchVehicle(type) {
+    function switchVehicle(type, hasSand = false) {
         if (!carGroup) return;
 
         const currentPos = carGroup.position.clone();
@@ -969,7 +1196,7 @@ window.TownScene = (function() {
                 createCarMesh(carGroup);
                 break;
             case 'truck':
-                createTruckMesh(carGroup);
+                createTruckMesh(carGroup, hasSand);
                 break;
             case 'excavator':
                 createExcavatorMesh(carGroup);
@@ -1109,6 +1336,7 @@ window.TownScene = (function() {
         hideTargetMarker,
         switchVehicle,
         animateExcavatorDig,
+        showHelperTruck,
         getScene: () => scene,
         getRenderer: () => renderer,
         getCarGroup: () => carGroup,

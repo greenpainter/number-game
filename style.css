@@ -99,17 +99,27 @@ html, body {
 .view {
     display: flex;
     flex-direction: column;
+    width: 100%;
     height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 25px 30px;
+    flex: 1;
+    opacity: 1;
+    transform: scale(1);
     transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.view.hidden {
+    display: none !important;
     opacity: 0;
     pointer-events: none;
-    transform: scale(0.97);
+    transform: scale(0.95);
+}
+
+.view.active {
+    display: flex !important;
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+    animation: fadeInView 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .header-title-box {

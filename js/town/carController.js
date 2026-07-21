@@ -62,8 +62,8 @@ window.CarController = (function() {
                 // 모래 산 부근 클릭 감지 (x: 70~100, z: -100~-70)
                 if (hitPoint.x > 70 && hitPoint.x < 100 && hitPoint.z < -70 && hitPoint.z > -100) {
                     isTargetingSand = true;
-                    // 모래 산 바로 앞 전방에 정차 좌표 지정
-                    targetPosition = new THREE.Vector3(85, 0, -72);
+                    // 모래 산 바로 앞 전방(76, -76)에 정차 좌표 지정
+                    targetPosition = new THREE.Vector3(76, 0, -76);
                 } else {
                     isTargetingSand = false;
                     const BOUNDARY_LIMIT = 115.0;
@@ -99,21 +99,33 @@ window.CarController = (function() {
     function update(deltaTime) {
         // 1. 굴착 동작 애니메이션 진행 중일 때
         if (isDigging) {
-            digProgress += deltaTime * 0.45; // 약 2.2초 동안 굴착 실행
+            digProgress += deltaTime * 0.28; // 약 3.5초 동안 굴착 및 트럭 덤핑 시네마틱 실행
             if (window.TownScene && typeof window.TownScene.animateExcavatorDig === 'function') {
                 window.TownScene.animateExcavatorDig(digProgress);
             }
 
             if (digProgress >= 1.0) {
-                // 굴착 완수 -> 줌아웃 복귀 및 동작 해제
+                // 굴착 & 적재 완수 -> 줌아웃 복귀 및 동작 해제
                 isDigging = false;
                 digProgress = 0.0;
                 if (window.CameraFollow && typeof window.CameraFollow.setZoomMode === 'function') {
                     window.CameraFollow.setZoomMode(false); // 스무스 줌아웃
                 }
 
-                // TTS 칭찬 안내
-                const speakMsg = "영차! 굴삭기로 모래를 펐어요!";
+                // 헬퍼 트럭 지우기 & 모래 가득 실린 덤프트럭으로 자동 교체!
+                if (window.TownScene) {
+                    window.TownScene.showHelperTruck(false);
+                    window.TownScene.switchVehicle('truck', true);
+                }
+
+                // UI 하단 버튼 덤프트럭으로 활성화
+                const buttons = document.querySelectorAll('.vehicle-btn');
+                buttons.forEach(b => {
+                    b.classList.toggle('active', b.dataset.vehicle === 'truck');
+                });
+
+                // TTS 칭찬 및 덤프트럭 운전 안내
+                const speakMsg = "와! 모래를 가득 실었어요! 이제 덤프트럭을 신나게 운전해보아요!";
                 if (window.speak) window.speak(speakMsg);
             }
             return;
@@ -187,8 +199,8 @@ window.CarController = (function() {
                     window.CameraFollow.setZoomMode(true);
                 }
 
-                // 차체가 모래 산을 똑바로 바라보도록 조향
-                carGroup.rotation.y = -Math.PI / 4;
+                // 차체가 모래 산 중심(85, -85)을 똑바로 바라보도록 정확 조향 (135도)
+                carGroup.rotation.y = Math.PI * 0.75;
             } else if (isTargetingSand) {
                 isTargetingSand = false;
                 if (window.speak) window.speak("굴삭기로 교체하고 모래를 퍼보아요!");

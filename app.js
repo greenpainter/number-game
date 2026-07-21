@@ -757,13 +757,17 @@ function showView(viewName) {
             townGameView.classList.add('active');
         }
 
-        // 3D 마을 운전 놀이 가동
+        // 3D 마을 운전 놀이 가동 (레이아웃 확정 후 캔버스 리사이즈 2회 보장)
         setTimeout(() => {
             if (window.TownGame) {
                 window.TownGame.start();
-                window.TownGame.resize();
             }
         }, 50);
+        setTimeout(() => {
+            if (window.TownGame) {
+                window.TownGame.resize();
+            }
+        }, 200);
 
     } else if (viewName === 'coloring-game' || viewName === 'coloringGame' || viewName === 'color' || viewName === 'color-game') {
         if (window.TownGame && window.TownGame.pause) {
