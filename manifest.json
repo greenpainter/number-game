@@ -1,0 +1,25 @@
+{
+  "name": "숫자 놀이 - 스케치북 놀이터",
+  "short_name": "숫자놀이",
+  "description": "아들을 위한 3D 스케치북 숫자 학습 및 마을 운전 놀이",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0f4f8",
+  "theme_color": "#84a59d",
+  "icons": [
+    {
+      "src": "https://fav.farm/🎨",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://fav.farm/🎨",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
