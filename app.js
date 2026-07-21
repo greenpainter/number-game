@@ -167,6 +167,9 @@ function speak(text) {
     window.speechSynthesis.speak(utterance);
 }
 
+// 전역 바인딩
+window.speak = speak;
+
 // 4. 숫자 상태 변경 함수
 function initNumber(num) {
     currentNumber = num;
@@ -688,22 +691,200 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// 12. 컨트롤 제어 및 오디오 잠금 해제 이벤트 바인딩
+// 12. SPA 뷰 전환 관리 (Portal View <-> Number Game View <-> Town Game View)
+function showView(viewName) {
+    const portalView = document.getElementById('portalView');
+    const numberGameView = document.getElementById('numberGameView');
+    const townGameView = document.getElementById('townGameView');
+    const coloringGameView = document.getElementById('coloringGameView');
+    const startOverlay = document.getElementById('startOverlay');
+
+    if (viewName === 'number-game' || viewName === 'numberGame') {
+        if (window.TownGame && window.TownGame.pause) {
+            window.TownGame.pause();
+        }
+        if (window.ColoringGame && window.ColoringGame.pause) {
+            window.ColoringGame.pause();
+        }
+
+        if (portalView) {
+            portalView.classList.remove('active');
+            portalView.classList.add('hidden');
+        }
+        if (townGameView) {
+            townGameView.classList.remove('active');
+            townGameView.classList.add('hidden');
+        }
+        if (coloringGameView) {
+            coloringGameView.classList.remove('active');
+            coloringGameView.classList.add('hidden');
+        }
+        if (numberGameView) {
+            numberGameView.classList.remove('hidden');
+            numberGameView.classList.add('active');
+        }
+
+        // 시작 모달 비활성화 처리
+        if (startOverlay) {
+            startOverlay.style.display = 'none';
+        }
+
+        // 뷰 전환 후 캔버스 리사이즈 및 숫자 초기화
+        setTimeout(() => {
+            resizeCanvas();
+            initNumber(currentNumber);
+        }, 50);
+
+    } else if (viewName === 'town-game' || viewName === 'townGame' || viewName === 'town') {
+        if (window.ColoringGame && window.ColoringGame.pause) {
+            window.ColoringGame.pause();
+        }
+
+        if (portalView) {
+            portalView.classList.remove('active');
+            portalView.classList.add('hidden');
+        }
+        if (numberGameView) {
+            numberGameView.classList.remove('active');
+            numberGameView.classList.add('hidden');
+        }
+        if (coloringGameView) {
+            coloringGameView.classList.remove('active');
+            coloringGameView.classList.add('hidden');
+        }
+        if (townGameView) {
+            townGameView.classList.remove('hidden');
+            townGameView.classList.add('active');
+        }
+
+        // 3D 마을 운전 놀이 가동
+        setTimeout(() => {
+            if (window.TownGame) {
+                window.TownGame.start();
+                window.TownGame.resize();
+            }
+        }, 50);
+
+    } else if (viewName === 'coloring-game' || viewName === 'coloringGame' || viewName === 'color' || viewName === 'color-game') {
+        if (window.TownGame && window.TownGame.pause) {
+            window.TownGame.pause();
+        }
+
+        if (portalView) {
+            portalView.classList.remove('active');
+            portalView.classList.add('hidden');
+        }
+        if (numberGameView) {
+            numberGameView.classList.remove('active');
+            numberGameView.classList.add('hidden');
+        }
+        if (townGameView) {
+            townGameView.classList.remove('active');
+            townGameView.classList.add('hidden');
+        }
+        if (coloringGameView) {
+            coloringGameView.classList.remove('hidden');
+            coloringGameView.classList.add('active');
+        }
+
+        // 아기 코끼리 문질문질 색칠 놀이 가동 (레이아웃 확정 후 캔버스 리사이즈 2회 보장)
+        setTimeout(() => {
+            if (window.ColoringGame) {
+                window.ColoringGame.start();
+            }
+        }, 50);
+        setTimeout(() => {
+            if (window.ColoringGame) {
+                window.ColoringGame.resize();
+            }
+        }, 200);
+
+    } else if (viewName === 'portal') {
+        if (window.TownGame && window.TownGame.pause) {
+            window.TownGame.pause();
+        }
+        if (window.ColoringGame && window.ColoringGame.pause) {
+            window.ColoringGame.pause();
+        }
+
+        if (numberGameView) {
+            numberGameView.classList.remove('active');
+            numberGameView.classList.add('hidden');
+        }
+        if (townGameView) {
+            townGameView.classList.remove('active');
+            townGameView.classList.add('hidden');
+        }
+        if (coloringGameView) {
+            coloringGameView.classList.remove('active');
+            coloringGameView.classList.add('hidden');
+        }
+        if (portalView) {
+            portalView.classList.remove('hidden');
+            portalView.classList.add('active');
+        }
+    }
+}
+
+// 전역 공유
+window.showView = showView;
+
+// 컨트롤 제어 및 오디오 잠금 해제 이벤트 바인딩
 const startOverlay = document.getElementById('startOverlay');
 const startBtn = document.getElementById('startBtn');
 
-startBtn.addEventListener('click', () => {
-    // iOS/태블릿 오디오 세션 활성화를 위한 초기 1회 실행
-    speak("숫자 놀이 시작!");
-    
-    // 페이드 아웃 후 모달 비활성화
-    startOverlay.style.opacity = '0';
-    setTimeout(() => {
-        startOverlay.style.display = 'none';
-        // 첫 번째 숫자 로드
-        initNumber('1');
-    }, 500);
-});
+if (startBtn) {
+    startBtn.addEventListener('click', () => {
+        // iOS/태블릿 오디오 세션 활성화를 위한 초기 1회 실행
+        speak("숫자 놀이 시작!");
+        
+        // 페이드 아웃 후 모달 비활성화
+        if (startOverlay) {
+            startOverlay.style.opacity = '0';
+            setTimeout(() => {
+                startOverlay.style.display = 'none';
+                // 첫 번째 숫자 로드
+                initNumber('1');
+            }, 500);
+        }
+    });
+}
+
+// 홈 버튼 (다른 놀이 하기) 이벤트 바인딩
+const homeBtn = document.getElementById('homeBtn');
+if (homeBtn) {
+    homeBtn.addEventListener('click', () => {
+        showView('portal');
+        speak("놀이터로 돌아가요!");
+    });
+}
+
+// 3D 마을 운전 놀이 홈 버튼 바인딩
+const townHomeBtn = document.getElementById('townHomeBtn');
+if (townHomeBtn) {
+    townHomeBtn.addEventListener('click', () => {
+        showView('portal');
+        speak("놀이터로 돌아가요!");
+    });
+}
+
+// 아기 코끼리 색칠 놀이 컨트롤 바인딩
+const colorHomeBtn = document.getElementById('colorHomeBtn');
+if (colorHomeBtn) {
+    colorHomeBtn.addEventListener('click', () => {
+        showView('portal');
+        speak("놀이터로 돌아가요!");
+    });
+}
+
+const colorResetBtn = document.getElementById('colorResetBtn');
+if (colorResetBtn) {
+    colorResetBtn.addEventListener('click', () => {
+        if (window.ColoringGame && window.ColoringGame.reset) {
+            window.ColoringGame.reset();
+        }
+    });
+}
 
 // 하단 컨트롤 패널 바인딩
 document.getElementById('clearBtn').addEventListener('click', () => {
@@ -750,22 +931,32 @@ document.querySelectorAll('.num-btn').forEach(btn => {
 
 // 13. 반응형 캔버스 크기 제어
 function resizeCanvas() {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    
-    // 캔버스 자체 픽셀 고해상도 대응 (Device Pixel Ratio 반영)
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    
-    // Context 스케일링 설정
-    ctx.scale(dpr, dpr);
-    
-    // 논리적 해상도(좌표 계산용) 저장
-    canvasLogicalWidth = rect.width;
-    canvasLogicalHeight = rect.height;
-    
-    draw();
+    if (canvas && canvas.parentElement) {
+        const container = canvas.parentElement;
+        const rect = container.getBoundingClientRect();
+        
+        // 캔버스 자체 픽셀 고해상도 대응 (Device Pixel Ratio 반영)
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        
+        // Context 스케일링 설정
+        ctx.scale(dpr, dpr);
+        
+        // 논리적 해상도(좌표 계산용) 저장
+        canvasLogicalWidth = rect.width;
+        canvasLogicalHeight = rect.height;
+        
+        draw();
+    }
+
+    // 3D 마을 운전 놀이 및 색칠 놀이 리사이즈 함께 수행
+    if (window.TownGame && window.TownGame.resize) {
+        window.TownGame.resize();
+    }
+    if (window.ColoringGame && window.ColoringGame.resize) {
+        window.ColoringGame.resize();
+    }
 }
 
 // 리사이즈 리스너 등록

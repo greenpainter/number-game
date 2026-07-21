@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아들을 위한 재미있는 숫자 놀이! ✏️🎨</title>
+    <title>아들을 위한 재미있는 스케치북 놀이터! ✏️🎨</title>
     <!-- 귀여운 한글 폰트 추가 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -28,59 +30,178 @@
                 <span class="spring"></span>
             </div>
 
-            <header class="sketchbook-header">
-                <h1>✏️ 아들을 위한 숫자 놀이! 🎨</h1>
-                <p class="subtitle">숫자를 손가락이나 펜으로 따라 그려보아요!</p>
-            </header>
+            <!-- 1. 포탈 화면 (놀이 선택 뷰) -->
+            <section class="view portal-view active" id="portalView">
+                <header class="sketchbook-header">
+                    <h1>🎨 신나는 스케치북 놀이터!</h1>
+                    <p class="subtitle">오늘 어떤 놀이를 해볼까요? 손가락으로 눌러보아요!</p>
+                </header>
 
-            <!-- 숫자 선택판 (0~9) -->
-            <section class="number-selector" id="numberSelector">
-                <button class="num-btn active" data-num="1">1</button>
-                <button class="num-btn" data-num="2">2</button>
-                <button class="num-btn" data-num="3">3</button>
-                <button class="num-btn" data-num="4">4</button>
-                <button class="num-btn" data-num="5">5</button>
-                <button class="num-btn" data-num="6">6</button>
-                <button class="num-btn" data-num="7">7</button>
-                <button class="num-btn" data-num="8">8</button>
-                <button class="num-btn" data-num="9">9</button>
-                <button class="num-btn" data-num="0">0</button>
-            </section>
-
-            <!-- 캔버스 영역 -->
-            <section class="canvas-container">
-                <canvas id="drawingCanvas"></canvas>
-                <!-- 첫 터치 유도를 위한 안내 모달 (iPad 오디오 잠금 해제 목적 겸용) -->
-                <div class="start-overlay" id="startOverlay">
-                    <div class="start-box">
-                        <h2>🎨 스케치북을 눌러서<br>숫자 놀이를 시작해요!</h2>
-                        <button class="start-btn" id="startBtn">시작하기 ⭐️</button>
+                <div class="portal-grid">
+                    <div class="portal-card active-card" data-game="number" id="card-number">
+                        <div class="card-icon">🔢</div>
+                        <div class="card-title">숫자 놀이</div>
+                        <div class="card-badge play-badge">지금 해요! ⭐️</div>
+                    </div>
+                    <div class="portal-card active-card" data-game="town" id="card-town">
+                        <div class="card-icon">🚗</div>
+                        <div class="card-title">마을 운전</div>
+                        <div class="card-badge play-badge">지금 해요! ⭐️</div>
+                    </div>
+                    <div class="portal-card active-card" data-game="color" id="card-color">
+                        <div class="card-icon">🎨</div>
+                        <div class="card-title">색칠 놀이</div>
+                        <div class="card-badge play-badge">지금 해요! ⭐️</div>
+                    </div>
+                    <div class="portal-card locked-card" data-game="hangul" data-title="한글 놀이" id="card-hangul">
+                        <div class="card-icon">🔤</div>
+                        <div class="card-title">한글 놀이</div>
+                        <div class="card-badge lock-badge">🔒 준비 중!</div>
                     </div>
                 </div>
-                <!-- 성공 시 축하 메시지 레이어 -->
-                <div class="success-message" id="successMessage">
-                    <div class="badge">참 잘했어요! 👍</div>
-                </div>
+
+                <!-- 커스텀 토스트 알림 메시지 레이어 -->
+                <div class="portal-toast" id="portalToast"></div>
             </section>
 
-            <!-- 컨트롤 버튼 패널 -->
-            <section class="control-panel">
-                <button class="ctrl-btn clear-btn" id="clearBtn">
-                    <span class="icon">🧹</span> 다시 그리기
-                </button>
-                <button class="ctrl-btn speech-btn" id="speechBtn">
-                    <span class="icon">🔊</span> 소리 듣기
-                </button>
-                <button class="ctrl-btn pen-mode-btn" id="penModeBtn">
-                    <span class="icon">🌈</span> 무지개 펜
-                </button>
-                <button class="ctrl-btn fullscreen-btn" id="fullscreenBtn">
-                    <span class="icon">🖥️</span> 전체화면
-                </button>
+            <!-- 2. 숫자 놀이 화면 (기존 전용 UI) -->
+            <section class="view number-game-view hidden" id="numberGameView">
+                <header class="sketchbook-header">
+                    <h1>✏️ 아들을 위한 숫자 놀이! 🎨</h1>
+                    <p class="subtitle">숫자를 손가락이나 펜으로 따라 그려보아요!</p>
+                </header>
+
+                <!-- 숫자 선택판 (0~9) -->
+                <section class="number-selector" id="numberSelector">
+                    <button class="num-btn active" data-num="1">1</button>
+                    <button class="num-btn" data-num="2">2</button>
+                    <button class="num-btn" data-num="3">3</button>
+                    <button class="num-btn" data-num="4">4</button>
+                    <button class="num-btn" data-num="5">5</button>
+                    <button class="num-btn" data-num="6">6</button>
+                    <button class="num-btn" data-num="7">7</button>
+                    <button class="num-btn" data-num="8">8</button>
+                    <button class="num-btn" data-num="9">9</button>
+                    <button class="num-btn" data-num="0">0</button>
+                </section>
+
+                <!-- 캔버스 영역 -->
+                <section class="canvas-container">
+                    <canvas id="drawingCanvas"></canvas>
+                    <!-- 첫 터치 유도를 위한 안내 모달 (iPad 오디오 잠금 해제 목적 겸용) -->
+                    <div class="start-overlay" id="startOverlay">
+                        <div class="start-box">
+                            <h2>🎨 스케치북을 눌러서<br>숫자 놀이를 시작해요!</h2>
+                            <button class="start-btn" id="startBtn">시작하기 ⭐️</button>
+                        </div>
+                    </div>
+                    <!-- 성공 시 축하 메시지 레이어 -->
+                    <div class="success-message" id="successMessage">
+                        <div class="badge">참 잘했어요! 👍</div>
+                    </div>
+                </section>
+
+                <!-- 컨트롤 버튼 패널 -->
+                <section class="control-panel">
+                    <button class="ctrl-btn home-btn" id="homeBtn">
+                        <span class="icon">🏠</span> 다른 놀이 하기
+                    </button>
+                    <button class="ctrl-btn clear-btn" id="clearBtn">
+                        <span class="icon">🧹</span> 다시 그리기
+                    </button>
+                    <button class="ctrl-btn speech-btn" id="speechBtn">
+                        <span class="icon">🔊</span> 소리 듣기
+                    </button>
+                    <button class="ctrl-btn pen-mode-btn" id="penModeBtn">
+                        <span class="icon">🌈</span> 무지개 펜
+                    </button>
+                    <button class="ctrl-btn fullscreen-btn" id="fullscreenBtn">
+                        <span class="icon">🖥️</span> 전체화면
+                    </button>
+                </section>
+            </section>
+
+            <!-- 3. 3D 마을 운전 놀이 화면 -->
+            <section class="view town-game-view hidden" id="townGameView">
+                <header class="sketchbook-header town-header">
+                    <h1>🚗 3D 마을 운전 놀이!</h1>
+                    <p class="subtitle">바닥을 터치해서 장난감 차로 신나게 달려보아요!</p>
+                </header>
+
+                <!-- 3D Canvas 컨테이너 -->
+                <div class="town-canvas-container" id="townCanvasContainer">
+                    <div class="town-instruction-overlay" id="townOverlay">
+                        <span>👉 바닥을 눌러서 장난감 차를 움직여보세요!</span>
+                    </div>
+                </div>
+
+                <!-- 차량 선택 팔레트 바 -->
+                <div class="vehicle-selector" id="vehicleSelector">
+                    <button class="vehicle-btn active" data-vehicle="bus"><span class="icon">🚌</span> 꼬마 버스</button>
+                    <button class="vehicle-btn" data-vehicle="car"><span class="icon">🚗</span> 승용차</button>
+                    <button class="vehicle-btn" data-vehicle="truck"><span class="icon">🚚</span> 덤프트럭</button>
+                    <button class="vehicle-btn" data-vehicle="excavator"><span class="icon">🚜</span> 굴삭기</button>
+                </div>
+
+                <!-- 하단 조작 바 -->
+                <section class="control-panel town-control-panel">
+                    <button class="ctrl-btn home-btn" id="townHomeBtn">
+                        <span class="icon">🏠</span> 다른 놀이 하기
+                    </button>
+                </section>
+            </section>
+
+            <!-- 4. 아기 코끼리 문질문질 색칠 놀이 화면 -->
+            <section class="view coloring-game-view hidden" id="coloringGameView">
+                <header class="sketchbook-header coloring-header">
+                    <h1>🎨 아기 코끼리 문질문질 색칠 놀이!</h1>
+                    <p class="subtitle">아래 물감을 고르고 손가락으로 쓱쓱 문질러보아요!</p>
+                </header>
+
+                <!-- 캔버스 컨테이너 -->
+                <div class="coloring-canvas-container" id="coloringCanvasContainer">
+                    <canvas id="coloringCanvas"></canvas>
+                    <!-- 성공 시 축하 메시지 레이어 -->
+                    <div class="coloring-success-message" id="coloringSuccessMessage">
+                        <div class="badge">참 잘했어요! 🐘🎨</div>
+                    </div>
+                </div>
+
+                <!-- 하단 파스텔 물감 팔레트 바 -->
+                <div class="coloring-palette" id="coloringPalette">
+                    <button class="color-swatch active" data-color="#ff70a6" style="--swatch-color: #ff70a6;" aria-label="아기 핑크"></button>
+                    <button class="color-swatch" data-color="#ffb703" style="--swatch-color: #ffb703;" aria-label="개나리 노랑"></button>
+                    <button class="color-swatch" data-color="#06d6a0" style="--swatch-color: #06d6a0;" aria-label="새싹 민트"></button>
+                    <button class="color-swatch" data-color="#4ea8de" style="--swatch-color: #4ea8de;" aria-label="하늘 블루"></button>
+                    <button class="color-swatch" data-color="#b5179e" style="--swatch-color: #b5179e;" aria-label="바이올렛"></button>
+                    <button class="color-swatch" data-color="#ff9f1c" style="--swatch-color: #ff9f1c;" aria-label="감귤 주황"></button>
+                    <button class="color-swatch" data-color="#ff4d6d" style="--swatch-color: #ff4d6d;" aria-label="체리 핑크"></button>
+                    <button class="color-swatch" data-color="#ffffff" style="--swatch-color: #ffffff;" aria-label="밀크 백색"></button>
+                </div>
+
+                <!-- 하단 조작 바 -->
+                <section class="control-panel coloring-control-panel">
+                    <button class="ctrl-btn home-btn" id="colorHomeBtn">
+                        <span class="icon">🏠</span> 다른 놀이 하기
+                    </button>
+                    <button class="ctrl-btn clear-btn" id="colorResetBtn">
+                        <span class="icon">🔄</span> 다시 칠하기
+                    </button>
+                </section>
             </section>
         </main>
     </div>
 
+    <!-- 3D 스크립트 연결 -->
+    <script src="js/town/townScene.js"></script>
+    <script src="js/town/carController.js"></script>
+    <script src="js/town/cameraFollow.js"></script>
+    <script src="js/town/townGame.js"></script>
+
+    <!-- 색칠 놀이 스크립트 연결 -->
+    <script src="js/coloring/coloringGame.js"></script>
+
     <script src="app.js"></script>
+    <script src="js/portal.js"></script>
 </body>
 </html>
