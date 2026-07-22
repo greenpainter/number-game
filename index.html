@@ -64,6 +64,11 @@
                         <div class="card-title">색칠 놀이</div>
                         <div class="card-badge play-badge">지금 해요! ⭐️</div>
                     </div>
+                    <div class="portal-card active-card warrior-card" data-game="warrior" id="card-warrior">
+                        <div class="card-icon">⚔️</div>
+                        <div class="card-title">어른 놀이</div>
+                        <div class="card-badge play-badge warrior-badge">바람의 무사 ⚔️</div>
+                    </div>
                     <div class="portal-card locked-card" data-game="hangul" data-title="한글 놀이" id="card-hangul">
                         <div class="card-icon">🔤</div>
                         <div class="card-title">한글 놀이</div>
@@ -206,6 +211,58 @@
                     </button>
                 </section>
             </section>
+
+            <!-- 5. 어른 놀이 - 바람의 무사 (2D 무협 수련장) 화면 -->
+            <section class="view warrior-game-view hidden" id="warriorGameView">
+                <header class="sketchbook-header warrior-header">
+                    <div class="warrior-header-title">
+                        <div class="warrior-profile">
+                            <div class="warrior-avatar"><span class="avatar-icon">⚔️</span></div>
+                            <h1>어른 놀이 : 바람의 무사</h1>
+                        </div>
+                        <div class="warrior-stats">
+                            <span class="stat-badge">레벨: <strong id="warriorLevel">1</strong></span>
+                            <span class="stat-badge">퇴치: <strong id="warriorKills">0</strong></span>
+                            <div class="energy-bar"><div class="energy-fill" id="warriorEnergyFill"></div></div>
+                        </div>
+                    </div>
+                    <p class="subtitle">방향키나 화면을 눌러 무사를 조종하고, 스킬로 목인을 수련해요!</p>
+                </header>
+
+                <!-- 2D 캔버스 게임 컨테이너 -->
+                <div class="warrior-canvas-container" id="warriorCanvasContainer">
+                    <canvas id="warriorCanvas"></canvas>
+                    
+                    <!-- 가상 D-Pad 조작계 (아이패드/모바일용) -->
+                    <div class="warrior-dpad" id="warriorDpad">
+                        <button class="dpad-btn dpad-up" id="warriorDpadUp">▲</button>
+                        <button class="dpad-btn dpad-left" id="warriorDpadLeft">◀</button>
+                        <button class="dpad-btn dpad-center" id="warriorDpadCenter">●</button>
+                        <button class="dpad-btn dpad-right" id="warriorDpadRight">▶</button>
+                        <button class="dpad-btn dpad-down" id="warriorDpadDown">▼</button>
+                    </div>
+
+                    <!-- 가상 스킬 액션 버튼 (아이패드/모바일용) -->
+                    <div class="warrior-actions" id="warriorActions">
+                        <button class="skill-btn slash-btn" id="btnWarriorSlash">⚔️ 베기</button>
+                        <button class="skill-btn dash-btn" id="btnWarriorDash">💨 초상비</button>
+                        <button class="skill-btn ult-btn" id="btnWarriorUltimate">⚡️ 필살검무</button>
+                    </div>
+                </div>
+
+                <!-- 하단 조작 바 -->
+                <section class="control-panel warrior-control-panel">
+                    <button class="ctrl-btn home-btn" id="warriorHomeBtn">
+                        <span class="icon">🏠</span> 다른 놀이 하기
+                    </button>
+                    <button class="ctrl-btn clear-btn" id="warriorResetBtn">
+                        <span class="icon">🔄</span> 수련장 리셋
+                    </button>
+                    <button class="ctrl-btn fullscreen-btn" id="warriorFullscreenBtn">
+                        <span class="icon">🖥️</span> 전체화면
+                    </button>
+                </section>
+            </section>
         </main>
     </div>
 
@@ -217,6 +274,9 @@
 
     <!-- 색칠 놀이 스크립트 연결 -->
     <script src="js/coloring/coloringGame.js"></script>
+
+    <!-- 어른 놀이 바람의 무사 스크립트 연결 -->
+    <script src="js/warrior/warriorGame.js"></script>
 
     <script src="app.js"></script>
     <script src="js/portal.js"></script>

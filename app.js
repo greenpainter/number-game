@@ -104,54 +104,54 @@ let explosionParticles = [];
 let confetti = [];
 let drawingParticles = [];
 
-// 3. 한국어 TTS 설정 (Siri 여성 및 여성 보이스 우선 매칭)
+// 3. 순수 Web Speech API [방법 2] 아이패드 & 컴퓨터 PC 통합 한국어 여성 음성 시스템
 let koVoice = null;
 
+// [방법 2] 아이패드 & PC 브라우저 최적화 한국어 여성 음성 선택 필터
 function loadVoices() {
     if (!window.speechSynthesis) return;
     const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return;
     
     // 한국어 목소리 필터링
     const koVoices = voices.filter(voice => voice.lang === 'ko-KR' || voice.lang.startsWith('ko'));
     
-    // 남성/중후한 음성 감지 필터
+    // 남성 음성 감지 필터 (Minsu, Male, 남성 등 제외)
     const isMaleVoice = (name) => {
         const lower = name.toLowerCase();
-        return lower.includes('male') || lower.includes('남성') || lower.includes('minsu') || 
-               lower.includes('yuna') || lower.includes('voice 2') || lower.includes('보이스 2') || 
-               lower.includes('siri 2') || lower.includes('compact');
+        return lower.includes('male') || lower.includes('남성') || lower.includes('minsu') || lower.includes('david');
     };
-
-    // 순수 여성/밝은 한국어 음성 후보군
-    const femaleVoices = koVoices.filter(v => !isMaleVoice(v.name));
 
     let selectedVoice = null;
     
-    // 1. Siri 여성 (Voice 1 / Siri 1 / Siri 여성)
-    selectedVoice = femaleVoices.find(v => v.name.includes('Siri') && (v.name.includes('1') || v.name.includes('여성') || v.name.includes('Female')));
-    
-    // 2. Google 한국어 여성 보资스
+    // 1. [아이패드 1순위] 사용자가 설정한 Siri 2 / Siri 음성 2 / Siri / Yuna
+    selectedVoice = koVoices.find(v => v.name.includes('Siri') && (v.name.includes('2') || v.name.includes('음성 2') || v.name.includes('Voice 2')));
     if (!selectedVoice) {
-        selectedVoice = femaleVoices.find(v => v.name.toLowerCase().includes('google'));
-    }
-
-    // 3. MS/Apple 밝은 여성 보이스 (Sun-Hi, Heami, Hyehyeon)
-    if (!selectedVoice) {
-        selectedVoice = femaleVoices.find(v => v.name.includes('Sun') || v.name.includes('Heami') || v.name.includes('Hye'));
+        selectedVoice = koVoices.find(v => v.name.includes('Siri') || v.name.includes('Yuna'));
     }
     
-    // 4. 기타 여성 음성 중 첫 번째
-    if (!selectedVoice && femaleVoices.length > 0) {
-        selectedVoice = femaleVoices[0];
+    // 2. [컴퓨터 PC 1순위] Google 한국어 여성 보이스 (Chrome PC)
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => v.name.includes('Google') || v.name.includes('구글'));
     }
 
-    // 5. 정 안되면 남성 음성이 아닌 한국어 음성
+    // 3. [컴퓨터 PC 2순위] MS Edge / Windows 맑은 여성 보이스 (Sun-Hi, Heami, Hyehyeon)
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => v.name.includes('Sun-Hi') || v.name.includes('SunHi') || v.name.includes('Heami') || v.name.includes('해미') || v.name.includes('Hye'));
+    }
+    
+    // 4. 남성이 아닌 밝은 한국어 여성 음성 중 선택
+    if (!selectedVoice) {
+        selectedVoice = koVoices.find(v => !isMaleVoice(v.name));
+    }
+    
+    // 5. 정 안되면 한국어 첫 번째 음성
     if (!selectedVoice && koVoices.length > 0) {
-        selectedVoice = koVoices.find(v => !isMaleVoice(v.name)) || koVoices[0];
+        selectedVoice = koVoices[0];
     }
     
     koVoice = selectedVoice;
-    console.log("아이패드 최적화 선택된 한국어 여성 음성:", koVoice ? koVoice.name : "기본 여성 음성");
+    console.log("선택된 한국어 음성 (iPad & PC 통합):", koVoice ? koVoice.name : "기본 음성");
 }
 
 if (window.speechSynthesis) {
@@ -159,18 +159,25 @@ if (window.speechSynthesis) {
     loadVoices();
 }
 
+// 사용자 첫 터치 시 음성 로드 보장
+window.addEventListener('touchstart', loadVoices, { once: true });
+window.addEventListener('click', loadVoices, { once: true });
+
 function speak(text) {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel(); // 진행 중인 음성 즉시 취소
+    if (!text || !window.speechSynthesis) return;
     
-    const utterance = new SpeechSynthesisUtterance(text);
+    // 진행 중인 음성 즉시 취소
+    window.speechSynthesis.cancel();
+    if (!koVoice) loadVoices();
+
+    const utterance = new SpeechSynthesisUtterance(text.trim());
     if (koVoice) {
         utterance.voice = koVoice;
     }
     
     utterance.lang = 'ko-KR';
-    utterance.rate = 0.95;  // 어린이가 잘 들을 수 있는 또박또박한 자연스러운 속도
-    utterance.pitch = 1.0;   // 깨짐 및 왜곡 없는 가장 맑고 깨끗한 표준 원음 높이 (1.0)
+    utterance.rate = 0.95; // 어린이가 잘 들을 수 있는 또박또박한 속도
+    utterance.pitch = 1.0;  // 지직거림 및 깨짐 없는 표준 원음 피치 (1.0)
     
     window.speechSynthesis.speak(utterance);
 }
@@ -699,12 +706,13 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// 12. SPA 뷰 전환 관리 (Portal View <-> Number Game View <-> Town Game View)
+// 12. SPA 뷰 전환 관리 (Portal View <-> Number Game View <-> Town Game View <-> Coloring Game View <-> Warrior Game View)
 function showView(viewName) {
     const portalView = document.getElementById('portalView');
     const numberGameView = document.getElementById('numberGameView');
     const townGameView = document.getElementById('townGameView');
     const coloringGameView = document.getElementById('coloringGameView');
+    const warriorGameView = document.getElementById('warriorGameView');
     const startOverlay = document.getElementById('startOverlay');
 
     if (viewName === 'number-game' || viewName === 'numberGame') {
@@ -713,6 +721,9 @@ function showView(viewName) {
         }
         if (window.ColoringGame && window.ColoringGame.pause) {
             window.ColoringGame.pause();
+        }
+        if (window.WarriorGame && window.WarriorGame.pause) {
+            window.WarriorGame.pause();
         }
 
         if (portalView) {
@@ -726,6 +737,10 @@ function showView(viewName) {
         if (coloringGameView) {
             coloringGameView.classList.remove('active');
             coloringGameView.classList.add('hidden');
+        }
+        if (warriorGameView) {
+            warriorGameView.classList.remove('active');
+            warriorGameView.classList.add('hidden');
         }
         if (numberGameView) {
             numberGameView.classList.remove('hidden');
@@ -747,6 +762,9 @@ function showView(viewName) {
         if (window.ColoringGame && window.ColoringGame.pause) {
             window.ColoringGame.pause();
         }
+        if (window.WarriorGame && window.WarriorGame.pause) {
+            window.WarriorGame.pause();
+        }
 
         if (portalView) {
             portalView.classList.remove('active');
@@ -759,6 +777,10 @@ function showView(viewName) {
         if (coloringGameView) {
             coloringGameView.classList.remove('active');
             coloringGameView.classList.add('hidden');
+        }
+        if (warriorGameView) {
+            warriorGameView.classList.remove('active');
+            warriorGameView.classList.add('hidden');
         }
         if (townGameView) {
             townGameView.classList.remove('hidden');
@@ -781,6 +803,9 @@ function showView(viewName) {
         if (window.TownGame && window.TownGame.pause) {
             window.TownGame.pause();
         }
+        if (window.WarriorGame && window.WarriorGame.pause) {
+            window.WarriorGame.pause();
+        }
 
         if (portalView) {
             portalView.classList.remove('active');
@@ -793,6 +818,10 @@ function showView(viewName) {
         if (townGameView) {
             townGameView.classList.remove('active');
             townGameView.classList.add('hidden');
+        }
+        if (warriorGameView) {
+            warriorGameView.classList.remove('active');
+            warriorGameView.classList.add('hidden');
         }
         if (coloringGameView) {
             coloringGameView.classList.remove('hidden');
@@ -811,12 +840,56 @@ function showView(viewName) {
             }
         }, 200);
 
+    } else if (viewName === 'warrior-game' || viewName === 'warriorGame' || viewName === 'warrior') {
+        if (window.TownGame && window.TownGame.pause) {
+            window.TownGame.pause();
+        }
+        if (window.ColoringGame && window.ColoringGame.pause) {
+            window.ColoringGame.pause();
+        }
+
+        if (portalView) {
+            portalView.classList.remove('active');
+            portalView.classList.add('hidden');
+        }
+        if (numberGameView) {
+            numberGameView.classList.remove('active');
+            numberGameView.classList.add('hidden');
+        }
+        if (townGameView) {
+            townGameView.classList.remove('active');
+            townGameView.classList.add('hidden');
+        }
+        if (coloringGameView) {
+            coloringGameView.classList.remove('active');
+            coloringGameView.classList.add('hidden');
+        }
+        if (warriorGameView) {
+            warriorGameView.classList.remove('hidden');
+            warriorGameView.classList.add('active');
+        }
+
+        // 바람의 무사 (어른 놀이) 2D 캔버스 가동
+        setTimeout(() => {
+            if (window.WarriorGame) {
+                window.WarriorGame.start();
+            }
+        }, 50);
+        setTimeout(() => {
+            if (window.WarriorGame) {
+                window.WarriorGame.resize();
+            }
+        }, 200);
+
     } else if (viewName === 'portal') {
         if (window.TownGame && window.TownGame.pause) {
             window.TownGame.pause();
         }
         if (window.ColoringGame && window.ColoringGame.pause) {
             window.ColoringGame.pause();
+        }
+        if (window.WarriorGame && window.WarriorGame.pause) {
+            window.WarriorGame.pause();
         }
 
         if (numberGameView) {
@@ -830,6 +903,10 @@ function showView(viewName) {
         if (coloringGameView) {
             coloringGameView.classList.remove('active');
             coloringGameView.classList.add('hidden');
+        }
+        if (warriorGameView) {
+            warriorGameView.classList.remove('active');
+            warriorGameView.classList.add('hidden');
         }
         if (portalView) {
             portalView.classList.remove('hidden');
@@ -886,6 +963,22 @@ if (colorHomeBtn) {
     colorHomeBtn.addEventListener('click', () => {
         showView('portal');
         speak("놀이터로 돌아가요!");
+    });
+}
+
+// 어른 놀이 (바람의 무사) 컨트롤 바인딩
+const warriorHomeBtn = document.getElementById('warriorHomeBtn');
+if (warriorHomeBtn) {
+    warriorHomeBtn.addEventListener('click', () => {
+        showView('portal');
+        speak("놀이터로 돌아가요!");
+    });
+}
+
+const warriorFullscreenBtn = document.getElementById('warriorFullscreenBtn');
+if (warriorFullscreenBtn) {
+    warriorFullscreenBtn.addEventListener('click', () => {
+        toggleFullscreen();
     });
 }
 

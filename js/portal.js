@@ -58,6 +58,11 @@ function initPortalEvents() {
                 if (window.speak) {
                     window.speak("색칠 놀이를 시작해요!");
                 }
+            } else if (gameType === 'warrior') {
+                // 4. 어른 놀이 (바람의 무사) 카드 선택 시 (음성 재생 없음)
+                if (window.showView) {
+                    window.showView('warrior-game');
+                }
             } else {
                 // 3. 잠긴 카드 선택 시 (색깔, 한글 등)
                 // 흔들림 애니메이션 적용

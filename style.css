@@ -1018,6 +1018,240 @@ html, body {
     }
 }
 
+/* ==========================================================================
+   어른 놀이 : 바람의 무사 (Warrior Game) 전용 스타일링
+   ========================================================================== */
+
+/* 포탈 무사 카드 전용 배경 & 이펙트 */
+.warrior-card {
+    background: linear-gradient(135deg, #1b263b 0%, #0d1b2a 100%) !important;
+    border: 3px solid #415a77 !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 0px #08121e, 0 12px 20px rgba(13, 27, 42, 0.4) !important;
+}
+
+.warrior-card .card-title {
+    color: #e0e1dd !important;
+}
+
+.warrior-card:hover {
+    box-shadow: 0 12px 0px #08121e, 0 0 25px rgba(114, 239, 221, 0.4) !important;
+    border-color: #72efdd !important;
+}
+
+.warrior-badge {
+    background-color: #e63946 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 0px #9d0208 !important;
+}
+
+/* 바람의 무사 뷰 상단 헤더 & 스탯 바 */
+.warrior-header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 20px;
+    padding: 12px 20px;
+    color: #f8fafc;
+    box-shadow: 0 6px 15px rgba(15, 23, 42, 0.3);
+    margin-bottom: 12px;
+}
+
+.warrior-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.warrior-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid #72efdd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 0 12px rgba(114, 239, 221, 0.5);
+    background: linear-gradient(135deg, #1b263b 0%, #0d1b2a 100%);
+}
+
+.warrior-header h1 {
+    color: #72efdd;
+    text-shadow: 0 2px 8px rgba(114, 239, 221, 0.3);
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.warrior-header-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.warrior-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stat-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    color: #ffd166;
+    border: 1px solid rgba(255, 209, 102, 0.3);
+}
+
+.energy-bar {
+    width: 100px;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1.5px solid #415a77;
+    overflow: hidden;
+}
+
+.energy-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #4cc9f0 0%, #72efdd 100%);
+    transition: width 0.2s ease;
+}
+
+/* 2D 캔버스 게임 컨테이너 */
+.warrior-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    min-height: 400px;
+    max-height: 650px;
+    background-color: #1e242b;
+    border: 4px solid #334155;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6), 0 10px 25px rgba(0, 0, 0, 0.3);
+    touch-action: none;
+}
+
+#warriorCanvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    touch-action: none;
+    outline: none;
+}
+
+/* 가상 D-Pad 조작계 (좌측 하단) */
+.warrior-dpad {
+    position: absolute;
+    bottom: 16px;
+    left: 20px;
+    width: 140px;
+    height: 140px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+    z-index: 10;
+    touch-action: none;
+    user-select: none;
+}
+
+.dpad-btn {
+    font-family: inherit;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #f8fafc;
+    background: rgba(30, 41, 59, 0.75);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(148, 163, 184, 0.4);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: background 0.1s, transform 0.1s;
+    touch-action: none;
+}
+
+.dpad-btn:active {
+    background: rgba(71, 85, 105, 0.9);
+    transform: scale(0.92);
+}
+
+.dpad-up { grid-column: 2; grid-row: 1; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-center { grid-column: 2; grid-row: 2; background: rgba(15, 23, 42, 0.6); color: #64748b; font-size: 0.8rem; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+/* 가상 스킬 액션 버튼 (우측 하단) */
+.warrior-actions {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+    touch-action: none;
+    user-select: none;
+}
+
+.skill-btn {
+    font-family: var(--font-main);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    box-shadow: 0 5px 0px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.25);
+    transition: transform 0.1s, box-shadow 0.1s;
+    backdrop-filter: blur(4px);
+    touch-action: none;
+}
+
+.skill-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0px rgba(0, 0, 0, 0.3);
+}
+
+.slash-btn {
+    background: linear-gradient(135deg, #e63946 0%, #b5179e 100%);
+}
+
+.dash-btn {
+    background: linear-gradient(135deg, #3a86c8 0%, #06d6a0 100%);
+}
+
+.ult-btn {
+    background: linear-gradient(135deg, #ff9f1c 0%, #ff006e 100%);
+    font-size: 1.3rem;
+}
+
+@media (max-width: 768px) {
+    .warrior-dpad {
+        width: 120px;
+        height: 120px;
+        bottom: 10px;
+        left: 10px;
+    }
+    .warrior-actions {
+        bottom: 10px;
+        right: 10px;
+        gap: 8px;
+    }
+    .skill-btn {
+        font-size: 1.05rem;
+        padding: 8px 14px;
+    }
+}
+
 
 
 
