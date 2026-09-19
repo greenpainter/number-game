@@ -1,0 +1,324 @@
+{
+  "generator": "supertonic==1.3.1",
+  "model": "supertone-oss-archive/supertonic-3",
+  "revision": "aafc6e32416a594460b32413efc49d7fe4ce6d46",
+  "voice": "F1",
+  "language": "ko",
+  "steps": 12,
+  "speed": 1.0,
+  "seed": 42,
+  "clips": [
+    {
+      "text": "먼저 타고 있는 차에서 내려 주세요.",
+      "file": "d3f2b9cbf004.mp3",
+      "durationSeconds": 3.033,
+      "sha256": "1fec32c29521afa965cdc27bcfc8d85ac43d81ef50828df46a77d113865b1862"
+    },
+    {
+      "text": "잠깐 기다렸다가 다시 눌러 주세요.",
+      "file": "82c8166a7618.mp3",
+      "durationSeconds": 3.072,
+      "sha256": "566cd093ad3d8b4d48ddfeb5e0c88205d0ee755a2a8660a1b3cc8fc19a040f17"
+    },
+    {
+      "text": "차에서 내려서 아이스크림을 받으러 가요.",
+      "file": "b4978290255d.mp3",
+      "durationSeconds": 3.545,
+      "sha256": "e4e6e17531286e84b62f0a9ac966e1e573627607fd407b8884c60115f62935d9"
+    },
+    {
+      "text": "냠냠! 아이스크림을 먹고 있어요.",
+      "file": "b48dc8c609ff.mp3",
+      "durationSeconds": 3.766,
+      "sha256": "3737aa1673b5740c20e147ab0df5be15eb09f8ce976a2a477ed58119e071dc3d"
+    },
+    {
+      "text": "작업 중이에요. 잠깐 기다려 주세요.",
+      "file": "59e22379c80f.mp3",
+      "durationSeconds": 3.734,
+      "sha256": "32f7d02c6a5a7644c6a5661292ab8888804ba9c7afdf9231d43c5b1ab4b72aae"
+    },
+    {
+      "text": "집이나 나무 옆의 빈 바닥을 눌러 주세요.",
+      "file": "5577a2d357a7.mp3",
+      "durationSeconds": 3.586,
+      "sha256": "7fd5cc84f9849f5f8ff7dcc62ea6a0f1c6c4019e5fac910adb659bbf29a6b150"
+    },
+    {
+      "text": "소방서 앞으로 갈 수 없어요. 빈 바닥에서 다시 눌러 주세요.",
+      "file": "58e774e41d3b.mp3",
+      "durationSeconds": 5.449,
+      "sha256": "529873795b000242de699277a84287a87230f060aa8bd5770500b8e28db90d70"
+    },
+    {
+      "text": "내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.",
+      "file": "ae56dd8f736a.mp3",
+      "durationSeconds": 4.771,
+      "sha256": "c4c73b985a3d9eada839078d00d46014a08d460bb70a315e42824844133ac693"
+    },
+    {
+      "text": "먼저 소방서 건물을 눌러 소방차를 타요!",
+      "file": "21bbf15c9c45.mp3",
+      "durationSeconds": 3.809,
+      "sha256": "795315093325164a24eb37341afc8d8837ead1b33945a1f73428ae85ad963624"
+    },
+    {
+      "text": "먼저 차에서 내려 주세요.",
+      "file": "2fc80092a4ba.mp3",
+      "durationSeconds": 2.274,
+      "sha256": "45cddff11de9021e2541b19d28e00198531c6391f5e0712db299ff61b2b1e562"
+    },
+    {
+      "text": "버스가 주차장에 돌아오면 탈 수 있어요.",
+      "file": "71cb3418f41d.mp3",
+      "durationSeconds": 3.442,
+      "sha256": "074890b986fec6c89d9f92a27a5a95c34be4dbbfbf9b757d46cf0b6acb6b7f06"
+    },
+    {
+      "text": "덤프트럭이 주차장에 돌아오면 다시 탈 수 있어요.",
+      "file": "dd1cd758b951.mp3",
+      "durationSeconds": 4.264,
+      "sha256": "5ee418b92c4e9be40b330e764c7392349a7fde6d4894d3e988f2340f2323d96e"
+    },
+    {
+      "text": "주차장에서 덤프트럭을 타고 와 주세요.",
+      "file": "83272502b054.mp3",
+      "durationSeconds": 3.578,
+      "sha256": "cd56b5169eccb2bba03148b476ef28a3974c7e7cce547bd7a93cb7e17343aea2"
+    },
+    {
+      "text": "흙이 가득해요. 초록색 테두리의 하역장에 내려 주세요.",
+      "file": "b6e67e1e5b91.mp3",
+      "durationSeconds": 5.119,
+      "sha256": "9b44d87bcb7dc2aee1aebe7713b2f213074d2b1824ac678badcf3eff1d305777"
+    },
+    {
+      "text": "흙을 옮기는 중이에요. 잠깐 기다려 주세요.",
+      "file": "695306218a70.mp3",
+      "durationSeconds": 4.395,
+      "sha256": "dfa7f12bcb2808564a5a7bbe8a165d0af3441507e98d43bb6392e79c579d7239"
+    },
+    {
+      "text": "흙을 실은 덤프트럭으로 와 주세요.",
+      "file": "4eb3e0b4514a.mp3",
+      "durationSeconds": 3.057,
+      "sha256": "a928e40305f835c41eb13cb980ea25f0b1a55c07296766c25bd633957ff98d61"
+    },
+    {
+      "text": "먼저 포크레인에게 흙을 받아 와 주세요.",
+      "file": "e9692eb607ba.mp3",
+      "durationSeconds": 3.747,
+      "sha256": "d6d09eb391ccb31b4c9099eeae3748a499ae98efca3e33f1687e7f35a0ed9172"
+    },
+    {
+      "text": "잠깐 기다려 주세요.",
+      "file": "38afbaac2612.mp3",
+      "durationSeconds": 1.979,
+      "sha256": "04b7e13e15bc2897261077cc48ef26421e140b0b37325fb82f0ee27273eaee1a"
+    },
+    {
+      "text": "소방서를 눌러 소방차를 불러 볼까요?",
+      "file": "ecb002642fe6.mp3",
+      "durationSeconds": 3.284,
+      "sha256": "d6a884d2813275563350af5028ef895f6e249ee2e198539caefb108e2a58cbff"
+    },
+    {
+      "text": "소방차가 나와요. 잠깐 기다려 주세요.",
+      "file": "f7d90ccfeaee.mp3",
+      "durationSeconds": 3.853,
+      "sha256": "43ddbfa9abfa50d8b0bce312b9f19d38c91289d36b1e3d91474a96948818ba3d"
+    },
+    {
+      "text": "앗, 불이 났어요! 불을 눌러 출동해요!",
+      "file": "13d6f1235e1a.mp3",
+      "durationSeconds": 4.221,
+      "sha256": "cb95e222144ddbe32995b12c3f80dd36249237b47b80d6b345394e93809f7aac"
+    },
+    {
+      "text": "소방차에 탔어요. 마을을 둘러볼까요?",
+      "file": "5efdb658cc97.mp3",
+      "durationSeconds": 3.67,
+      "sha256": "ad6312b114ebeb133b608bf398464df77d7e8005bacc97d2ba8434fe7c4c2624"
+    },
+    {
+      "text": "다시 탔어요. 불을 눌러 출동해 주세요.",
+      "file": "dd7b25611ab7.mp3",
+      "durationSeconds": 3.844,
+      "sha256": "13980f9e1da8af4a1674f86613a805b41c9eb7ad3f78c50712d7688dcae908e2"
+    },
+    {
+      "text": "출동! 불을 끄러 가요.",
+      "file": "0ab808565b2c.mp3",
+      "durationSeconds": 2.724,
+      "sha256": "5ed45aa01dfaf1e1e8304ff5fe14ed76dab7baf66fa6dc4f76ed00a0fa71870f"
+    },
+    {
+      "text": "물을 뿌려서 불을 꺼요.",
+      "file": "9517c67af21e.mp3",
+      "durationSeconds": 2.254,
+      "sha256": "fb6ea092520f7482ccdd3cafab3ffe836bc40951070f6004ecc999a0b3cc6fad"
+    },
+    {
+      "text": "내렸어요! 소방차가 소방서로 돌아가요.",
+      "file": "87beedb21b22.mp3",
+      "durationSeconds": 4.144,
+      "sha256": "2d40d715081868f39bb79b120404b63928cdabf5b2c24ca84758ce656a0ab2cc"
+    },
+    {
+      "text": "덤프트럭에 타러 가요.",
+      "file": "86955ca793d5.mp3",
+      "durationSeconds": 2.047,
+      "sha256": "c69c9609619fec4b716356d559dab8403882fd0e4a8378e944aa36407dfd9608"
+    },
+    {
+      "text": "출발! 포크레인에게 흙을 받으러 가요.",
+      "file": "b0127b27f626.mp3",
+      "durationSeconds": 4.255,
+      "sha256": "37a33852a98d991890252c096996b13011d40f9235f278486e0dde83e471d330"
+    },
+    {
+      "text": "포크레인에게 흙을 받으러 가요.",
+      "file": "a0273e9b4ab0.mp3",
+      "durationSeconds": 2.76,
+      "sha256": "f2614055b307b90e64ccb9f9d54cfb6ccca5308eadc14f8c0f23826971be9a6c"
+    },
+    {
+      "text": "포크레인이 흙을 퍼서 실어 줄게요.",
+      "file": "4194cafdd136.mp3",
+      "durationSeconds": 3.069,
+      "sha256": "9abd51b5cc629fb981a296524dd7da32aba53d904fe7dd0c154f120ec0ffd78a"
+    },
+    {
+      "text": "흙을 다 실었어요! 초록 테두리 안에 내려 볼까요?",
+      "file": "1c3bbcdd79f8.mp3",
+      "durationSeconds": 4.83,
+      "sha256": "e3855b98a215b412b19ecbb125f52d5cbc27ff44301b9b2f3dc554b58233850c"
+    },
+    {
+      "text": "흙을 내릴 곳으로 가요.",
+      "file": "dabea281faa1.mp3",
+      "durationSeconds": 2.129,
+      "sha256": "03f01ebd753d423046befbb3bc6f0e4821fb49b8edf4d10d5a5d5a14346f219c"
+    },
+    {
+      "text": "적재함을 들어 흙을 내려요.",
+      "file": "0dea02261d19.mp3",
+      "durationSeconds": 2.443,
+      "sha256": "88b5d46e70c775291b3d0aae8a12e4292d1dbd86079fa92d41d17f9aa7800b81"
+    },
+    {
+      "text": "흙을 잘 옮겼어요! 다시 흙을 받으러 가 볼까요?",
+      "file": "681741dac1dd.mp3",
+      "durationSeconds": 4.727,
+      "sha256": "6112e616458b8f9e2bbaeb2b516f8141a42763c102600dfe41ca0f4495853f8c"
+    },
+    {
+      "text": "덤프트럭이 주차장으로 돌아가요.",
+      "file": "e01a268c4ac5.mp3",
+      "durationSeconds": 2.873,
+      "sha256": "573d1e80072ed3e2d044c2ffc89f802113e78c6acb358d4482d018b6f6580c96"
+    },
+    {
+      "text": "경찰차 출발! 마을을 순찰해요!",
+      "file": "a6f3cf8f0c34.mp3",
+      "durationSeconds": 3.869,
+      "sha256": "670ce377fd727d47aded00d3094e6f277db9480ef1c06a301ec628c82bfb19ff"
+    },
+    {
+      "text": "앰뷸런스에 탔어요. 마을을 둘러볼까요?",
+      "file": "221a3410db92.mp3",
+      "durationSeconds": 3.882,
+      "sha256": "7a67965cb0574db05577ebec6dc0e223bb37e8ffa83b0534b0e6da49f4f6c78b"
+    },
+    {
+      "text": "내렸어요. 자동차가 자기 차고로 돌아가요.",
+      "file": "309cc0d94f66.mp3",
+      "durationSeconds": 4.093,
+      "sha256": "8f748916a840a90a7cc4166af7dd19c4ea19731caad317e01bdda9e487ed4d50"
+    },
+    {
+      "text": "버스가 주차장으로 돌아가요.",
+      "file": "fc249daea694.mp3",
+      "durationSeconds": 2.527,
+      "sha256": "cb32f1e127ffa4e6ec69dd2caa3b1ca07287939edcb28d36978348d0c3c6695c"
+    },
+    {
+      "text": "아이스크림을 받으러 가요!",
+      "file": "8f885820c2ec.mp3",
+      "durationSeconds": 2.377,
+      "sha256": "abcc2d33e62ffdae1996a6dfe159a884106116de67917483a12dd5e65b9ab67e"
+    },
+    {
+      "text": "와, 아이스크림이다! 냠냠, 맛있다!",
+      "file": "37eb156e3c7c.mp3",
+      "durationSeconds": 4.275,
+      "sha256": "d977d3c8ebb04d0ca397b913645246e3d24996bed758bf935d8de6443e3b8dc8"
+    },
+    {
+      "text": "잘 먹었습니다!",
+      "file": "5015ca62c5ab.mp3",
+      "durationSeconds": 1.72,
+      "sha256": "f634097d02d9cc14d41c4828fdc3f11f345f4cbd623b181584d18eaa026724c7"
+    },
+    {
+      "text": "고마워요! 마을이 다시 안전해졌어요.",
+      "file": "888c9c75c522.mp3",
+      "durationSeconds": 3.733,
+      "sha256": "2920a86deca7750939433cd3ad94ee90c795fd344e603c8574d5fa856545945a"
+    },
+    {
+      "text": "한국어 음성 안내를 켰어요.",
+      "file": "e724d59fdc0f.mp3",
+      "durationSeconds": 2.523,
+      "sha256": "30015d177aa607ae57cf0798722c43ce868d2bb344688e9e38a08f27f817887d"
+    },
+    {
+      "text": "경찰차가 나와요. 문 앞에서 기다려 주세요.",
+      "file": "75a2620c5451.mp3",
+      "durationSeconds": 4.295,
+      "sha256": "a65bd29372f062986fad716b5f4f586ac2d60cae30442e9376af9027579f358d"
+    },
+    {
+      "text": "앰뷸런스가 나와요. 문 앞에서 기다려 주세요.",
+      "file": "1157f8380b1b.mp3",
+      "durationSeconds": 4.446,
+      "sha256": "4784a76c03dacad0da84172cedd882fb3595090894b100f5dc133eac2a586018"
+    },
+    {
+      "text": "빨간색 버스를 타러 가요!",
+      "file": "f989f04bedbe.mp3",
+      "durationSeconds": 2.403,
+      "sha256": "04b5b487d1c28ac6062fb5eba92fd4fff1474450fa7c66a7b2ba257a69d61007"
+    },
+    {
+      "text": "빨간색 버스에 탔어요! 마을을 한 바퀴 돌아볼까요?",
+      "file": "1f2015999f80.mp3",
+      "durationSeconds": 5.055,
+      "sha256": "70a349782a839d0e3cf44dae7a3625fa71c92c3ca9fbf97f0c46b1174dfb1eb3"
+    },
+    {
+      "text": "파란색 버스를 타러 가요!",
+      "file": "3c6acd39e361.mp3",
+      "durationSeconds": 2.318,
+      "sha256": "3f8a662ae45bfbd9e5f45468db029c1f18074bbed8a5cbab803188acc79b1968"
+    },
+    {
+      "text": "파란색 버스에 탔어요! 마을을 한 바퀴 돌아볼까요?",
+      "file": "e0914ece7550.mp3",
+      "durationSeconds": 4.95,
+      "sha256": "76c5d55048eaddeb4ca549b5b510518ac4ff767b3ef5b660b6a7604df9b5c2c2"
+    },
+    {
+      "text": "초록색 버스를 타러 가요!",
+      "file": "a20e1abe6596.mp3",
+      "durationSeconds": 2.361,
+      "sha256": "a5085c96b80bbc91c7626444735dd1b66b9979f513ae1c8497b6e8743c3c71c8"
+    },
+    {
+      "text": "초록색 버스에 탔어요! 마을을 한 바퀴 돌아볼까요?",
+      "file": "bc9e72e5317c.mp3",
+      "durationSeconds": 5.022,
+      "sha256": "6fd2d22ff5112ec5dea74cd58f5bcccb3055e7e30b9a6bd5e9d517a11b2f5988"
+    }
+  ]
+}

@@ -184,7 +184,7 @@ function pointerUp(event){
 // Audio is unlocked by a real touch/click, including on iPad Safari.
 function ensureAudio(){
   if(audioCtx)return;const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
-  audioCtx=new Audio();
+  audioCtx=new Audio();narrator.connect(audioCtx);
   const gain=audioCtx.createGain();gain.gain.value=0;gain.connect(audioCtx.destination);
   const osc=audioCtx.createOscillator();osc.type='triangle';osc.connect(gain);osc.start();engineOsc={osc,gain};
   const sirenGain=audioCtx.createGain();sirenGain.gain.value=0;sirenGain.connect(audioCtx.destination);const siren=audioCtx.createOscillator();siren.type='sine';siren.connect(sirenGain);siren.start();sirenOsc={osc:siren,gain:sirenGain};
