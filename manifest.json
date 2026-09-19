@@ -8,12 +8,12 @@
     }
   ],
   "scope": "./",
-  "description": "아이와 함께 걸어 다니고 소방차를 타는 3D 소방 놀이",
+  "description": "소방차, 경찰차, 앰뷸런스와 덤프트럭을 타고 아이스크림도 먹는 3D 마을 놀이",
   "start_url": "./",
   "theme_color": "#cce8ec",
   "orientation": "any",
   "background_color": "#cce8ec",
-  "name": "출동! 꼬마 소방마을",
+  "name": "꼬마 자동차 마을",
   "display": "standalone",
-  "short_name": "소방마을"
+  "short_name": "자동차마을"
 }
