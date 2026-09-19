@@ -1,25 +1,19 @@
 {
-  "name": "숫자 놀이 - 스케치북 놀이터",
-  "short_name": "숫자놀이",
-  "description": "아들을 위한 3D 스케치북 숫자 학습 및 마을 운전 놀이",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "any",
-  "background_color": "#f0f4f8",
-  "theme_color": "#84a59d",
   "icons": [
     {
-      "src": "https://fav.farm/🎨",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://fav.farm/🎨",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "src": "./icon.svg"
     }
-  ]
+  ],
+  "scope": "./",
+  "description": "아이와 함께 걸어 다니고 소방차를 타는 3D 소방 놀이",
+  "start_url": "./",
+  "theme_color": "#cce8ec",
+  "orientation": "any",
+  "background_color": "#cce8ec",
+  "name": "출동! 꼬마 소방마을",
+  "display": "standalone",
+  "short_name": "소방마을"
 }
