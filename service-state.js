@@ -2,12 +2,12 @@ import {SERVICES,ICE_STOP,findPath,walkable,truckContains} from './navigation.js
 export const serviceActions={
   resetServices(){
     this.services=Object.fromEntries(Object.entries(SERVICES).map(([id,s])=>[id,{car:{...s.garage,angle:0,halfWidth:.95,halfLength:1.9},phase:'parked',door:0,path:[]}]));
-    this.serviceRequest=null;this.iceMission=false;this.eatTime=0;this.iceCreams=0;
+    this.serviceRequest=null;this.iceMission=false;this.fishingMission=false;this.eatTime=0;this.iceCreams=0;
   },
   boardService(id){
-    const s=this.services[id],config=SERVICES[id];if(!s||this.riding||this.mode==='eating')return false;
+    const s=this.services[id],config=SERVICES[id];if(!s||this.riding||this.activityLocked)return false;
     if(!this.routeTo(config.waiting,{boarding:true}))return false;
-    this.busRequest=null;this.serviceRequest=id;this.iceMission=false;this.boardingStage='service-wait';
+    this.busRequest=null;this.serviceRequest=id;this.iceMission=false;this.fishingMission=false;this.boardingStage='service-wait';
     if(s.phase==='parked')s.phase='opening';
     if(this.truckPhase==='waiting')this.returnTruck();this.changed('service-call');return true;
   },
@@ -36,8 +36,8 @@ export const serviceActions={
     s.path=route;s.phase='returning';this.changed('service-exit');return true;
   },
   getIceCream(){
-    if(this.riding||this.mode==='eating'||!this.routeTo(ICE_STOP))return false;
-    this.boardingStage=null;this.busRequest=null;this.serviceRequest=null;this.iceMission=true;
+    if(this.riding||this.activityLocked||!this.routeTo(ICE_STOP))return false;
+    this.boardingStage=null;this.busRequest=null;this.serviceRequest=null;this.iceMission=true;this.fishingMission=false;
     if(this.truckPhase==='waiting')this.returnTruck();this.changed('ice-walk');return true;
   },
   updateServices(dt,travel){
@@ -48,7 +48,7 @@ export const serviceActions={
       if(s.phase==='opening'&&s.door===1){s.path=[{...c.home}];s.phase='outgoing'}
       if(s.phase==='openingReturn'&&s.door===1){s.car.angle=0;s.path=[{...c.garage}];s.phase='entering'}
       if(['outgoing','returning','entering'].includes(s.phase)){
-        const next={...s.car},path=s.path.map(p=>({...p}));travel(next,path,dt*3.6,dt,s.phase==='entering');
+        const next={...s.car},path=s.path.map(p=>({...p}));travel(next,path,dt*3.6*1.2,dt,s.phase==='entering');
         if(this.riding||!truckContains(this.child.x,this.child.z,next,.38)){Object.assign(s.car,next);s.path=path}
         if(!s.path.length){if(s.phase==='outgoing'){s.car.angle=0;s.phase='waiting'}else if(s.phase==='returning')s.phase='openingReturn';else s.phase='closing'}
       }

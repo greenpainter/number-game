@@ -319,6 +319,24 @@
       "file": "bc9e72e5317c.mp3",
       "durationSeconds": 5.022,
       "sha256": "6fd2d22ff5112ec5dea74cd58f5bcccb3055e7e30b9a6bd5e9d517a11b2f5988"
+    },
+    {
+      "text": "연못으로 낚시하러 가요!",
+      "file": "56a34e2e5006.mp3",
+      "durationSeconds": 2.339,
+      "sha256": "c6a44cb6cb0a31252fd4e2fa38f7320fd4f1d9bf75b5c74a607f6e670b066e8d"
+    },
+    {
+      "text": "물고기야, 이리 와! 조금만 기다려 볼까요?",
+      "file": "ad019ca6ddb6.mp3",
+      "durationSeconds": 4.492,
+      "sha256": "9f0ed1a3cbf9be4fd95915ed4ba3c8145b95808a19cc7aa21952e6bc8e249b11"
+    },
+    {
+      "text": "우와! 물고기를 잡았어요!",
+      "file": "c22104f54655.mp3",
+      "durationSeconds": 2.983,
+      "sha256": "5ab9357f8b119770ef7d1149a714975b33560f925d3c35ceabebb06fb5d15180"
     }
   ]
 }

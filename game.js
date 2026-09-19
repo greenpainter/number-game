@@ -6,6 +6,8 @@ import {createServices} from './services.js';
 import {createExpansion} from './expansion.js';
 import {soundMix} from './sound.js';
 import {KoreanNarrator} from './narration.js';
+import {PlayInput,iceCreamZoom} from './play-input.js';
+import {createFishing} from './fishing.js';
 const narrator=new KoreanNarrator();
 
 const $=id=>document.getElementById(id);
@@ -20,19 +22,22 @@ let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
 const flameParts=[], smokeParts=[];
-const pointerStart={x:0,y:0,id:null};
+let pendingPress=null,fishing;
+const tapFeedback=document.createElement('div');tapFeedback.id='tap-feedback';tapFeedback.setAttribute('aria-hidden','true');document.body.append(tapFeedback);
 
 function toast(message){narrator.say(message)}
 function updateUI(){
   document.body.classList.toggle('complete',state.complete);
   const returning=['returning','openingReturn','entering','closing'].includes(state.truckPhase);
   $('badge-text').textContent=state.mode==='extinguishing'?'불을 끄고 있어요':state.boarding?(state.boardingStage==='dump-door'?'덤프트럭에 타러 가요':'소방차를 기다려요'):state.riding?'소방차 탑승 중':returning?'소방차가 복귀 중':'걸어서 탐험 중';
-  $('dispatch').hidden=!state.complete;$('dispatch').disabled=!state.ready;
   $('exit').hidden=!state.riding;$('exit').setAttribute('aria-label',state.drivingDump?'덤프트럭에서 내리기':'소방차에서 내리기');
   if(state.drivingDump)$('badge-text').textContent=state.mode==='loading'?'흙을 싣고 있어요':state.mode==='unloading'?'흙을 내리고 있어요':state.cargo?'흙을 실은 덤프트럭':'덤프트럭 탑승 중';
   else if(!state.riding&&state.dumpPhase==='returning')$('badge-text').textContent='덤프트럭이 주차장으로 돌아가요';
   if(state.services[state.vehicle]){$('badge-text').textContent=state.vehicle==='police'?'경찰차로 순찰 중':'앰뷸런스 탑승 중';$('exit').setAttribute('aria-label',SERVICES[state.vehicle].name+'에서 내리기')}
   if(state.drivingBus){$('badge-text').textContent=state.drivingBus.name+' 운전 중';$('exit').setAttribute('aria-label',state.drivingBus.name+'에서 내리기')}
+  if(state.mode==='pulling-over')$('badge-text').textContent='내리기 좋은 곳에 멈춰요';
+  if(state.fishingMission||state.mode==='fishing')$('badge-text').textContent='물고기를 만나러 가요';
+  if(state.mode==='fish-celebrate')$('badge-text').textContent='물고기를 잡았어요!';
   if(state.busRequest!==null)$('badge-text').textContent=state.buses[state.busRequest].name+'에 타러 가요';
   if(state.serviceRequest)$('badge-text').textContent=SERVICES[state.serviceRequest].name+'를 기다려요';
   if(state.iceMission||state.mode==='eating')$('badge-text').textContent=state.mode==='eating'?'냠냠! 맛있는 아이스크림':'아이스크림 받으러 가요';
@@ -48,14 +53,14 @@ function setRoute(points){
 }
 function moveTo(target){
   if(!state.ready)return false;
-  if(['loading','unloading','eating'].includes(state.mode)){toast('작업 중이에요. 잠깐 기다려 주세요.');return false}
-  if(!state.moveTo(target)){toast('집이나 나무 옆의 빈 바닥을 눌러 주세요.');return false}return true;
+  if(['loading','unloading','eating','fishing','fish-celebrate','pulling-over'].includes(state.mode))return false;
+  return state.moveNear(target);
 }
 function boardTruck(){if(!state.ready)return false;if(!state.boardTruck()){toast('소방서 앞으로 갈 수 없어요. 빈 바닥에서 다시 눌러 주세요.');return false}return true}
 function exitTruck(){if(!state.ready)return false;if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
 function stationAction(){if(!state.ready)return;if(state.riding&&!state.drivingFire){toast('먼저 타고 있는 차에서 내려 주세요.');return}if(state.riding)state.goHome();else boardTruck()}
-function dispatch(){if(!state.ready)return false;if(state.complete){reset();return true}if(!state.riding)return boardTruck();return state.dispatch()}
-function fireAction(){if(!state.ready)return;if(state.complete){reset();return}if(!state.drivingFire){toast('먼저 소방서 건물을 눌러 소방차를 타요!');return}state.dispatch()}
+function dispatch(){if(!state.ready)return false;if(!state.riding)return boardTruck();return state.dispatch()}
+function fireAction(){if(!state.ready||state.complete)return;if(!state.drivingFire){toast('먼저 소방서 건물을 눌러 소방차를 타요!');return}state.dispatch()}
 function reset(){state.reset()}
 function busAction(index){if(!state.ready)return;if(!state.boardBus(index))toast(state.riding?'먼저 차에서 내려 주세요.':'버스가 주차장에 돌아오면 탈 수 있어요.')}
 function dumpAction(){if(!state.ready)return;if(!state.boardDump())toast(state.riding?'먼저 타고 있는 차에서 내려 주세요.':'덤프트럭이 주차장에 돌아오면 다시 탈 수 있어요.')}
@@ -72,7 +77,7 @@ function onStateChange(reason){
     toast('소방서를 눌러 소방차를 불러 볼까요?');
   }
   if(reason==='garage'&&state.truckPhase==='opening')toast('소방차가 나와요. 잠깐 기다려 주세요.');
-  if(reason==='fire-start')toast('앗, 불이 났어요! 불을 눌러 출동해요!');
+  if(reason==='fire-start'){wood.traverse(o=>{if(o.isMesh&&o.userData.originalColor)o.material.color.copy(o.userData.originalColor)});toast('앗, 불이 났어요! 불을 눌러 출동해요!')}
   if(reason==='board')toast(state.complete?'소방차에 탔어요. 마을을 둘러볼까요?':'다시 탔어요. 불을 눌러 출동해 주세요.');
   if(reason==='move'&&state.fireMission)toast('출동! 불을 끄러 가요.');
   if(reason==='arrive'&&state.mode==='extinguishing')toast('물을 뿌려서 불을 꺼요.');
@@ -88,6 +93,9 @@ function onStateChange(reason){
   if(reason==='ice-walk')toast('아이스크림을 받으러 가요!');
   if(reason==='ice-eat')toast('와, 아이스크림이다! 냠냠, 맛있다!');
   if(reason==='ice-done')toast('잘 먹었습니다!');
+  if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
+  if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
+  if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
   if(reason==='win'){flames.visible=false;water.visible=false;wood.traverse(o=>{if(o.isMesh)o.material.color.multiplyScalar(.5)});chime();toast('고마워요! 마을이 다시 안전해졌어요.');}
   updateUI();
 }
@@ -120,6 +128,7 @@ function followCamera(dt,snap=false){
   const actor=state.actor,target=new THREE.Vector3(actor.x,1,actor.z);
   if(snap)cameraTarget.copy(target);else cameraTarget.lerp(target,1-Math.exp(-dt*9));
   if(sun){sun.position.set(cameraTarget.x-15,28,cameraTarget.z+16);sun.target.position.set(cameraTarget.x,0,cameraTarget.z);sun.target.updateMatrixWorld(true)}
+  camera.zoom=iceCreamZoom(camera.zoom,state.mode==='eating',dt);camera.updateProjectionMatrix();
   camera.position.copy(cameraTarget).add(cameraOffset);camera.lookAt(cameraTarget);camera.updateMatrixWorld(true);
 }
 function syncActors(time=0,paused=false){
@@ -136,8 +145,9 @@ function tick(now){
   requestAnimationFrame(tick);if(!state.ready||document.hidden)return;
   const dt=Math.min((now-lastTime)/1000,.05);lastTime=now;const time=now/1000;
   const paused=$('help-dialog').open;
+  if(pendingPress){const action=pendingPress;pendingPress=null;if(!paused)action()}
   if(!paused)state.update(dt);
-  syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);followCamera(dt);
+  syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);followCamera(dt);
   flames.visible=state.fireActive;
   water.visible=state.riding&&state.mode==='extinguishing';
   const strength=.12+.88*(state.hp/100);
@@ -155,30 +165,36 @@ function tick(now){
   if(marker.visible)marker.scale.setScalar(1+Math.sin(time*5)*.12);
   updateSound(paused);renderer.render(scene,camera);
 }
-function pointerUp(event){
-  if(event.pointerId!==pointerStart.id)return;
-  pointerStart.id=null;
-  if(!state.ready||Math.hypot(event.clientX-pointerStart.x,event.clientY-pointerStart.y)>12)return;
-  const bounds=canvas.getBoundingClientRect(),mouse=new THREE.Vector2((event.clientX-bounds.left)/bounds.width*2-1,-(event.clientY-bounds.top)/bounds.height*2+1);
-  raycaster.setFromCamera(mouse,camera);
+function pickPress({x,y,type}){
+  if(!state.ready||$('help-dialog').open||['eating','fishing','fish-celebrate','pulling-over','loading','unloading'].includes(state.mode))return;
+  const bounds=canvas.getBoundingClientRect();
+  const cast=(px,py)=>raycaster.setFromCamera(new THREE.Vector2((px-bounds.left)/bounds.width*2-1,-(py-bounds.top)/bounds.height*2+1),camera);
+  const roots=[fishing.dock,rectGround,village,truck,wood,services.ground,services.van,...Object.values(services.entries).flatMap(v=>[v.building,v.car]),expansion.ground,expansion.dump,expansion.excavator,expansion.pile,...expansion.buses,...(state.fireActive?flameParts:[])];
+  const actionFor=object=>{
+    const belongs=root=>{for(let o=object;o;o=o.parent)if(o===root)return true;return false};
+    if(belongs(fishing.dock)||object.material?.name==='water')return ()=>state.startFishing();
+    for(const [id,v] of Object.entries(services.entries))if(belongs(v.building)||belongs(v.car))return ()=>{if(state.vehicle!==id&&state.serviceRequest!==id)serviceAction(id)};
+    if(belongs(services.van))return ()=>{if(!state.iceMission)iceAction()};
+    if(belongs(expansion.dump))return ()=>{if(!state.drivingDump&&state.boardingStage!=='dump-door')dumpAction()};
+    if(belongs(expansion.excavator))return ()=>{if(state.dumpMission!=='load')excavatorAction()};
+    if(belongs(expansion.pad)||belongs(expansion.pile))return ()=>{if(state.dumpMission!=='unload')unloadAction()};
+    const index=expansion.buses.findIndex(b=>belongs(b));if(index>=0)return ()=>{if(state.vehicle!==`bus-${index}`&&state.busRequest!==index)busAction(index)};
+    if(belongs(station)||belongs(garageDoor))return ()=>{if(!['waiting','door'].includes(state.boardingStage))stationAction()};
+    if(belongs(truck))return ()=>{if(!state.riding&&!['waiting','door'].includes(state.boardingStage))boardTruck()};
+    if(belongs(wood)||flameParts.includes(object))return ()=>{if(!state.fireMission)fireAction()};
+    return null;
+  };
   scene.updateMatrixWorld(true);
-  const hits=raycaster.intersectObjects([rectGround,village,truck,wood,services.ground,services.van,...Object.values(services.entries).flatMap(v=>[v.building,v.car]),expansion.ground,expansion.dump,expansion.excavator,expansion.pile,...expansion.buses,...(state.fireActive?flameParts:[])],true);
-  if(hits.length){
-    const object=hits[0].object;
-    const belongs=(root)=>{for(let o=object;o;o=o.parent)if(o===root)return true;return false};
-    for(const [id,v] of Object.entries(services.entries))if(belongs(v.building)||belongs(v.car)){serviceAction(id);return}
-    if(belongs(services.van)){iceAction();return}
-    if(belongs(expansion.dump)){dumpAction();return}
-    if(belongs(expansion.excavator)){excavatorAction();return}
-    if(belongs(expansion.pad)||belongs(expansion.pile)){unloadAction();return}
-    const busIndex=expansion.buses.findIndex(b=>belongs(b));if(busIndex>=0){busAction(busIndex);return}
-    if(belongs(station)||belongs(garageDoor)){stationAction();return}
-    if(belongs(truck)){if(!state.riding)boardTruck();return}
-    if(belongs(wood)||flameParts.includes(object)){fireAction();return}
+  const radius=type==='touch'?22:type==='pen'?12:7;
+  for(const [dx,dy] of [[0,0],[-radius,0],[radius,0],[0,-radius],[0,radius],[-radius*.7,-radius*.7],[radius*.7,-radius*.7],[-radius*.7,radius*.7],[radius*.7,radius*.7]]){
+    cast(x+dx,y+dy);
+    const hit=raycaster.intersectObjects(roots,true)[0],action=hit&&actionFor(hit.object);
+    if(action){pendingPress=action;return}
   }
+  cast(x,y);
   const hit=new THREE.Vector3();
   if(!raycaster.ray.intersectPlane(ground,hit))return;
-  moveTo({x:hit.x,z:hit.z});
+  const target={x:hit.x,z:hit.z};pendingPress=()=>moveTo(target);
 }
 
 // Audio is unlocked by a real touch/click, including on iPad Safari.
@@ -215,11 +231,12 @@ async function init(){
     wood=prepareModel(woodAsset.scene);wood.position.set(FIRE.x,.16,FIRE.z);wood.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.userData.originalColor=o.material.color.clone()}});scene.add(wood);
     expansion=await createExpansion(loader,scene,prepareModel);
     services=await createServices(loader,scene,prepareModel,child,limbs);
+    fishing=createFishing(scene,child,limbs);
     rectGround=prepareModel((await loader.loadAsync('./models/rect-ground.glb')).scene);scene.add(rectGround);
     addEffects();resize();syncActors();state.ready=true;$('loading').hidden=true;updateUI();registerGameTools();lastTime=performance.now();requestAnimationFrame(tick);
   }catch(error){console.error(error);$('loading').innerHTML='<div class="error-message"><strong>마을을 불러오지 못했어요.</strong><br>인터넷 연결과 Safari 업데이트를 확인하고 다시 열어 주세요.<button class="primary-button" id="retry">다시 열기</button></div>';$('retry').onclick=()=>location.reload()}
 }
-$('dispatch').addEventListener('click',dispatch);$('exit').addEventListener('click',exitTruck);
+$('exit').addEventListener('click',exitTruck);
 $('help').addEventListener('click',()=>$('help-dialog').showModal());
 for(const id of ['close-help','start-playing'])$(id).addEventListener('click',()=>$('help-dialog').close());
 $('sound').addEventListener('click',()=>{
@@ -229,15 +246,19 @@ $('sound').addEventListener('click',()=>{
   if(state.sound){unlockAudio();toast('한국어 음성 안내를 켰어요.')}updateSound();
 });
 function unlockAudio(){try{ensureAudio();audioCtx?.resume().catch(()=>{})}catch{}}
-canvas.addEventListener('pointerdown',()=>{if(state.sound)unlockAudio()});
-canvas.addEventListener('pointerdown',event=>{if(!event.isPrimary){pointerStart.id=null;return}pointerStart.x=event.clientX;pointerStart.y=event.clientY;pointerStart.id=event.pointerId;canvas.setPointerCapture(event.pointerId)});
-canvas.addEventListener('pointercancel',()=>{pointerStart.id=null});
-canvas.addEventListener('pointerup',pointerUp);
-canvas.addEventListener('contextmenu',event=>event.preventDefault());
+const playInput=new PlayInput(press=>{
+  if(state.sound)unlockAudio();
+  tapFeedback.style.left=press.x+'px';tapFeedback.style.top=press.y+'px';tapFeedback.classList.remove('pulse');void tapFeedback.offsetWidth;tapFeedback.classList.add('pulse');
+  pickPress(press);
+});
+canvas.addEventListener('pointerdown',event=>{event.preventDefault();if(playInput.down(event)){try{canvas.setPointerCapture(event.pointerId)}catch{}}},{passive:false});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,event=>playInput.up(event));
+for(const name of ['contextmenu','dragstart','selectstart'])document.addEventListener(name,event=>event.preventDefault());
+window.addEventListener('blur',()=>{playInput.cancel();pendingPress=null});
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();state.ready=false;updateSound(true);$('loading').hidden=false;$('loading').innerHTML='<div class="error-message">화면이 잠시 쉬고 있어요.<button class="primary-button" id="reload-game">게임 다시 열기</button></div>';$('reload-game').onclick=()=>location.reload()});
-window.addEventListener('resize',resize);document.addEventListener('visibilitychange',()=>{lastTime=performance.now();if(document.hidden)narrator.stop();updateSound()});
+window.addEventListener('resize',resize);document.addEventListener('visibilitychange',()=>{lastTime=performance.now();if(document.hidden){narrator.stop();playInput.cancel();pendingPress=null}updateSound()});
 
-function gameSnapshot(){return {ready:state.ready,...state.snapshot(),narration:narrator.snapshot(),cameraTarget:{x:cameraTarget.x,y:cameraTarget.y,z:cameraTarget.z}}}
+function gameSnapshot(){return {ready:state.ready,...state.snapshot(),narration:narrator.snapshot(),cameraZoom:camera.zoom,cameraTarget:{x:cameraTarget.x,y:cameraTarget.y,z:cameraTarget.z}}}
 function registerGameTools(){
   const context=document.modelContext;if(!context?.registerTool)return;
   const lifecycle=new AbortController();
@@ -251,6 +272,7 @@ function registerGameTools(){
     {name:'board_policecar',description:'Call the police car out of its garage and walk over to board for a patrol.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('police'))throw new Error('Cannot board police car.');return gameSnapshot()}},
     {name:'board_ambulance',description:'Call the ambulance out of the hospital and board it.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('ambulance'))throw new Error('Cannot board ambulance.');return gameSnapshot()}},
     {name:'get_icecream',description:'Walk to the ice cream van, receive a cone and eat it facing the camera.',inputSchema:empty,execute:()=>{if(!state.ready||!state.getIceCream())throw new Error('Dismount first or finish eating.');return gameSnapshot()}},
+    {name:'go_fishing',description:'Walk to the pond, catch a fish and lift it in celebration.',inputSchema:empty,execute:()=>{if(!state.ready||!state.startFishing())throw new Error('Dismount or finish playing first.');return gameSnapshot()}},
     {name:'board_bus',description:'Walk to a parked bus and board it. Index 0 is red, 1 blue, 2 green.',inputSchema:{type:'object',properties:{index:{type:'integer',minimum:0,maximum:2}},required:['index'],additionalProperties:false},execute:({index})=>{if(!state.ready||!state.boardBus(index))throw new Error('Bus is unavailable.');return gameSnapshot()}},
     {name:'board_dumptruck',description:'Walk to the parked dump truck and board it.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardDump())throw new Error('Dump truck is unavailable.');return gameSnapshot()}},
     {name:'load_soil',description:'Drive the dump truck to the excavator and load up to three scoops.',inputSchema:empty,execute:()=>{if(!state.ready||!state.loadDump())throw new Error('Board an empty dump truck first.');return gameSnapshot()}},

@@ -5,6 +5,7 @@ import {serviceActions} from './service-state.js';
 
 export const GARAGE={x:-7,z:-5.4};
 export const WAITING={x:-9.25,z:2.8};
+export const MOVEMENT_SPEED=1.2;
 const approach=(value,target,step)=>value<target?Math.min(target,value+step):Math.max(target,value-step);
 function distanceToRoute(p,route){
   let distance=Infinity;
@@ -46,7 +47,7 @@ export class FireGame {
     this.hp=100;this.fireActive=false;this.complete=false;this.path=[];this.target=null;this.truckPath=[];
     this.truckPhase='parked';this.door=0;this.boardingStage=null;
     this.dump={...DUMP_HOME,angle:0,halfWidth:1.04,halfLength:2.22};this.dumpPhase='parked';this.dumpPath=[];this.dumpMission=null;this.cargo=0;this.delivered=0;this.workTime=0;this.loadStart=0;this.unloadCommitted=false;
-    this.resetBuses();this.resetServices();if(notify)this.changed('reset');
+    this.resetBuses();this.resetServices();this.fishingMission=false;this.fishTime=0;this.fishCaught=0;if(notify)this.changed('reset');
   }
   routeTo(target,{boarding=false,fireMission=false,homeMission=false}={}){
     const path=findPath(this.actor,target,this.options);if(!path)return false;
@@ -54,11 +55,32 @@ export class FireGame {
     this.mode='moving';this.changed('move');return true;
   }
   moveTo(target){
-    if(['loading','unloading','eating'].includes(this.mode))return false;
+    if(['loading','unloading','eating','fishing','fish-celebrate','pulling-over'].includes(this.mode))return false;
     if(!this.routeTo(target))return false;
-    this.boardingStage=null;this.dumpMission=null;this.busRequest=null;this.serviceRequest=null;this.iceMission=false;
+    this.boardingStage=null;this.dumpMission=null;this.busRequest=null;this.serviceRequest=null;this.iceMission=false;this.fishingMission=false;
     if(this.truckPhase==='waiting')this.returnTruck();
     return true;
+  }
+  moveNear(target){
+    if(!Number.isFinite(target.x)||!Number.isFinite(target.z))return false;
+    if(this.target&&Math.hypot(target.x-this.target.x,target.z-this.target.z)<.45&&!this.boarding)return true;
+    if(this.moveTo(target))return true;
+    const candidates=[];
+    for(const r of [.6,1.2,1.8,2.4,3.2])for(let i=0;i<12;i++){
+      const a=i*Math.PI/6,p={x:target.x+Math.cos(a)*r,z:target.z+Math.sin(a)*r};
+      if(walkable(p.x,p.z,this.options))candidates.push({...p,score:r+Math.hypot(p.x-this.actor.x,p.z-this.actor.z)*.04});
+    }
+    candidates.sort((a,b)=>a.score-b.score);
+    for(const p of candidates.slice(0,6))if(this.moveTo({x:p.x,z:p.z}))return true;
+    return false;
+  }
+  get activityLocked(){return ['eating','fishing','fish-celebrate','pulling-over'].includes(this.mode)}
+  startFishing(){
+    if(this.riding||this.activityLocked)return false;
+    if(this.fishingMission)return true;
+    if(!this.routeTo({x:12,z:-11.1}))return false;
+    this.boardingStage=null;this.boarding=false;this.busRequest=null;this.serviceRequest=null;this.iceMission=false;this.fishingMission=true;
+    if(this.truckPhase==='waiting')this.returnTruck();this.changed('fish-walk');return true;
   }
   boardingSpots(){
     const c=Math.cos(this.truck.angle),s=Math.sin(this.truck.angle),spots=[];
@@ -69,9 +91,9 @@ export class FireGame {
     return spots;
   }
   boardTruck(){
-    if(this.riding||this.mode==='eating')return false;
+    if(this.riding||this.activityLocked)return false;
     if(!this.routeTo(WAITING,{boarding:true}))return false;
-    this.boardingStage='waiting';this.busRequest=null;this.serviceRequest=null;this.iceMission=false;
+    this.boardingStage='waiting';this.busRequest=null;this.serviceRequest=null;this.iceMission=false;this.fishingMission=false;
     if(this.truckPhase==='parked')this.phase('opening');
     return true;
   }
@@ -109,7 +131,7 @@ export class FireGame {
     if(this.truckMoving&&!this.drivingFire){
       // Pause an unattended truck if a pedestrian is immediately in its path.
       const next={...this.truck},path=this.truckPath.map(p=>({...p}));
-      travel(next,path,dt*3.1,dt,this.truckPhase==='entering');
+      travel(next,path,dt*3.1*MOVEMENT_SPEED,dt,this.truckPhase==='entering');
       if(this.riding||!truckContains(this.child.x,this.child.z,next,.38)){
         Object.assign(this.truck,next);this.truckPath=path;
       }
@@ -134,22 +156,24 @@ export class FireGame {
         const route=findPath(this.child,this.target,this.options);if(route)this.path=route;else return;
       }
       if(!this.riding){
-        const next={...this.child},path=this.path.map(p=>({...p}));travel(next,path,dt*2.65,dt);
+        const next={...this.child},path=this.path.map(p=>({...p}));travel(next,path,dt*2.65*MOVEMENT_SPEED,dt);
         if(!walkable(next.x,next.z,this.options)){
           const route=findPath(this.child,this.target,this.options);if(route)this.path=route;return;
         }
         Object.assign(this.child,next);this.path=path;
-      }else travel(this.actor,this.path,dt*(this.drivingBus?4.6:this.drivingDump?4.8:3.5),dt);
+      }else travel(this.actor,this.path,dt*(this.drivingBus?4.6:this.drivingDump?4.8:3.5)*MOVEMENT_SPEED,dt);
       if(!this.path.length){
         if(this.boarding&&this.boardingStage==='door'&&this.truckPhase==='waiting'){
           this.riding=true;this.vehicle='firetruck';this.boarding=false;this.boardingStage=null;this.mode='idle';this.target=null;this.truckPhase='occupied';
-          const firstFire=!this.complete&&!this.fireActive;
-          if(firstFire)this.fireActive=true;
+          const firstFire=!this.fireActive;
+          if(firstFire){this.fireActive=true;this.complete=false;this.hp=100}
           this.changed(firstFire?'fire-start':'board');
          }else if(this.boardingStage==='service-door'&&this.services[this.serviceRequest]?.phase==='waiting'){
           this.riding=true;this.vehicle=this.serviceRequest;this.services[this.vehicle].phase='occupied';this.serviceRequest=null;this.boarding=false;this.boardingStage=null;this.mode='idle';this.target=null;this.changed('service-board');
         }else if(this.boardingStage==='bus-door'&&this.busRequest!==null){
           const bus=this.buses[this.busRequest];this.riding=true;this.vehicle=bus.id;bus.phase='occupied';this.busRequest=null;this.boarding=false;this.boardingStage=null;this.mode='idle';this.target=null;this.changed('bus-board');
+        }else if(this.fishingMission){
+          this.fishingMission=false;this.fishTime=0;this.mode='fishing';this.target=null;this.child.angle=0;this.changed('fishing');
         }else if(this.iceMission){
           this.iceMission=false;this.eatTime=0;this.mode='eating';this.target=null;this.child.angle=Math.PI/4;this.changed('ice-eat');
         }else if(this.boardingStage==='dump-door'){
@@ -167,13 +191,18 @@ export class FireGame {
       this.truck.angle+=delta*Math.min(1,dt*5);this.hp=Math.max(0,this.hp-dt*14);
       if(this.hp===0){this.complete=true;this.fireActive=false;this.fireMission=false;this.mode='idle';this.changed('win')}
     }
+    if(this.mode==='fishing'||this.mode==='fish-celebrate'){
+      this.fishTime+=dt;
+      if(this.mode==='fishing'&&this.fishTime>=3.5){this.mode='fish-celebrate';this.fishTime=0;this.fishCaught++;this.child.angle=Math.PI/4;this.changed('fish-caught')}
+      else if(this.mode==='fish-celebrate'&&this.fishTime>=3){this.mode='idle';this.changed('fish-done')}
+    }
   }
   boardDump(){
-    if(this.riding||this.mode==='eating'||this.dumpPhase==='returning')return false;
+    if(this.riding||this.activityLocked||this.dumpPhase==='returning')return false;
     const spots=[];
     for(const dx of [-1.65,1.65,-2.5,2.5])spots.push({x:this.dump.x+dx*Math.cos(this.dump.angle)+1.15*Math.sin(this.dump.angle),z:this.dump.z-dx*Math.sin(this.dump.angle)+1.15*Math.cos(this.dump.angle)});
     spots.sort((a,b)=>Math.hypot(a.x-this.child.x,a.z-this.child.z)-Math.hypot(b.x-this.child.x,b.z-this.child.z));
-    for(const p of spots)if(this.routeTo(p,{boarding:true})){this.boardingStage='dump-door';this.busRequest=null;this.dumpMission=null;this.serviceRequest=null;this.iceMission=false;if(this.truckPhase==='waiting')this.returnTruck();this.changed('dump-walk');return true}
+    for(const p of spots)if(this.routeTo(p,{boarding:true})){this.boardingStage='dump-door';this.busRequest=null;this.dumpMission=null;this.serviceRequest=null;this.iceMission=false;this.fishingMission=false;if(this.truckPhase==='waiting')this.returnTruck();this.changed('dump-walk');return true}
     return false;
   }
   loadDump(){
@@ -200,7 +229,7 @@ export class FireGame {
   }
   updateDump(dt){
     if(this.dumpPhase==='returning'){
-      const next={...this.dump},path=this.dumpPath.map(p=>({...p}));travel(next,path,dt*4.5,dt);
+      const next={...this.dump},path=this.dumpPath.map(p=>({...p}));travel(next,path,dt*4.5*MOVEMENT_SPEED,dt);
       if(this.riding||!truckContains(this.child.x,this.child.z,next,.38)){Object.assign(this.dump,next);this.dumpPath=path}
       if(!this.dumpPath.length){this.dump.angle=0;this.dumpPhase='parked';this.changed('dump-parked')}
     }
@@ -215,7 +244,7 @@ export class FireGame {
       if(this.workTime>=4.5){this.mode='idle';this.dumpMission=null;this.workTime=0;this.changed('delivered')}
     }
   }
-  snapshot(){return {buses:structuredClone(this.buses),busRequest:this.busRequest,services:structuredClone(this.services),serviceRequest:this.serviceRequest,eatTime:this.eatTime,iceCreams:this.iceCreams,vehicle:this.vehicle,dump:{...this.dump},dumpPhase:this.dumpPhase,cargo:this.cargo,delivered:this.delivered,workTime:this.workTime,dumpMission:this.dumpMission,mode:this.mode,riding:this.riding,boarding:this.boarding,truckPhase:this.truckPhase,doorOpen:this.door,fireActive:this.fireActive,fireRemaining:this.fireActive?Math.round(this.hp):0,complete:this.complete,child:{...this.child},truck:{...this.truck}}}
+  snapshot(){return {fishingMission:this.fishingMission,fishTime:this.fishTime,fishCaught:this.fishCaught,buses:structuredClone(this.buses),busRequest:this.busRequest,services:structuredClone(this.services),serviceRequest:this.serviceRequest,eatTime:this.eatTime,iceCreams:this.iceCreams,vehicle:this.vehicle,dump:{...this.dump},dumpPhase:this.dumpPhase,cargo:this.cargo,delivered:this.delivered,workTime:this.workTime,dumpMission:this.dumpMission,mode:this.mode,riding:this.riding,boarding:this.boarding,truckPhase:this.truckPhase,doorOpen:this.door,fireActive:this.fireActive,fireRemaining:this.fireActive?Math.round(this.hp):0,complete:this.complete,child:{...this.child},truck:{...this.truck}}}
 }
 
 Object.assign(FireGame.prototype,serviceActions,busActions);

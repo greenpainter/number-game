@@ -17,7 +17,7 @@ test('open shutter, drive outside, board, extinguish, dismount and park inside',
   assert(g.dispatch());advance(g,()=>g.complete);assert.equal(g.fireActive,false);assert(g.exitTruck());const child={...g.child};
   advance(g,()=>g.truckPhase==='parked');assert.deepEqual(g.child,child);assert.equal(g.door,0);
   assert.deepEqual({x:g.truck.x,z:g.truck.z},GARAGE);
-  board(g);assert(g.complete);g.reset();assert.deepEqual({x:g.child.x,z:g.child.z},CHILD_START);
+  board(g);assert(!g.complete);assert(g.fireActive);assert.equal(g.hp,100);assert(g.dispatch());advance(g,()=>g.complete);g.reset();assert.deepEqual({x:g.child.x,z:g.child.z},CHILD_START);
 });
 test('dismount interrupts water, return finishes and a new summon completes the fire',()=>{
   const g=new FireGame();board(g);g.dispatch();advance(g,()=>g.mode==='extinguishing');

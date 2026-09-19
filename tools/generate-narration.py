@@ -13,6 +13,8 @@ manifest = json.loads((folder / 'manifest.json').read_text(encoding='utf-8'))
 tts = TTS(model_dir=Path(sys.argv[1]), auto_download=False, intra_op_num_threads=4)
 style = tts.get_voice_style(manifest['voice'])
 for i, clip in enumerate(manifest['clips']):
+    if '--missing-only' in sys.argv and (folder / clip['file']).exists() and clip.get('sha256'):
+        continue
     np.random.seed(manifest['seed'] + i)
     wav, duration = tts.synthesize(clip['text'], voice_style=style, lang=manifest['language'], total_steps=manifest['steps'], speed=manifest['speed'])
     with tempfile.TemporaryDirectory(prefix='village-voice-') as temp:

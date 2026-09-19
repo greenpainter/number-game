@@ -18,6 +18,16 @@ test('a bus returns independently while the child boards a different color',()=>
   const g=new FireGame();g.boardBus(0);advance(g,()=>g.riding);g.moveTo({x:-28,z:14});advance(g,()=>g.mode==='idle');assert(g.exitTruck());assert(g.boardBus(2));advance(g,()=>g.vehicle==='bus-2'&&g.buses[0].phase==='parked');
   assert(!g.getIceCream());assert(!g.dispatch());assert(!g.boardService('police'));
 });
+
+test('crowded bus exit moves a short distance once, lets the child off, then returns',()=>{
+  const g=new FireGame();g.riding=true;g.vehicle='bus-0';const b=g.drivingBus;
+  Object.assign(b.car,{x:-30.5,z:-16,angle:0});b.phase='occupied';
+  Object.assign(g.buses[1].car,{x:-34.5,z:-16,angle:0});Object.assign(g.buses[2].car,{x:-26.5,z:-16,angle:0});Object.assign(g.dump,{x:-30.5,z:-20.5,halfWidth:2.5,halfLength:1.1});
+  assert(g.exitTruck());assert.equal(g.mode,'pulling-over');assert(g.riding);assert(Math.hypot(g.target.x+30.5,g.target.z+16)<2);
+  const target={...g.target};assert(g.exitTruck());assert.deepEqual(g.target,target);assert(!g.moveTo({x:0,z:0}));
+  advance(g,()=>!g.riding);assert(walkable(g.child.x,g.child.z,g.options));const child={...g.child};
+  advance(g,()=>b.phase==='parked');assert.deepEqual(g.child,child);
+});
 test('rectangular ground is 1.5 times the previous island union, and full ring is traversable',()=>{
   const report=JSON.parse(readFileSync(new URL('../models/world-layout.json',import.meta.url)));
   assert.deepEqual(report.bounds,{minX:WORLD.minX,maxX:WORLD.maxX,minZ:WORLD.minZ,maxZ:WORLD.maxZ});assert(Math.abs(report.area/report.previousArea-1.5)<.0001);

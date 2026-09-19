@@ -51,5 +51,8 @@ export const NARRATION_CLIPS = Object.freeze({
   "파란색 버스를 타러 가요!": "./audio/ko/3c6acd39e361.mp3",
   "파란색 버스에 탔어요! 마을을 한 바퀴 돌아볼까요?": "./audio/ko/e0914ece7550.mp3",
   "초록색 버스를 타러 가요!": "./audio/ko/a20e1abe6596.mp3",
-  "초록색 버스에 탔어요! 마을을 한 바퀴 돌아볼까요?": "./audio/ko/bc9e72e5317c.mp3"
+  "초록색 버스에 탔어요! 마을을 한 바퀴 돌아볼까요?": "./audio/ko/bc9e72e5317c.mp3",
+  "연못으로 낚시하러 가요!": "./audio/ko/56a34e2e5006.mp3",
+  "물고기야, 이리 와! 조금만 기다려 볼까요?": "./audio/ko/ad019ca6ddb6.mp3",
+  "우와! 물고기를 잡았어요!": "./audio/ko/c22104f54655.mp3"
 });
