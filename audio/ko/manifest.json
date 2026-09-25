@@ -5,7 +5,7 @@
   "voice": "F1",
   "language": "ko",
   "steps": 12,
-  "speed": 1.0,
+  "speed": 1,
   "seed": 42,
   "clips": [
     {
@@ -337,6 +337,42 @@
       "file": "c22104f54655.mp3",
       "durationSeconds": 2.983,
       "sha256": "5ab9357f8b119770ef7d1149a714975b33560f925d3c35ceabebb06fb5d15180"
+    },
+    {
+      "text": "승강장으로 기차를 타러 가요.",
+      "file": "1a31439995af.mp3",
+      "durationSeconds": 2.623,
+      "sha256": "97dd84c0ef0a37ea89730329b20f00d9ca139c24e2776fea0317aef139016650"
+    },
+    {
+      "text": "칙칙폭폭! 기차를 타고 마을을 한 바퀴 돌아요.",
+      "file": "9164d2880f20.mp3",
+      "durationSeconds": 5.106,
+      "sha256": "9248d6f6c86bbed22dbd2ce66e7e086a72476d2bbf9b671f28c234a0b5137260"
+    },
+    {
+      "text": "다음 승강장에서 내려요. 조금만 기다려 주세요.",
+      "file": "c5a244729876.mp3",
+      "durationSeconds": 4.59,
+      "sha256": "af394a014bb1d7130d03e10d40c711595da167284bdf9a30a76ae336023cda53"
+    },
+    {
+      "text": "승강장에 도착했어요. 기차 여행 재미있었죠?",
+      "file": "f4e3f0374c49.mp3",
+      "durationSeconds": 4.142,
+      "sha256": "62b0daef4c1c9397945b79e58139d4e1962f679d697d268320f326e01db81b29"
+    },
+    {
+      "text": "강아지가 친구가 되었어요. 같이 산책해요!",
+      "file": "bd338cee5697.mp3",
+      "durationSeconds": 4.152,
+      "sha256": "2f16203b18da0866e1791fba32573136a708e44c05292cd7e93fa77c8432aee8"
+    },
+    {
+      "text": "고양이가 친구가 되었어요. 같이 산책해요!",
+      "file": "487432e522ee.mp3",
+      "durationSeconds": 4.115,
+      "sha256": "712130bca6becfcbaf1eec6f6db3284539c0ff616d7d7658cd911608ad5b7cbc"
     }
   ]
 }

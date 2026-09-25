@@ -1,41 +1,18 @@
 {
-  "roadWidthMultiplier": 1.5,
-  "previousFootprints": [
-    [
-      -16.5,
-      16.5,
-      -13,
-      13
-    ],
-    [
-      -38,
-      -16,
-      -17,
-      17
-    ],
-    [
-      16,
-      38,
-      -17,
-      17
-    ],
-    [
-      -17,
-      17,
-      -30,
-      -12
-    ]
-  ],
-  "previousArea": 2898.0,
-  "width": 76,
-  "depth": 57.2,
-  "area": 4347.2,
-  "ratio": 1.5000690131124914,
+  "minX": -76,
+  "maxX": 76,
+  "minZ": -59.6,
+  "maxZ": 54.8,
+  "previousArea": 4347.2,
+  "area": 17388.8,
+  "width": 152,
+  "depth": 114.4,
+  "ratio": 4,
   "bounds": {
-    "minX": -38,
-    "maxX": 38,
-    "minZ": -31,
-    "maxZ": 26.2
+    "minX": -76,
+    "maxX": 76,
+    "minZ": -59.6,
+    "maxZ": 54.8
   },
   "reimport": "passed"
 }

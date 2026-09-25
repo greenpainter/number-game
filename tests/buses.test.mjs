@@ -28,10 +28,12 @@ test('crowded bus exit moves a short distance once, lets the child off, then ret
   advance(g,()=>!g.riding);assert(walkable(g.child.x,g.child.z,g.options));const child={...g.child};
   advance(g,()=>b.phase==='parked');assert.deepEqual(g.child,child);
 });
-test('rectangular ground is 1.5 times the previous island union, and full ring is traversable',()=>{
+test('expanded ground has four times the previous area, and both road rings are traversable',()=>{
   const report=JSON.parse(readFileSync(new URL('../models/world-layout.json',import.meta.url)));
-  assert.deepEqual(report.bounds,{minX:WORLD.minX,maxX:WORLD.maxX,minZ:WORLD.minZ,maxZ:WORLD.maxZ});assert(Math.abs(report.area/report.previousArea-1.5)<.0001);
+  assert.deepEqual(report.bounds,{minX:WORLD.minX,maxX:WORLD.maxX,minZ:WORLD.minZ,maxZ:WORLD.maxZ});assert(Math.abs(report.area/report.previousArea-4)<.0001);
   for(let x=-34.5;x<=34.5;x+=.5)for(const z of [-16.5,1,20])assert(walkable(x,z,{radius:.32}),`Road blocked at ${x},${z}`);
   for(let z=-16.5;z<=20;z+=.5)for(const x of [-34.5,34.5])assert(walkable(x,z,{radius:2.7}),`Bus ring blocked at ${x},${z}`);
-  assert(walkable(-35,-27,{radius:.32}));assert(walkable(35,23,{radius:.32}));assert(!walkable(39,0));assert(!walkable(0,27));
+  for(let x=-48;x<=48;x+=.5)for(const z of [-34,31])assert(walkable(x,z,{radius:2.7}),`New bus road blocked at ${x},${z}`);
+  for(let z=-34;z<=31;z+=.5)for(const x of [-48,48])assert(walkable(x,z,{radius:2.7}),`New bus road blocked at ${x},${z}`);
+  assert(walkable(-35,-27,{radius:.32}));assert(walkable(35,23,{radius:.32}));assert(walkable(39,0));assert(walkable(0,27));assert(!walkable(77,0));assert(!walkable(0,56));
 });

@@ -8,6 +8,7 @@ import {soundMix} from './sound.js';
 import {KoreanNarrator} from './narration.js';
 import {PlayInput,iceCreamZoom} from './play-input.js';
 import {createFishing} from './fishing.js';
+import {createRailway,groundHeight} from './railway.js';
 const narrator=new KoreanNarrator();
 
 const $=id=>document.getElementById(id);
@@ -22,7 +23,7 @@ let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
 const flameParts=[], smokeParts=[];
-let pendingPress=null,fishing;
+let pendingPress=null,fishing,railway;
 const tapFeedback=document.createElement('div');tapFeedback.id='tap-feedback';tapFeedback.setAttribute('aria-hidden','true');document.body.append(tapFeedback);
 
 function toast(message){narrator.say(message)}
@@ -30,7 +31,7 @@ function updateUI(){
   document.body.classList.toggle('complete',state.complete);
   const returning=['returning','openingReturn','entering','closing'].includes(state.truckPhase);
   $('badge-text').textContent=state.mode==='extinguishing'?'불을 끄고 있어요':state.boarding?(state.boardingStage==='dump-door'?'덤프트럭에 타러 가요':'소방차를 기다려요'):state.riding?'소방차 탑승 중':returning?'소방차가 복귀 중':'걸어서 탐험 중';
-  $('exit').hidden=!state.riding;$('exit').setAttribute('aria-label',state.drivingDump?'덤프트럭에서 내리기':'소방차에서 내리기');
+  $('exit').hidden=!state.riding||state.drivingTrain;$('exit').setAttribute('aria-label',state.drivingDump?'덤프트럭에서 내리기':'소방차에서 내리기');
   if(state.drivingDump)$('badge-text').textContent=state.mode==='loading'?'흙을 싣고 있어요':state.mode==='unloading'?'흙을 내리고 있어요':state.cargo?'흙을 실은 덤프트럭':'덤프트럭 탑승 중';
   else if(!state.riding&&state.dumpPhase==='returning')$('badge-text').textContent='덤프트럭이 주차장으로 돌아가요';
   if(state.services[state.vehicle]){$('badge-text').textContent=state.vehicle==='police'?'경찰차로 순찰 중':'앰뷸런스 탑승 중';$('exit').setAttribute('aria-label',SERVICES[state.vehicle].name+'에서 내리기')}
@@ -41,6 +42,9 @@ function updateUI(){
   if(state.busRequest!==null)$('badge-text').textContent=state.buses[state.busRequest].name+'에 타러 가요';
   if(state.serviceRequest)$('badge-text').textContent=SERVICES[state.serviceRequest].name+'를 기다려요';
   if(state.iceMission||state.mode==='eating')$('badge-text').textContent=state.mode==='eating'?'냠냠! 맛있는 아이스크림':'아이스크림 받으러 가요';
+  if(state.boardingStage==='train-door')$('badge-text').textContent='기차 승강장으로 걸어가요';
+  if(state.drivingTrain)$('badge-text').textContent='기차 여행 중 · 도착하면 내려요';
+  $('exit').querySelector('span').textContent='내리기';
 }
 function serviceAction(id){if(!state.ready)return;if(!state.boardService(id))toast(state.riding?'먼저 타고 있는 차에서 내려 주세요.':'잠깐 기다렸다가 다시 눌러 주세요.')}
 function iceAction(){if(!state.ready)return;if(!state.getIceCream())toast(state.riding?'차에서 내려서 아이스크림을 받으러 가요.':'냠냠! 아이스크림을 먹고 있어요.')}
@@ -61,7 +65,13 @@ function exitTruck(){if(!state.ready)return false;if(!state.exitTruck()){toast('
 function stationAction(){if(!state.ready)return;if(state.riding&&!state.drivingFire){toast('먼저 타고 있는 차에서 내려 주세요.');return}if(state.riding)state.goHome();else boardTruck()}
 function dispatch(){if(!state.ready)return false;if(!state.riding)return boardTruck();return state.dispatch()}
 function fireAction(){if(!state.ready||state.complete)return;if(!state.drivingFire){toast('먼저 소방서 건물을 눌러 소방차를 타요!');return}state.dispatch()}
-function reset(){state.reset()}
+function reset(){
+  if(!state.ready)return;
+  pendingPress=null;playInput.cancel();narrator.stop();
+  if($('help-dialog').open)$('help-dialog').close();
+  state.reset();camera.zoom=1;followCamera(0,true);
+  expansion.update(state,0,0);services.update(state,0);fishing.update(state,0);railway.update(state,0,camera);updateSound();
+}
 function busAction(index){if(!state.ready)return;if(!state.boardBus(index))toast(state.riding?'먼저 차에서 내려 주세요.':'버스가 주차장에 돌아오면 탈 수 있어요.')}
 function dumpAction(){if(!state.ready)return;if(!state.boardDump())toast(state.riding?'먼저 타고 있는 차에서 내려 주세요.':'덤프트럭이 주차장에 돌아오면 다시 탈 수 있어요.')}
 function excavatorAction(){if(!state.ready)return;if(!state.drivingDump){toast('주차장에서 덤프트럭을 타고 와 주세요.');return}if(!state.loadDump())toast(state.cargo>=3?'흙이 가득해요. 초록색 테두리의 하역장에 내려 주세요.':'흙을 옮기는 중이에요. 잠깐 기다려 주세요.')}
@@ -96,6 +106,8 @@ function onStateChange(reason){
   if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
   if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
   if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
+  const newMessages={'train-walk':'승강장으로 기차를 타러 가요.','train-board':'칙칙폭폭! 기차를 타고 마을을 한 바퀴 돌아요.','train-exit':'승강장에 도착했어요. 기차 여행 재미있었죠?','dog-follow':'강아지가 친구가 되었어요. 같이 산책해요!','cat-follow':'고양이가 친구가 되었어요. 같이 산책해요!'};
+  if(newMessages[reason])toast(newMessages[reason]);
   if(reason==='win'){flames.visible=false;water.visible=false;wood.traverse(o=>{if(o.isMesh)o.material.color.multiplyScalar(.5)});chime();toast('고마워요! 마을이 다시 안전해졌어요.');}
   updateUI();
 }
@@ -136,9 +148,10 @@ function syncActors(time=0,paused=false){
   child.visible=!state.riding;childRing.visible=!state.riding;
   const walking=!state.riding&&state.mode==='moving'&&!paused;
   const swing=walking?Math.sin(time*10)*.62:0;
-  child.position.set(state.child.x,.13+(walking?Math.abs(Math.sin(time*10))*.045:0),state.child.z);child.rotation.y=state.child.angle;
+  const height=groundHeight(state.child.x,state.child.z);
+  child.position.set(state.child.x,height+(walking?Math.abs(Math.sin(time*10))*.045:0),state.child.z);child.rotation.y=state.child.angle;
   for(const [name,sign] of [['Arm_L',-1],['Arm_R',1],['Leg_L',1],['Leg_R',-1]])if(limbs[name])limbs[name].rotation.x=swing*sign;
-  childRing.position.set(state.child.x,.16,state.child.z);
+  childRing.position.set(state.child.x,height+.03,state.child.z);
   garageDoor.scale.y=Math.max(.025,1-state.door);
 }
 function tick(now){
@@ -147,7 +160,7 @@ function tick(now){
   const paused=$('help-dialog').open;
   if(pendingPress){const action=pendingPress;pendingPress=null;if(!paused)action()}
   if(!paused)state.update(dt);
-  syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);followCamera(dt);
+  syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);followCamera(dt);railway.update(state,time,camera);
   flames.visible=state.fireActive;
   water.visible=state.riding&&state.mode==='extinguishing';
   const strength=.12+.88*(state.hp/100);
@@ -169,9 +182,11 @@ function pickPress({x,y,type}){
   if(!state.ready||$('help-dialog').open||['eating','fishing','fish-celebrate','pulling-over','loading','unloading'].includes(state.mode))return;
   const bounds=canvas.getBoundingClientRect();
   const cast=(px,py)=>raycaster.setFromCamera(new THREE.Vector2((px-bounds.left)/bounds.width*2-1,-(py-bounds.top)/bounds.height*2+1),camera);
-  const roots=[fishing.dock,rectGround,village,truck,wood,services.ground,services.van,...Object.values(services.entries).flatMap(v=>[v.building,v.car]),expansion.ground,expansion.dump,expansion.excavator,expansion.pile,...expansion.buses,...(state.fireActive?flameParts:[])];
+  const roots=[railway.platform,...railway.cars,...railway.animals.map(p=>p.root),fishing.dock,rectGround,village,truck,wood,services.ground,services.van,...Object.values(services.entries).flatMap(v=>[v.building,v.car]),expansion.ground,expansion.dump,expansion.excavator,expansion.pile,...expansion.buses,...(state.fireActive?flameParts:[])];
   const actionFor=object=>{
     const belongs=root=>{for(let o=object;o;o=o.parent)if(o===root)return true;return false};
+    if(belongs(railway.platform)||railway.cars.some(belongs))return ()=>{if(!state.boardTrain()&&state.riding)toast('먼저 타고 있는 차에서 내려 주세요.')};
+    const pet=railway.animals.find(p=>belongs(p.root));if(pet)return ()=>state.followPet(pet.id);
     if(belongs(fishing.dock)||object.material?.name==='water')return ()=>state.startFishing();
     for(const [id,v] of Object.entries(services.entries))if(belongs(v.building)||belongs(v.car))return ()=>{if(state.vehicle!==id&&state.serviceRequest!==id)serviceAction(id)};
     if(belongs(services.van))return ()=>{if(!state.iceMission)iceAction()};
@@ -232,11 +247,13 @@ async function init(){
     expansion=await createExpansion(loader,scene,prepareModel);
     services=await createServices(loader,scene,prepareModel,child,limbs);
     fishing=createFishing(scene,child,limbs);
-    rectGround=prepareModel((await loader.loadAsync('./models/rect-ground.glb')).scene);scene.add(rectGround);
+    rectGround=prepareModel((await loader.loadAsync('./models/expanded-ground.glb')).scene);scene.add(rectGround);
+    railway=await createRailway(loader,scene,prepareModel);railway.update(state,0,camera);
     addEffects();resize();syncActors();state.ready=true;$('loading').hidden=true;updateUI();registerGameTools();lastTime=performance.now();requestAnimationFrame(tick);
   }catch(error){console.error(error);$('loading').innerHTML='<div class="error-message"><strong>마을을 불러오지 못했어요.</strong><br>인터넷 연결과 Safari 업데이트를 확인하고 다시 열어 주세요.<button class="primary-button" id="retry">다시 열기</button></div>';$('retry').onclick=()=>location.reload()}
 }
 $('exit').addEventListener('click',exitTruck);
+$('home').addEventListener('click',reset);
 $('help').addEventListener('click',()=>$('help-dialog').showModal());
 for(const id of ['close-help','start-playing'])$(id).addEventListener('click',()=>$('help-dialog').close());
 $('sound').addEventListener('click',()=>{
@@ -258,12 +275,14 @@ window.addEventListener('blur',()=>{playInput.cancel();pendingPress=null});
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();state.ready=false;updateSound(true);$('loading').hidden=false;$('loading').innerHTML='<div class="error-message">화면이 잠시 쉬고 있어요.<button class="primary-button" id="reload-game">게임 다시 열기</button></div>';$('reload-game').onclick=()=>location.reload()});
 window.addEventListener('resize',resize);document.addEventListener('visibilitychange',()=>{lastTime=performance.now();if(document.hidden){narrator.stop();playInput.cancel();pendingPress=null}updateSound()});
 
-function gameSnapshot(){return {ready:state.ready,...state.snapshot(),narration:narrator.snapshot(),cameraZoom:camera.zoom,cameraTarget:{x:cameraTarget.x,y:cameraTarget.y,z:cameraTarget.z}}}
+function gameSnapshot(){return {ready:state.ready,...state.snapshot(),world:WORLD,train:structuredClone(state.train),pets:state.pets.map(({path,...pet})=>pet),narration:narrator.snapshot(),cameraZoom:camera.zoom,cameraTarget:{x:cameraTarget.x,y:cameraTarget.y,z:cameraTarget.z}}}
 function registerGameTools(){
   const context=document.modelContext;if(!context?.registerTool)return;
   const lifecycle=new AbortController();
   const empty={type:'object',properties:{},additionalProperties:false};
   const tools=[
+    {name:'board_train',description:'Walk to the north platform and ride one lap in one direction. Automatically dismount when the train returns to the platform.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardTrain())throw new Error('Dismount or finish playing first.');return gameSnapshot()}},
+    {name:'follow_pet',description:'Befriend a dog or cat in the village. It follows the child on foot and waits while the child rides.',inputSchema:{type:'object',properties:{id:{type:'string',enum:['dog','cat']}},required:['id'],additionalProperties:false},execute:({id})=>{if(!state.ready||!state.followPet(id))throw new Error('Dismount first.');return gameSnapshot()}},
     {name:'get_fire_game_state',description:'Read the current fire, mission, and firetruck position.',inputSchema:empty,annotations:{readOnlyHint:true,untrustedContentHint:false},execute:()=>gameSnapshot()},
     {name:'start_fire_response',description:'Start driving to the fire. The child must already be riding the truck. Returns when dispatch starts.',inputSchema:empty,execute:()=>{if(!state.ready||state.complete||!state.riding)throw new Error('Board the truck before responding to an active fire.');if(!state.dispatch())throw new Error('Cannot reach fire.');return gameSnapshot()}},
     {name:'move_player',description:'Move the child on foot, or drive the truck when riding. Cancels a pending boarding or fire response.',inputSchema:{type:'object',properties:{x:{type:'number',minimum:WORLD.minX,maximum:WORLD.maxX},z:{type:'number',minimum:WORLD.minZ,maximum:WORLD.maxZ}},required:['x','z'],additionalProperties:false},execute:input=>{if(!input||!Number.isFinite(input.x)||!Number.isFinite(input.z)||!moveTo(input))throw new Error('Choose a reachable clear point in the village.');return gameSnapshot()}},
