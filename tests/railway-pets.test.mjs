@@ -1,16 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FireGame} from '../game-state.js';
-import {trackPoint,TRACK_LENGTH} from '../railway-state.js';
+import {trackPoint,TRACK_LENGTH,stationDistance} from '../railway-state.js';
 import layout from '../railway-layout.js';
 import {walkable,findPath,WORLD} from '../navigation.js';
 function advance(g,until,limit=18000){for(let i=0;i<limit&&!until();i++)g.update(1/60);assert(until(),JSON.stringify(g.snapshot()))}
 
-test('north platform automatically dismounts after one lap and supports repeated rides',()=>{
+test('four stations stop in order, automatically dismount, and support repeated rides',()=>{
   const g=new FireGame();assert(layout.boarding.z<-40);assert(Math.abs(g.train.car.z-layout.rail.top)<.001);
-  for(let lap=1;lap<=3;lap++){
-    assert(g.boardTrain());assert.equal(g.boardingStage,'train-door');advance(g,()=>g.drivingTrain);
-    const stop=lap*TRACK_LENGTH;assert(Math.abs(g.train.stopAt-stop)<.0001);let previous=g.train.distance;
+  for(let ride=0;ride<8;ride++){
+    const departure=layout.stops[ride%4],arrival=layout.stops[(ride+1)%4];
+    assert(g.boardTrain(departure.id));assert.equal(g.boardingStage,'train-door');advance(g,()=>g.drivingTrain);
+    const stop=stationDistance(arrival)+Math.floor((ride+1)/4)*TRACK_LENGTH;assert(Math.abs(g.train.stopAt-stop)<.0001);let previous=g.train.distance;
     for(let i=0;i<5000&&g.riding;i++){
       g.update(1/60);assert(g.train.distance>=previous);previous=g.train.distance;
       assert.deepEqual(g.train.car,trackPoint(g.train.distance));
@@ -18,8 +19,25 @@ test('north platform automatically dismounts after one lap and supports repeated
       if(g.riding&&i%100===0){assert(g.moveNear({x:0,z:0}));assert(g.boardTrain());assert.equal(g.train.stopAt,stop);assert.equal(g.path.length,0)}
     }
     assert(!g.riding,'Every ride must end without a dismount request');assert.equal(g.train.speed,0);assert.equal(g.train.phase,'parked');
-    assert.deepEqual({x:g.child.x,z:g.child.z},layout.exit);assert(walkable(g.child.x,g.child.z,{radius:.32}));
-    assert(g.moveTo({x:6.5,z:-34}));advance(g,()=>g.mode==='idle');
+    assert.equal(g.train.stationId,arrival.id);
+    assert.deepEqual({x:g.child.x,z:g.child.z},arrival.exit);assert(walkable(g.child.x,g.child.z,{radius:.32}));
+  }
+});
+test('each remote station summons an empty train; waiting, cancellation and reset are safe',()=>{
+  for(const stop of layout.stops.slice(1)){
+    const g=new FireGame();g.child={...stop.boarding,angle:0};
+    assert(g.boardTrain(stop.id));assert.equal(g.train.phase,'fetching');g.update(1/60);assert.equal(g.mode,'train-waiting');
+    const target=g.train.stopAt;assert(g.boardTrain(stop.id));assert.equal(g.train.stopAt,target);
+    advance(g,()=>g.drivingTrain);assert.equal(g.train.distance,stationDistance(stop));advance(g,()=>!g.riding);
+    g.reset();assert(g.boardTrain(stop.id));assert(g.moveTo({x:-7,z:12}));advance(g,()=>g.train.phase==='parked'&&g.mode==='idle');assert(!g.riding);assert.equal(g.boardingStage,null);
+    assert(g.boardTrain('north'));g.update(.1);g.reset();assert.deepEqual(g.snapshot(),new FireGame().snapshot());
+  }
+});
+test('every station boarding point and exit is reachable from town',()=>{
+  for(const stop of layout.stops){
+    assert(walkable(stop.boarding.x,stop.boarding.z,{radius:.32}));
+    const g=new FireGame();assert(g.boardTrain(stop.id));advance(g,()=>g.drivingTrain);
+    assert(walkable(stop.exit.x,stop.exit.z,{radius:.32}));
   }
 });
 test('walking away or choosing another activity cancels pending train boarding',()=>{
@@ -46,7 +64,7 @@ test('pets follow around solid buildings, repeated taps keep following, and wait
   g.reset();assert(g.pets.every(p=>!p.following));
 });
 test('expanded map routes reach all four outer avenues without obstacles',()=>{
-  assert.equal(WORLD.area/WORLD.previousArea,4);
+  assert(WORLD.area/WORLD.previousArea>4);assert.equal(WORLD.area,(WORLD.maxX-WORLD.minX)*(WORLD.maxZ-WORLD.minZ));
   const points=[{x:-48,z:31},{x:-48,z:-34},{x:48,z:-34},{x:48,z:31}];
   let p={x:-7,z:20};for(const target of points){const route=findPath(p,target,{radius:2.7});assert(route);for(const q of route)assert(walkable(q.x,q.z,{radius:2.7}));p=target}
 });

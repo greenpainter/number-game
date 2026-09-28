@@ -34,8 +34,8 @@ export async function createExpansion(loader,scene,prepare){
     return shoulder+elbow;
   }
   function update(state,time,dt){
-    buses.forEach((bus,i)=>{const car=state.buses[i].car;bus.position.set(car.x,.13,car.z);bus.rotation.y=car.angle});
-    dump.position.set(state.dump.x,.13,state.dump.z);dump.rotation.y=state.dump.angle;
+    buses.forEach((bus,i)=>{const car=state.buses[i].car;bus.position.set(car.x,.13+(car.height??0),car.z);bus.rotation.y=car.angle});
+    dump.position.set(state.dump.x,.13+(state.dump.height??0),state.dump.z);dump.rotation.y=state.dump.angle;
     const unloading=state.mode==='unloading'&&state.drivingDump,loading=state.mode==='loading'&&state.drivingDump;
     const t=state.workTime;
     const tip=unloading?(t<1.2?smooth(0,.98,t/1.2):t<3.2?.98:smooth(.98,0,Math.min(1,(t-3.2)/1.3))):0;

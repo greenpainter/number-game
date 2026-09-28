@@ -23,6 +23,15 @@ test('ice cream zoom eases in and returns without a camera jump',()=>{
   for(let i=0;i<120;i++)zoom=iceCreamZoom(zoom,true,1/60);assert(Math.abs(zoom-1.38)<.001);
   for(let i=0;i<120;i++)zoom=iceCreamZoom(zoom,false,1/60);assert(Math.abs(zoom-1)<.001);
 });
+
+test('rapid clicks at one spot are coalesced; a new target and later clicks stay immediate',()=>{
+  const presses=[],p=new PlayInput(e=>presses.push(e));
+  for(let i=0;i<10;i++){const e=event(i,'mouse',{timeStamp:1000+i*15});p.down(e);p.up(e)}
+  assert.equal(presses.length,1);
+  const moved=event(11,'mouse',{timeStamp:1140,clientX:110});assert(p.down(moved));p.up(moved);
+  const later=event(12,'mouse',{timeStamp:1400,clientX:110});assert(p.down(later));p.up(later);
+  p.cancel();assert(p.down(event(13,'mouse',{timeStamp:1401,clientX:110})));
+});
 test('walk speed is 1.2 times the original and curb taps resolve to nearby ground',()=>{
   const g=new FireGame(),start={...g.child};assert(g.moveTo({x:-7,z:6.7}));g.update(.1);assert(Math.abs(Math.hypot(g.child.x-start.x,g.child.z-start.z)-2.65*1.2*.1)<.00001);
   assert(g.moveNear({x:-3.2,z:7.5}));assert(g.target);assert(!g.moveNear({x:NaN,z:0}));
