@@ -191,3 +191,10 @@ node --test tests/*.test.mjs
 - 월드 경계에는 모래사장·얕은 물·파도를 표시합니다. 기존 이동 경계 밖으로 나갈 수 없습니다. `coast.js`가 지형과 강 하구에 맞춰 그립니다.
 - 원본·GLB·PNG·재가져오기 검증: `../games/assets/town-renewal/`, `wildlife-polished/`, `family-walk/`, `child-articulated/`. 제작 스크립트는 `../games/tools/blender/build_town_renewal.py`, `build_wildlife_polished.py`, `build_family.py`, `build_child_knees.py`입니다. 기존 모델 생성 후 이 수정 단계를 적용해야 합니다.
 - 한국어 녹음 21개를 추가했으며 생성기는 `../games/tools/tts/add_family.py`입니다. 자동 검사는 69개로 순환 경유·다음 역 탑승, 킥보드 발 접지·무릎 운동, 차량별 사이렌 토글과 기존 기능을 포함합니다.
+
+## 도로 검수 · 역 이동 · 마을 음악
+
+- 전 구역 도로를 합친 뒤 보도를 다시 만들어 곡선 합류부의 가로막힌 보도와 중복 차선을 정리했습니다. 공항 북쪽 연결로를 추가하고 고가도로는 가까운 입구로 진입합니다. 제작·재가져오기 검증은 `../games/tools/blender/audit_city_roads.py`, 원본과 미리보기는 `../games/assets/road-network-audit/`에 있습니다.
+- 지도에 지하철역 네 곳을 🚇로 표시하며 오른쪽 목록에도 포함합니다. 지도에서 역을 누르면 헬기로 입구까지 이동합니다. 실제 역 입구는 기존처럼 계단을 내려가 다음 역으로 가는 순환 지하철입니다.
+- 모든 긴급차의 지붕 경광등이 사이렌 버튼과 함께 켜지고 꺼집니다. 시민의 신발을 다리 관절에 연결하여 보행 중 분리되던 문제를 수정했습니다.
+- Bobjt의 CC0 음원 **Peaceful Ville (2023)**을 로컬 파일로 포함했습니다. 첫 터치 후 조용히 반복 재생하며 음성 안내·사이렌·헬기 소리 중에는 작아집니다. 소리 끄기, 일시정지, 숨긴 탭에서는 음악도 꺼집니다. 출처와 라이선스는 `audio/bgm/CREDITS.txt`에 있습니다.

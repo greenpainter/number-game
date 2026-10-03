@@ -39,6 +39,28 @@ function loadMeshes(name){
   const root=new THREE.Group();for(const i of json.scenes[json.scene??0].nodes)root.add(nodes[i]);root.updateMatrixWorld(true);return root;
 }
 const native=THREE.Mesh.prototype.raycast;
+test('citizen shoes remain attached to their moving leg pivots',()=>{
+  const citizen=loadMeshes('city-citizen');
+  for(const side of ['L','R']){
+    const leg=citizen.getObjectByName('Leg_'+side),shoe=citizen.getObjectByName('Shoe_'+side);
+    assert.equal(shoe.parent,leg);
+    const local=shoe.position.clone(),initial=shoe.getWorldPosition(new THREE.Vector3());
+    for(const angle of [-.42,.42]){
+      leg.rotation.x=angle;citizen.updateMatrixWorld(true);
+      assert(shoe.position.equals(local));assert(shoe.getWorldPosition(new THREE.Vector3()).distanceTo(initial)>.2);
+    }
+  }
+});
+
+test('both elevated ramp surfaces raycast to the Overpass interaction root',()=>{
+  const world=loadMeshes('city-world');world.traverse(o=>{if(o.isMesh)acceleratePicking(o)});
+  for(const [x,z,y] of [[76,24,.7],[178,36.6,.9],[110,-5,7.2]]){
+    const origin=new THREE.Vector3(x+10,y+16,z+10),target=new THREE.Vector3(x,y,z);
+    const hit=new THREE.Raycaster(origin,target.sub(origin).normalize()).intersectObject(world,true)[0];
+    assert(hit);let root=hit.object;while(root.parent&&root.parent!==world)root=root.parent;
+    assert.equal(root.name,'Overpass');
+  }
+});
 test('all six bridge piers stay below the exported driving surface',()=>{
   const world=loadMeshes('waterfront-world');world.traverse(o=>{if(o.isMesh)acceleratePicking(o)});
   // Sample both driving lanes, clear of the raised centre-line paint.

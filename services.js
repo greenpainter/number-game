@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {SERVICES,ICE_VAN} from './navigation.js';
+import {createEmergencyLights} from './emergency-lights.js';
 export async function createServices(loader,scene,prepare,child,limbs){
   const names=['civic-ground-rect','police-station','hospital-station','policecar','ambulance','icecream','city-fire-station','firetruck'];
   const assets=await Promise.all(names.map(n=>loader.loadAsync(`./models/${n}.glb`)));
@@ -9,7 +10,7 @@ export async function createServices(loader,scene,prepare,child,limbs){
     const building=c.kind==='fire'?prepare(models['city-fire-station'].clone(true)):models[id==='police'?'police-station':'hospital-station'],car=c.kind==='fire'?prepare(models.firetruck.clone(true)):models[id==='police'?'policecar':'ambulance'];
     if(c.kind==='fire')scene.add(building,car);
     building.position.set(c.building.x,.13,c.building.z);
-    const lights=[];car.traverse(o=>{if(o.isMesh&&['red','blue'].includes(o.material.name)){o.material=o.material.clone();o.material.emissive.copy(o.material.color);lights.push(o.material)}});
+    const lights=createEmergencyLights(car,id);
     entries[id]={building,car,door:building.getObjectByName('Door'),lights};
   }
   scene.remove(models['city-fire-station'],models.firetruck);
@@ -23,8 +24,7 @@ export async function createServices(loader,scene,prepare,child,limbs){
   return {entries,van,ground:models['civic-ground-rect'],update(state,time){
     for(const [id,v] of Object.entries(entries)){
       const s=state.services[id];v.car.position.set(s.car.x,.13+(s.car.height??0),s.car.z);v.car.rotation.y=s.car.angle;v.door.scale.y=Math.max(.025,1-s.door);
-      const active=s.phase==='occupied'||['outgoing','returning','entering'].includes(s.phase);
-      v.lights.forEach((m,i)=>m.emissiveIntensity=active&&Math.floor(time*5)%2===i?2.5:0);
+      v.lights.update(state,time);
     }
     const eating=state.mode==='eating';cone.visible=eating;
     if(limbs.Arm_R)limbs.Arm_R.rotation.z=eating?-.5:0;

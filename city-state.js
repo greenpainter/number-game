@@ -3,6 +3,7 @@ import {noticeVoice} from './city-voice.js';
 import {walkable} from './navigation.js';
 import {trafficRoutes,bridgeRoute,TRAFFIC_COUNT} from './road-layout.js';
 const overpass=bridgeRoute();
+const reverseOverpass=[...overpass].reverse();
 const smooth=t=>t*t*(3-2*t);
 
 export function routeLength(route,closed=true){let n=0;for(let i=1;i<route.length+(closed?1:0);i++){const a=route[i-1],b=route[i%route.length];n+=Math.hypot(b[0]-a[0],b[1]-a[1],(b[2]??0)-(a[2]??0))}return n}
@@ -37,7 +38,10 @@ export const cityActions={
   },
   startBridgeTour(){
     if(this.activityLocked||this.drivingPlane||this.drivingTrain)return false;
-    if(!this.moveTo(layout.bridge.entry))return false;
+    const {entry,exit}=layout.bridge;
+    const reverse=Math.hypot(this.actor.x-exit.x,this.actor.z-exit.z)<Math.hypot(this.actor.x-entry.x,this.actor.z-entry.z);
+    if(!this.moveTo(reverse?exit:entry))return false;
+    this.city.bridge.reverse=reverse;
     this.city.bridge.phase='approach';this.cityNotice('고가도로 입구로 가요 · 곡선 다리를 건너요');return true;
   },
   updateHelicopter(dt){
@@ -106,7 +110,7 @@ export const cityActions={
       city.bridge.phase='crossing';city.bridge.distance=0;this.mode='bridge';this.path=[];this.target=null;this.changed('bridge');
     }
     if(this.crossingBridge){
-      city.bridge.distance+=dt*(this.riding?7:4.5);Object.assign(this.actor,routePoint(overpass,city.bridge.distance,false));
+      city.bridge.distance+=dt*(this.riding?7:4.5);Object.assign(this.actor,routePoint(city.bridge.reverse?reverseOverpass:overpass,city.bridge.distance,false));
       if(city.bridge.distance>=routeLength(overpass,false)){this.actor.height=0;city.bridge.phase='idle';this.mode='idle';this.cityNotice('고가도로를 건넜어요!')}
     }
     if(city.noticeTime>0){city.noticeTime-=dt;if(city.noticeTime<=0){city.notice='';city.speech=null;this.changed('city-notice')}}

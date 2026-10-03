@@ -68,3 +68,14 @@ test('curved overpass carries walking and driving actors at deck height and appr
   const g=new FireGame();assert(g.startBridgeTour());assert(g.moveTo({x:-7,z:12}));advance(g,()=>g.mode==='idle');assert.equal(g.city.bridge.phase,'idle');assert.equal(g.child.x,-7);
   assert(trafficRoutes[0].length>50);assert(Math.max(...bridgeRoute().map(p=>p[2]))>6);
 });
+
+test('the east ramp boards nearby and crosses back to the west on foot and by car',()=>{
+  for(const driving of [false,true]){
+    const g=new FireGame();if(driving){assert(g.boardService('police'));advance(g,()=>g.riding)}
+    Object.assign(g.actor,layout.bridge.exit);
+    assert(g.startBridgeTour());assert(g.city.bridge.reverse);
+    advance(g,()=>g.crossingBridge);assert(Math.hypot(g.actor.x-layout.bridge.exit.x,g.actor.z-layout.bridge.exit.z)<1);
+    advance(g,()=>g.actor.height>5.8);advance(g,()=>g.city.bridge.phase==='idle');
+    assert.equal(g.actor.height,0);assert(Math.hypot(g.actor.x-layout.bridge.entry.x,g.actor.z-layout.bridge.entry.z)<1e-6);
+  }
+});

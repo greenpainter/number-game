@@ -1,0 +1,11 @@
+Peaceful Ville (2023 version)
+Artist: Bobjt (bobjt)
+Source: https://opengameart.org/content/peacefull-ville
+Original file: https://opengameart.org/sites/default/files/peaceful_ville_2023_0.mp3
+License: CC0 1.0 Universal Public Domain Dedication
+License terms: https://creativecommons.org/publicdomain/zero/1.0/
+Downloaded: 2026-10-03
+
+The source page lists CC0 and says attribution is not required.
+The original MP3 is bundled unchanged as peaceful-ville.mp3.
+Playback volume and looping are controlled by the game.

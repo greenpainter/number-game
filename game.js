@@ -3,8 +3,10 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {FIRE,SERVICES,WORLD} from './navigation.js';
 import {FireGame} from './game-state.js';
 import {createServices} from './services.js';
+import {createEmergencyLights} from './emergency-lights.js';
 import {createExpansion} from './expansion.js';
 import {soundMix} from './sound.js';
+import {createBackgroundMusic} from './background-music.js';
 import {KoreanNarrator} from './narration.js';
 import {PlayInput,iceCreamZoom} from './play-input.js';
 import {createFishing} from './fishing.js';
@@ -22,7 +24,7 @@ import {createCityMap} from './city-map.js';
 import {scooterPose,applyScooterPose} from './scooter-pose.js';
 import {createCoast} from './coast.js';
 import {createFamily} from './family.js';
-import {nextMetroStation,nearestMetroStation} from './metro-loop.js';
+import {nextMetroStation} from './metro-loop.js';
 const narrator=new KoreanNarrator();
 
 const $=id=>document.getElementById(id);
@@ -33,8 +35,9 @@ const state=new FireGame(onStateChange);
 state.ready=false;state.sound=true;
 let renderer,scene,camera,truck,child,wood,village,station,garageDoor,flames,smoke,water,marker,routeLine,childRing,lastTime=0,audioCtx,expansion,sun,ambientLight,services,rectGround,caveBlend=0;
 const limbs={};
+let truckLights;
 const cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(28,32,28);
-let waterSound=null,engineOsc=null,sirenOsc=null,rotorSound=null;
+let waterSound=null,engineOsc=null,sirenOsc=null,rotorSound=null,backgroundMusic=null;
 let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
@@ -193,6 +196,7 @@ function followCamera(dt,snap=false){
   camera.position.copy(cameraTarget).add(new THREE.Vector3().copy(underground?new THREE.Vector3(22,22,26):cameraOffset).lerp(new THREE.Vector3(9,6.5,12),caveBlend));camera.lookAt(cameraTarget);camera.updateMatrixWorld(true);
 }
 function syncActors(time=0,paused=false){
+  truckLights?.update(state,time);
   truck.position.set(state.truck.x,.13+(state.truck.height??0),state.truck.z);truck.rotation.y=state.truck.angle;
   child.visible=!state.riding;childRing.visible=!state.riding;
   const scooting=state.onScooter;
@@ -287,6 +291,7 @@ function pickPress({x,y,type}){
 function ensureAudio(){
   if(audioCtx)return;const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
   audioCtx=new Audio();narrator.connect(audioCtx);
+  backgroundMusic=createBackgroundMusic(audioCtx);
   const gain=audioCtx.createGain();gain.gain.value=0;gain.connect(audioCtx.destination);
   const osc=audioCtx.createOscillator();osc.type='triangle';osc.connect(gain);osc.start();engineOsc={osc,gain};
   const sirenGain=audioCtx.createGain();sirenGain.gain.value=0;sirenGain.connect(audioCtx.destination);const siren=audioCtx.createOscillator();siren.type='sine';siren.connect(sirenGain);siren.start();sirenOsc={osc:siren,gain:sirenGain};
@@ -304,6 +309,7 @@ function ensureAudio(){
 function updateSound(paused=false){
   if(!audioCtx)return;
   const mix=soundMix(state,audioCtx.currentTime,{paused,hidden:document.hidden,narrating:narrator.status==='speaking'});
+  backgroundMusic.setVolume(mix.musicGain);
   engineOsc.gain.gain.setTargetAtTime(mix.engineGain,audioCtx.currentTime,.08);engineOsc.osc.frequency.setTargetAtTime(mix.engineHz,audioCtx.currentTime,.08);
   sirenOsc.gain.gain.setTargetAtTime(mix.sirenGain,audioCtx.currentTime,.12);sirenOsc.osc.frequency.setTargetAtTime(mix.sirenHz,audioCtx.currentTime,.06);
   waterSound.gain.setTargetAtTime(mix.waterGain,audioCtx.currentTime,.08);
@@ -319,7 +325,7 @@ async function init(){
     ambientLight=new THREE.HemisphereLight(0xf3f8ff,0x839576,1.8);scene.add(ambientLight);sun=new THREE.DirectionalLight(0xfff2d7,2.8);sun.position.set(-15,28,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-25,right:25,top:25,bottom:-25,near:1,far:80});sun.shadow.bias=-.0005;sun.shadow.normalBias=.035;scene.add(sun,sun.target);
     const loader=new GLTFLoader();const [villageAsset,truckAsset,woodAsset,childAsset]=await Promise.all(['village-rect','firetruck','firewood','child'].map(name=>loader.loadAsync(`./models/${name}.glb`)));
     village=prepareModel(villageAsset.scene);scene.add(village);station=village.getObjectByName("Station");garageDoor=village.getObjectByName("GarageDoor");
-    truck=prepareModel(truckAsset.scene);scene.add(truck);
+    truck=prepareModel(truckAsset.scene);scene.add(truck);truckLights=createEmergencyLights(truck,'firetruck');
     child=prepareModel(childAsset.scene);child.scale.setScalar(1.15);scene.add(child);
     scooter=prepareModel((await loader.loadAsync('./models/scooter.glb')).scene);scene.add(scooter);scooter.visible=false;
     for(const name of ['Arm_L','Arm_R','Leg_L','Leg_R','Knee_L','Knee_R','Ankle_L','Ankle_R']){limbs[name]=child.getObjectByName(name);if(limbs[name])limbs[name].userData.restX=limbs[name].position.x}
@@ -353,10 +359,8 @@ function rideNextMetro(stationId){
 }
 function rideMapMetro(destination){
   if(!state.ready)return;if(state.sound)unlockAudio();$('city-map').close();
-  if(state.riding||state.activityLocked){toast('먼저 타고 있는 차에서 내려 주세요.');return}
-  const from=nearestMetroStation(state.child);
-  if(from.id===destination){state.moveTo(from.boarding);toast('역 입구를 누르면 다음 역으로 출발해요.');return}
-  if(!state.rideSubway(from.id,destination))toast('잠깐 기다렸다가 다시 눌러 주세요.');
+  const station=waterfrontLayout.stations.find(s=>s.id===destination);
+  if(station&&!state.callHelicopter({...station.boarding,name:station.name}))toast('지금 놀이가 끝나면 헬기를 불러 주세요');
 }
 for(const id of ['mom','dad'])$(id+'-toggle').addEventListener('click',()=>{
   if(!state.ready)return;if(state.sound)unlockAudio();const active=family.toggle(id,state);
@@ -373,7 +377,7 @@ $('sound').addEventListener('click',()=>{
   $('sound-waves').setAttribute('d',state.sound?'M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14':'m16 9 5 6m0-6-5 6');
   if(state.sound){unlockAudio();toast('한국어 음성 안내를 켰어요.')}updateSound();
 });
-function unlockAudio(){try{ensureAudio();audioCtx?.resume().catch(()=>{})}catch{}}
+function unlockAudio(){try{ensureAudio();audioCtx?.resume().catch(()=>{});backgroundMusic?.start()}catch{}}
 const playInput=new PlayInput(press=>{
   if(state.sound)unlockAudio();
   tapFeedback.style.left=press.x+'px';tapFeedback.style.top=press.y+'px';tapFeedback.classList.remove('pulse');void tapFeedback.offsetWidth;tapFeedback.classList.add('pulse');

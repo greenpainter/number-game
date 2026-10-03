@@ -7,6 +7,7 @@ export function soundMix(state,time,{paused=false,hidden=false,narrating=false}=
   const helicopter=state.city?.helicopter,rotors=helicopter&&!['idle','waiting'].includes(helicopter.phase);
   const rotorDistance=helicopter?Math.hypot(helicopter.car.x-state.actor.x,helicopter.car.z-state.actor.z,helicopter.car.height-(state.actor.height??0)):0;
   return {
+    musicGain:enabled?(narrating?.025:emergency||rotors?.055:.14):0,
     engineHz:(metro?55+(state.transit.metro.speed??0)*2:ferry?46:state.drivingTrain?50:state.drivingBus?58:state.drivingDump?72:82)+Math.sin(time*23)*1.5,
     engineGain:enabled&&moving?(narrating?.007:metro?.022:.016):0,
     sirenHz:state.drivingFire?520+(Math.sin(time*2.8)+1)*330:state.vehicle==='police'?650+(Math.sin(time*5)+1)*260:Math.floor(time*2)%2?960:720,
