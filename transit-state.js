@@ -1,11 +1,11 @@
 import layout from './waterfront-layout.js';
 import {riverX,riverHeight} from './river-geometry.js';
 import {walkable} from './navigation.js';
-import {METRO_STAIRS,METRO_PLATFORM,METRO_BOARD,METRO_TRAIN_Z,metroPathPoint,pathLength} from './metro-path.js';
+import {METRO_STAIRS,METRO_PLATFORM,METRO_BOARD,METRO_TRAIN_Z,METRO_RAIL_HEIGHT,metroPathPoint,pathLength} from './metro-path.js';
 import {nextMetroStation,metroStopsBetween} from './metro-loop.js';
 const ease=t=>t*t*(3-2*t);
 export const transitActions={
-  resetTransit(){this.transit={metro:{phase:'idle',time:0,speed:0,car:{x:0,z:0,height:-12,angle:0}},ferry:{phase:'idle',time:0,car:{...layout.dock.boat,height:0,angle:Math.PI}}}},
+  resetTransit(){this.transit={metro:{phase:'idle',time:0,speed:0,car:{x:0,z:0,height:METRO_RAIL_HEIGHT,angle:0}},ferry:{phase:'idle',time:0,car:{...layout.dock.boat,height:0,angle:Math.PI}}}},
   rideSubway(stationId,destinationId=nextMetroStation(stationId)){
     const from=layout.stations.find(s=>s.id===stationId),to=layout.stations.find(s=>s.id===destinationId);
     if(!from||!to||from===to||this.riding||this.activityLocked)return false;
@@ -22,7 +22,7 @@ export const transitActions={
     const m=this.transit.metro,f=this.transit.ferry;
     if(m.phase==='approach'&&this.mode==='idle'){
       const from=layout.stations.find(s=>s.id===m.from);
-      m.car={x:from.x+2,z:from.z+METRO_TRAIN_Z,height:-12,angle:0};m.scene={x:from.x,z:from.z};
+      m.car={x:from.x+2,z:from.z+METRO_TRAIN_Z,height:METRO_RAIL_HEIGHT,angle:0};m.scene={x:from.x,z:from.z};
       m.phase='descending';m.time=0;m.walking=true;m.doors=0;this.mode='metro';this.path=[];this.target=null;
       this.cityNotice('계단을 내려가 지하 승강장으로 가요.');
     }
@@ -38,7 +38,7 @@ export const transitActions={
       if(paths[m.phase])Object.assign(this.child,metroPathPoint(paths[m.phase],t,['alighting','returning','ascending'].includes(m.phase)?to:from));
       if(m.phase==='exiting'){const start=to.boarding;this.child.x=start.x+(m.exit.x-start.x)*smooth;this.child.z=start.z+(m.exit.z-start.z)*smooth;this.child.height=0;this.child.angle=Math.atan2(m.exit.x-start.x,m.exit.z-start.z)}
       m.doors=['waiting','boarding','alighting','returning','ascending','exiting'].includes(m.phase)?1:m.phase==='closing'?1-t:m.phase==='arriving'?t:0;
-      if(m.phase==='running'){m.car.x=legFrom.x+2+(legTo.x-legFrom.x)*smooth;m.car.z=legFrom.z+METRO_TRAIN_Z+(legTo.z-legFrom.z)*smooth;m.scene={x:m.car.x-2,z:m.car.z-METRO_TRAIN_Z};m.speed=distance/duration*6*t*(1-t)}
+      if(m.phase==='running'){m.car.x=legFrom.x+2+(legTo.x-legFrom.x)*smooth;m.car.z=legFrom.z+METRO_TRAIN_Z+(legTo.z-legFrom.z)*smooth;m.scene={x:m.car.x-2,z:m.car.z-METRO_TRAIN_Z,METRO_RAIL_HEIGHT};m.speed=distance/duration*6*t*(1-t)}
       if(t===1){
         m.time=0;
         const next={descending:'platform',platform:'waiting',waiting:'boarding',boarding:'closing',closing:'running',running:'arriving',arriving:'alighting',alighting:'returning',returning:'ascending',ascending:'exiting',exiting:'idle'};

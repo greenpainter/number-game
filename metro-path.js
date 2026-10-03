@@ -1,10 +1,12 @@
 // Coordinates are relative to the entrance. Heights are character offsets;
 // render feet add .13 m, matching the stair treads and platform surface.
-export const METRO_STAIRS=[[0,0,5],[0,-4,-3],[3,-4,-3],[3,-8,5],[6,-8,5],[6,-11.4,-1.8]];
+export const METRO_DEPTH=-4.2;
+export const METRO_RAIL_HEIGHT=METRO_DEPTH-.6;
+export const METRO_STAIRS=[[0,0,5],[0,METRO_DEPTH,-2]];
 // The train stops beyond the stairs, leaving a clear platform walking route.
-export const METRO_TRAIN_Z=-12;
-export const METRO_PLATFORM=[[6,-11.4,-1.8],[6,-11.4,METRO_TRAIN_Z+1.95],[4.9,-11.4,METRO_TRAIN_Z+1.95]];
-export const METRO_BOARD=[[4.9,-11.4,METRO_TRAIN_Z+1.95],[2.8,-11.4,METRO_TRAIN_Z+1.95]];
+export const METRO_TRAIN_Z=-9;
+export const METRO_PLATFORM=[[0,METRO_DEPTH,-2],[0,METRO_DEPTH,-3],[6,METRO_DEPTH,-3],[6,METRO_DEPTH,METRO_TRAIN_Z+1.95],[4.9,METRO_DEPTH,METRO_TRAIN_Z+1.95]];
+export const METRO_BOARD=[[4.9,METRO_DEPTH,METRO_TRAIN_Z+1.95],[2.8,METRO_DEPTH,METRO_TRAIN_Z+1.95]];
 export function pathLength(points){return points.slice(1).reduce((n,p,i)=>n+Math.hypot(...p.map((v,k)=>v-points[i][k])),0)}
 export function metroPathPoint(points,fraction,origin){
   let remaining=pathLength(points)*Math.max(0,Math.min(1,fraction));

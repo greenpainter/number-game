@@ -1,3 +1,4 @@
+import {METRO_DEPTH,METRO_RAIL_HEIGHT} from '../metro-path.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FireGame} from '../game-state.js';
@@ -27,7 +28,7 @@ test('the river blocks water, routes across all three arches and reaches the eas
 test('all twelve subway journeys descend, run underground and safely dismount at the chosen station',()=>{
   for(const from of layout.stations)for(const to of layout.stations.filter(s=>s!==from)){
     const g=new FireGame();g.child={...from.boarding,angle:0};assert(g.rideSubway(from.id,to.id));
-    until(g,()=>g.transit.metro.phase==='running');assert(g.riding);assert.equal(g.vehicle,'metro');assert.equal(g.actor.height,-12);
+    until(g,()=>g.transit.metro.phase==='running');assert(g.riding);assert.equal(g.vehicle,'metro');assert.equal(g.actor.height,METRO_RAIL_HEIGHT);
     const target=g.transit.metro.to;g.moveTo({x:0,z:0});assert.equal(g.transit.metro.to,target);
     assert(!g.callHelicopter({x:0,z:0,name:'test'}));assert(!g.boardFerry());assert(!g.exitTruck());
     until(g,()=>g.transit.metro.phase==='idle');assert(!g.riding);assert.equal(g.mode,'idle');assert.equal(g.child.height,0);assert(Math.hypot(g.child.x-to.exit.x,g.child.z-to.exit.z)<.1);assert(walkable(g.child.x,g.child.z,{radius:.32}));
@@ -45,10 +46,10 @@ test('metro entrances clear house roofs and children walk down stairs before boa
     assert(Math.hypot(horizontal,drop)<.1,'No free fall or teleport');
     if(drop>.001){assert(horizontal>.001,'Height only changes while walking on a flight');stairFrames++}
   }
-  assert(stairFrames>150);assert.equal(g.transit.metro.phase,'platform');assert.equal(g.child.height,-11.4);
+  assert(stairFrames>80&&stairFrames<110,'one short continuous flight');assert.equal(g.transit.metro.phase,'platform');assert.equal(g.child.height,METRO_DEPTH);
   until(g,()=>g.transit.metro.phase==='boarding');assert(!g.riding);assert.equal(g.transit.metro.doors,1);
   until(g,()=>g.transit.metro.phase==='closing');assert(g.riding);
-  until(g,()=>g.transit.metro.phase==='ascending');assert(!g.riding);assert.equal(g.child.height,-11.4);
+  until(g,()=>g.transit.metro.phase==='ascending');assert(!g.riding);assert.equal(g.child.height,METRO_DEPTH);
   until(g,()=>g.transit.metro.phase==='idle');assert.equal(g.child.height,0);
 });
 

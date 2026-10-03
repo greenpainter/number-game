@@ -2,6 +2,7 @@ import layout from './city-layout.js';
 import {noticeVoice} from './city-voice.js';
 import {walkable} from './navigation.js';
 import {trafficRoutes,bridgeRoute,TRAFFIC_COUNT} from './road-layout.js';
+import {createZooAnimals,updateZooAnimals} from './zoo-wildlife.js';
 const overpass=bridgeRoute();
 const reverseOverpass=[...overpass].reverse();
 const smooth=t=>t*t*(3-2*t);
@@ -17,7 +18,7 @@ export function routePoint(route,distance,closed=true){
 }
 export const cityActions={
   resetCity(){
-    this.city={time:0,notice:'',noticeTime:0,chase:null,chaseTimer:0,caught:0,viewing:null,
+    this.city={time:0,notice:'',noticeTime:0,chase:null,chaseTimer:0,caught:0,viewing:null,animalSoundRequest:0,animals:createZooAnimals(),
       traffic:Array.from({length:TRAFFIC_COUNT},(_,i)=>{const route=i%trafficRoutes.length,distance=Math.floor(i/trafficRoutes.length)*routeLength(trafficRoutes[route],route<3)/3;return {route,distance,car:routePoint(trafficRoutes[route],distance,route<3),moving:true}}),
       people:layout.walkRoutes.map((route,i)=>({route:i,distance:i*4,car:routePoint(route,i*4),moving:true})),
       thieves:layout.thiefRoutes.map((route,i)=>({id:i,distance:0,car:routePoint(route,0),phase:'wandering',cooldown:0,seen:false})),
@@ -96,6 +97,7 @@ export const cityActions={
     if(this.riding){this.cityNotice('동물 친구는 차에서 내려서 만나러 가요');return false}
     if(!this.moveTo(animal?.view??layout.zoo.entrance))return false;
     this.city.viewing=animal?.id??null;
+    if(animal)this.city.animalSoundRequest++;
     this.cityNotice(animal?`${animal.name} 만나러 가요`:'동물원으로 가요 · 동물을 눌러 가까이 가세요');return true;
   },
   chaseThief(id){
@@ -105,6 +107,7 @@ export const cityActions={
   },
   updateCity(dt){
     const city=this.city;city.time+=dt;
+    updateZooAnimals(city.animals,dt);
     this.updateHelicopter(dt);
     if(city.bridge.phase==='approach'&&this.mode==='idle'){
       city.bridge.phase='crossing';city.bridge.distance=0;this.mode='bridge';this.path=[];this.target=null;this.changed('bridge');
@@ -116,7 +119,7 @@ export const cityActions={
     if(city.noticeTime>0){city.noticeTime-=dt;if(city.noticeTime<=0){city.notice='';city.speech=null;this.changed('city-notice')}}
     const actor=this.actor;
     if(city.viewing&&!this.riding&&this.mode==='idle'){
-      const animal=layout.zoo.animals.find(a=>a.id===city.viewing);
+      const animal=city.animals.find(a=>a.id===city.viewing);
       if(animal&&Math.hypot(actor.x-animal.view.x,actor.z-animal.view.z)<1)actor.angle=Math.atan2(animal.x-actor.x,animal.z-actor.z);
     }
     for(const traffic of city.traffic){

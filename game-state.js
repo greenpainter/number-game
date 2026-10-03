@@ -1,6 +1,7 @@
 import {HOME,CHILD_START,FIRE,FIRE_STOP,findPath,walkable,truckContains,DUMP_HOME,LOAD_STOP,UNLOAD_STOP} from './navigation.js';
 
 import {busActions} from './bus-state.js';
+import {rescueActions} from './rescue-state.js';
 import {serviceActions} from './service-state.js';
 import {railwayActions} from './railway-state.js';
 import {petActions} from './pets-state.js';
@@ -42,6 +43,7 @@ export class FireGame {
   get drivingFire(){return this.riding&&(this.vehicle==='firetruck'||this.vehicle?.startsWith('fire-'))}
   get drivingDump(){return this.riding&&this.vehicle==='dumptruck'}
   get hasSiren(){return this.riding&&(this.drivingFire||['police','ambulance'].includes(this.vehicle))}
+  get carryingPatient(){return ['boarding','transporting','waiting-route','unloading'].includes(this.rescue?.phase)}
   get sirenOn(){return this.hasSiren&&!!this.sirens?.[this.vehicle]}
   toggleSiren(){if(!this.hasSiren)return false;this.sirens[this.vehicle]=!this.sirenOn;this.changed('siren');return true}
   get canUseScooter(){return !this.riding&&!this.activityLocked&&['idle','moving'].includes(this.mode)&&!this.boarding&&!this.boardingStage&&!this.fishingMission&&!this.iceMission&&this.busRequest===null&&!this.serviceRequest&&this.transit.metro.phase==='idle'&&this.transit.ferry.phase==='idle'&&this.city.bridge.phase==='idle'}
@@ -70,7 +72,7 @@ export class FireGame {
     this.hp=100;this.fireActive=false;this.complete=false;this.path=[];this.target=null;this.truckPath=[];
     this.truckPhase='parked';this.door=0;this.boardingStage=null;
     this.dump={...DUMP_HOME,angle:0,halfWidth:1.04,halfLength:2.22};this.dumpPhase='parked';this.dumpPath=[];this.dumpMission=null;this.cargo=0;this.delivered=0;this.workTime=0;this.loadStart=0;this.unloadCommitted=false;
-    this.resetBuses();this.resetServices();this.resetRailway();this.resetPets();this.resetCity();this.resetTransit();this.fishingMission=false;this.fishTime=0;this.fishCaught=0;if(notify)this.changed('reset');
+    this.resetBuses();this.resetServices();this.resetRescue();this.resetRailway();this.resetPets();this.resetCity();this.resetTransit();this.fishingMission=false;this.fishTime=0;this.fishCaught=0;if(notify)this.changed('reset');
   }
   routeTo(target,{boarding=false,fireMission=false,homeMission=false}={}){
     if(this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge)return false;
@@ -81,10 +83,12 @@ export class FireGame {
     this.mode='moving';this.changed('move');return true;
   }
   moveTo(target){
+    if(this.carryingPatient)return false;
     if(this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge)return true;
     if(this.drivingTrain||this.drivingPlane)return true;
     if(['loading','unloading','eating','fishing','fish-celebrate','pulling-over'].includes(this.mode))return false;
     if(!this.routeTo(target))return false;
+    if(this.rescue.phase==='approach')this.rescue.phase='idle';
     this.city.chase=null;
     this.city.viewing=null;
     this.city.bridge.phase='idle';
@@ -105,7 +109,7 @@ export class FireGame {
     for(const p of candidates.slice(0,6))if(this.moveTo({x:p.x,z:p.z}))return true;
     return false;
   }
-  get activityLocked(){return this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge||['eating','fishing','fish-celebrate','pulling-over'].includes(this.mode)}
+  get activityLocked(){return this.carryingPatient||this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge||['eating','fishing','fish-celebrate','pulling-over'].includes(this.mode)}
   startFishing(){
     if(this.riding||this.activityLocked)return false;
     if(this.fishingMission)return true;
@@ -184,7 +188,7 @@ export class FireGame {
   }
   update(dt){
     if(this.scooter&&!this.canUseScooter){this.scooter=false;this.changed('scooter-fold')}
-    this.updateGarage(dt);this.updateDump(dt);this.updateServices(dt,travel);this.updateBuses(dt,travel);this.updateRailway(dt);this.updatePets(dt,travel);this.updateCity(dt);this.updateTransit(dt);
+    this.updateGarage(dt);this.updateDump(dt);this.updateServices(dt,travel);this.updateBuses(dt,travel);this.updateRailway(dt);this.updatePets(dt,travel);this.updateCity(dt);this.updateTransit(dt);this.updateRescue(dt);
     if(this.mode==='moving'){
       // Replan when the returning truck crosses a walking route.
       if(!this.riding&&this.path.length&&!walkable(this.path[0].x,this.path[0].z,this.options)){
@@ -285,7 +289,7 @@ export class FireGame {
       if(this.workTime>=4.5){this.mode='idle';this.dumpMission=null;this.workTime=0;this.changed('delivered')}
     }
   }
-  snapshot(){return {sirenOn:this.sirenOn,transit:structuredClone(this.transit),train:structuredClone(this.train),pets:structuredClone(this.pets),fishingMission:this.fishingMission,fishTime:this.fishTime,fishCaught:this.fishCaught,buses:structuredClone(this.buses),busRequest:this.busRequest,services:structuredClone(this.services),serviceRequest:this.serviceRequest,eatTime:this.eatTime,iceCreams:this.iceCreams,vehicle:this.vehicle,dump:{...this.dump},dumpPhase:this.dumpPhase,cargo:this.cargo,delivered:this.delivered,workTime:this.workTime,dumpMission:this.dumpMission,mode:this.mode,riding:this.riding,boarding:this.boarding,truckPhase:this.truckPhase,doorOpen:this.door,fireActive:this.fireActive,fireRemaining:this.fireActive?Math.round(this.hp):0,complete:this.complete,child:{...this.child},truck:{...this.truck}}}
+  snapshot(){return {rescue:structuredClone(this.rescue),patients:structuredClone(this.patients),sirenOn:this.sirenOn,transit:structuredClone(this.transit),train:structuredClone(this.train),pets:structuredClone(this.pets),fishingMission:this.fishingMission,fishTime:this.fishTime,fishCaught:this.fishCaught,buses:structuredClone(this.buses),busRequest:this.busRequest,services:structuredClone(this.services),serviceRequest:this.serviceRequest,eatTime:this.eatTime,iceCreams:this.iceCreams,vehicle:this.vehicle,dump:{...this.dump},dumpPhase:this.dumpPhase,cargo:this.cargo,delivered:this.delivered,workTime:this.workTime,dumpMission:this.dumpMission,mode:this.mode,riding:this.riding,boarding:this.boarding,truckPhase:this.truckPhase,doorOpen:this.door,fireActive:this.fireActive,fireRemaining:this.fireActive?Math.round(this.hp):0,complete:this.complete,child:{...this.child},truck:{...this.truck}}}
 }
 
-Object.assign(FireGame.prototype,serviceActions,busActions,railwayActions,petActions,cityActions,transitActions);
+Object.assign(FireGame.prototype,rescueActions,serviceActions,busActions,railwayActions,petActions,cityActions,transitActions);

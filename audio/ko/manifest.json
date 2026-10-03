@@ -865,6 +865,42 @@
       "file": "12e50cc6e0e2.mp3",
       "durationSeconds": 2.995,
       "sha256": "3d21cb1cf6cee755b2e8ef9324a9bb067ebd3cd6186a3f76e6264c9aae9eea4d"
+    },
+    {
+      "text": "구급차를 타고 아픈 친구를 도와줘요.",
+      "file": "02f39fba20a1.mp3",
+      "durationSeconds": 3.135,
+      "sha256": "56cc3594f9a967023e2ba2f14620aa8dbff992f23aee711e39b29236fb4a0f01"
+    },
+    {
+      "text": "아픈 친구를 만나러 가요.",
+      "file": "0dbb5e7735c7.mp3",
+      "durationSeconds": 2.368,
+      "sha256": "5d73a05976dd80580d41ff398c9a766aae2d82be3ea04c30179b70cbbbd93d59"
+    },
+    {
+      "text": "조심조심 구급차에 타요.",
+      "file": "3397a273a867.mp3",
+      "durationSeconds": 2.368,
+      "sha256": "d902fd99cadb70f295f431c66c44149bbb65ec432713673709adc930255db14d"
+    },
+    {
+      "text": "병원으로 출발해요!",
+      "file": "aab6ab56417b.mp3",
+      "durationSeconds": 2.02,
+      "sha256": "d5c9c5f2b8205eb4c2ce3a0b156774c25625d62ff8f65678a81ec423b1b2b337"
+    },
+    {
+      "text": "병원에 도착했어요. 이제 괜찮아요!",
+      "file": "4b96001317ec.mp3",
+      "durationSeconds": 3.692,
+      "sha256": "9db666c0b3fb2097ea9c337827ebb0a0ef8aac4c85be6ac1d5dea6e6204ff28d"
+    },
+    {
+      "text": "친구를 병원에 데려다준 뒤 내려요.",
+      "file": "4e027a3bcd66.mp3",
+      "durationSeconds": 3.065,
+      "sha256": "5436be7fa987e141b81689339a2916ab3311af1629e976fb99fc5de25d8b320b"
     }
   ]
 }

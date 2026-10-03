@@ -1,3 +1,4 @@
+import {METRO_DEPTH,METRO_RAIL_HEIGHT} from '../metro-path.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -9,6 +10,7 @@ import {zooTapTarget} from '../zoo-interaction.js';
 import waterfrontLayout from '../waterfront-layout.js';
 import {METRO_PLATFORM,METRO_TRAIN_Z,metroPathPoint} from '../metro-path.js';
 import {riverHeight} from '../river-geometry.js';
+import {createZooAnimals} from '../zoo-wildlife.js';
 
 // Read actual shipped geometry without loading browser-only textures.
 function loadMeshes(name){
@@ -39,6 +41,15 @@ function loadMeshes(name){
   const root=new THREE.Group();for(const i of json.scenes[json.scene??0].nodes)root.add(nodes[i]);root.updateMatrixWorld(true);return root;
 }
 const native=THREE.Mesh.prototype.raycast;
+
+test('walking animal exports retain attached legs and fit their enclosure clearance',()=>{
+  for(const a of createZooAnimals().filter(a=>!a.id.includes('-'))){
+    const root=loadMeshes('city-'+a.species);let radius=0;
+    root.traverse(o=>{if(!o.isMesh)return;const p=o.geometry.attributes.position;for(let i=0;i<p.count;i++){const v=new THREE.Vector3().fromBufferAttribute(p,i);o.localToWorld(v);radius=Math.max(radius,Math.hypot(v.x,v.z))}});
+    assert(radius<=a.radius,a.species+' body exceeds safe radius');
+    for(const name of ['Walk_FL','Walk_FR']){const leg=root.getObjectByName(name);assert(leg?.parent,a.species+' needs attached walking feet');const home=leg.position.clone();leg.rotation.x=.23;root.updateMatrixWorld(true);assert.deepEqual(leg.position,home)}
+  }
+});
 test('citizen shoes remain attached to their moving leg pivots',()=>{
   const citizen=loadMeshes('city-citizen');
   for(const side of ['L','R']){
@@ -130,7 +141,7 @@ test('rebuilt railway homes clear the connecting roads and relocated metro entra
     assert(!box.intersectsBox(stationBox),home.name+' overlaps the metro');
     for(const [x0,x1,z0,z1] of roads)assert(box.max.x<=x0||box.min.x>=x1||box.max.z<=z0||box.min.z>=z1,home.name+' overlaps a connector');
   }
-  const stairs=loadMeshes('metro-stairs'),train=loadMeshes('metro-train');train.position.set(2,-12,METRO_TRAIN_Z);
+  const stairs=loadMeshes('metro-stairs'),train=loadMeshes('metro-train');train.position.set(2,METRO_RAIL_HEIGHT,METRO_TRAIN_Z);
   assert(!new THREE.Box3().setFromObject(stairs).intersectsBox(new THREE.Box3().setFromObject(train)),'stairs intersect the stopped train');
   stairs.traverse(o=>{if(o.isMesh){o.material.side=THREE.DoubleSide;acceleratePicking(o)}});
   for(let i=0;i<=100;i++){

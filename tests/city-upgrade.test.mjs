@@ -17,7 +17,7 @@ test('elephant, fence and sign taps lead to its viewing point; paths retain thei
   for(let i=0;i<3000&&g.mode!=='idle';i++)g.update(1/30);
   assert.equal(g.mode,'idle');assert(Math.hypot(g.child.x-h.view.x,g.child.z-h.view.z)<.1);
   g.update(1/30); // Idle-facing pose is applied on the following animation frame.
-  const animal=layout.zoo.animals.find(a=>a.id==='elephant');assert(Math.abs(g.child.angle-Math.atan2(animal.x-g.child.x,animal.z-g.child.z))<.01);
+  const animal=g.city.animals.find(a=>a.id==='elephant');assert(Math.abs(g.child.angle-Math.atan2(animal.x-g.child.x,animal.z-g.child.z))<.01);
   assert(!g.visitZoo('unknown'));assert.deepEqual(g.target,null);
 });
 

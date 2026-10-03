@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import layout from './waterfront-layout.js';
 import {riverX} from './river-geometry.js';
-import {METRO_TRAIN_Z} from './metro-path.js';
+import {METRO_TRAIN_Z,METRO_RAIL_HEIGHT} from './metro-path.js';
 import {METRO_ICONS,nextMetroStation} from './metro-loop.js';
 
 function sign(text,width=5){
@@ -24,11 +24,11 @@ export async function createWaterfront(loader,scene,prepare){
   const entrances=layout.stations.map(s=>{const root=entrance.clone(true);root.position.set(s.x,.12,s.z);const label=sign(`${METRO_ICONS[s.id]} 🚇 → ${METRO_ICONS[nextMetroStation(s.id)]}`);label.position.set(0,5,2.9);root.add(label);scene.add(root);return {...s,root}});
   const dockLabel=sign('유람선 선착장',7);dockLabel.position.set(layout.dock.x,3.4,layout.dock.z);scene.add(dockLabel);
   const underground=new THREE.Group();scene.add(underground);underground.visible=false;
-  underground.add(tunnel,stairs);tunnel.position.set(2,-12,METRO_TRAIN_Z);
+  underground.add(tunnel,stairs);tunnel.position.set(2,METRO_RAIL_HEIGHT,METRO_TRAIN_Z);
   const cars=[train,train.clone(true),train.clone(true)],doors=[];
-  cars.forEach((car,i)=>{car.position.set(2,-12,METRO_TRAIN_Z-i*11);underground.add(car);car.traverse(o=>{if(o.name.startsWith('Door_'))doors.push({o,home:o.position.clone(),direction:o.name.split('_').at(-1).startsWith('-1')?-1:1})})});
-  const stationSign=sign('강변선 지하철',7);stationSign.position.set(-2,-8,METRO_TRAIN_Z+5);underground.add(stationSign);
-  for(const z of [-20,0,20]){const light=new THREE.PointLight(0xc8eaff,45,28,1.2);light.position.set(2,-8,z);underground.add(light)}
+  cars.forEach((car,i)=>{car.position.set(2,METRO_RAIL_HEIGHT,METRO_TRAIN_Z-i*11);underground.add(car);car.traverse(o=>{if(o.name.startsWith('Door_'))doors.push({o,home:o.position.clone(),direction:o.name.split('_').at(-1).startsWith('-1')?-1:1})})});
+  const stationSign=sign('강변선 지하철',7);stationSign.position.set(-2,METRO_RAIL_HEIGHT+3,METRO_TRAIN_Z+5);underground.add(stationSign);
+  for(const z of [-20,0,20]){const light=new THREE.PointLight(0xc8eaff,45,28,1.2);light.position.set(2,METRO_RAIL_HEIGHT+3,z);underground.add(light)}
   const stairLight=new THREE.PointLight(0xffdeb2,65,24,1.1);stairLight.position.set(4,-2,2);underground.add(stairLight);
   const hidden=new Map();let currentBackground=null;
   return {world,boat,entrances,pickRoots:[world,boat,...entrances.map(s=>s.root)],update(state,child,childRing){

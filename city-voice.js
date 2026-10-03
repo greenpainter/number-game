@@ -1,3 +1,4 @@
+import {RESCUE_LINES} from './rescue-state.js';
 import layout from './city-layout.js';
 import waterfront from './waterfront-layout.js';
 const replacements={
@@ -17,6 +18,7 @@ const replacements={
   '지금 놀이가 끝나면 헬기를 불러 주세요':'지금 놀이가 끝나면 헬기를 불러 주세요.',
 };
 const direct=[
+  ...RESCUE_LINES,
   '엄마랑 손잡고 걸어요!','아빠랑 손잡고 걸어요!','엄마 아빠랑 손잡고 걸어요!','엄마는 잠깐 기다릴게요.','아빠는 잠깐 기다릴게요.','지금 놀이를 마치고 손을 잡아요.','역 입구를 누르면 다음 역으로 출발해요.',
   '킥보드 출발! 바닥을 누르면 슝슝 달려요.','킥보드에서 내렸어요. 걸어서 탐험해요.','지금 놀이를 마치고 킥보드를 타요.',
   '지하철 입구로 걸어가요.','계단을 내려가 지하 승강장으로 가요.','지하철 문이 열렸어요. 타 볼까요?',

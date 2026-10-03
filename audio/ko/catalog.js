@@ -142,5 +142,11 @@ export const NARRATION_CLIPS = Object.freeze({
   "정원과 곡선 도로가 있는 동네예요.": "./audio/ko/ca8c2900dc79.mp3",
   "강변 산책길과 다리를 둘러봐요.": "./audio/ko/c6ee6cab44f2.mp3",
   "유람선을 타고 강을 여행해요.": "./audio/ko/fe4723e3ef6f.mp3",
-  "강 건너 새로운 동네를 찾아가요.": "./audio/ko/12e50cc6e0e2.mp3"
+  "강 건너 새로운 동네를 찾아가요.": "./audio/ko/12e50cc6e0e2.mp3",
+  "구급차를 타고 아픈 친구를 도와줘요.": "./audio/ko/02f39fba20a1.mp3",
+  "아픈 친구를 만나러 가요.": "./audio/ko/0dbb5e7735c7.mp3",
+  "조심조심 구급차에 타요.": "./audio/ko/3397a273a867.mp3",
+  "병원으로 출발해요!": "./audio/ko/aab6ab56417b.mp3",
+  "병원에 도착했어요. 이제 괜찮아요!": "./audio/ko/4b96001317ec.mp3",
+  "친구를 병원에 데려다준 뒤 내려요.": "./audio/ko/4e027a3bcd66.mp3"
 });

@@ -7,6 +7,7 @@ import {createEmergencyLights} from './emergency-lights.js';
 import {createExpansion} from './expansion.js';
 import {soundMix} from './sound.js';
 import {createBackgroundMusic} from './background-music.js';
+import {createZooAudio} from './zoo-audio.js';
 import {KoreanNarrator} from './narration.js';
 import {PlayInput,iceCreamZoom} from './play-input.js';
 import {createFishing} from './fishing.js';
@@ -37,7 +38,7 @@ let renderer,scene,camera,truck,child,wood,village,station,garageDoor,flames,smo
 const limbs={};
 let truckLights;
 const cameraTarget=new THREE.Vector3(),cameraOffset=new THREE.Vector3(28,32,28);
-let waterSound=null,engineOsc=null,sirenOsc=null,rotorSound=null,backgroundMusic=null;
+let waterSound=null,engineOsc=null,sirenOsc=null,rotorSound=null,backgroundMusic=null,zooAudio=null;
 let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
@@ -95,7 +96,7 @@ function moveTo(target){
   return state.moveNear(target);
 }
 function boardTruck(){if(!state.ready)return false;if(!state.boardTruck()){toast('소방서 앞으로 갈 수 없어요. 빈 바닥에서 다시 눌러 주세요.');return false}return true}
-function exitTruck(){if(!state.ready)return false;if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
+function exitTruck(){if(!state.ready)return false;if(state.carryingPatient){toast('친구를 병원에 데려다준 뒤 내려요.');return false}if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
 function stationAction(){if(!state.ready)return;if(state.riding&&!state.drivingFire){toast('먼저 타고 있는 차에서 내려 주세요.');return}if(state.riding)state.goHome();else boardTruck()}
 function dispatch(){if(!state.ready)return false;if(!state.riding)return boardTruck();return state.dispatch()}
 function fireAction(){if(!state.ready||state.complete)return;if(!state.drivingFire){toast('먼저 소방서 건물을 눌러 소방차를 타요!');return}state.dispatch()}
@@ -132,7 +133,7 @@ function onStateChange(reason){
   const messages={'dump-walk':'덤프트럭에 타러 가요.','dump-board':'출발! 포크레인에게 흙을 받으러 가요.','dump-dispatch':'포크레인에게 흙을 받으러 가요.','loading':'포크레인이 흙을 퍼서 실어 줄게요.','loaded':'흙을 다 실었어요! 초록 테두리 안에 내려 볼까요?','dump-deliver':'흙을 내릴 곳으로 가요.','unloading':'적재함을 들어 흙을 내려요.','delivered':'흙을 잘 옮겼어요! 다시 흙을 받으러 가 볼까요?','dump-exit':'덤프트럭이 주차장으로 돌아가요.'};
   if(messages[reason])toast(messages[reason]);
   if(reason==='service-call')toast(SERVICES[state.serviceRequest].kind==='fire'?'소방차가 나와요. 잠깐 기다려 주세요.':SERVICES[state.serviceRequest].name+'가 나와요. 문 앞에서 기다려 주세요.');
-  if(reason==='service-board')toast(state.drivingFire?'다시 탔어요. 불을 눌러 출동해 주세요.':state.vehicle==='police'?'경찰차 출발! 마을을 순찰해요!':'앰뷸런스에 탔어요. 마을을 둘러볼까요?');
+  if(reason==='service-board')toast(state.drivingFire?'다시 탔어요. 불을 눌러 출동해 주세요.':state.vehicle==='police'?'경찰차 출발! 마을을 순찰해요!':'구급차를 타고 아픈 친구를 도와줘요.');
   if(reason==='service-exit')toast('내렸어요. 자동차가 자기 차고로 돌아가요.');
   if(reason==='bus-walk')toast(state.buses[state.busRequest].name+'를 타러 가요!');
   if(reason==='bus-board')toast(state.drivingBus.name+'에 탔어요! 마을을 한 바퀴 돌아볼까요?');
@@ -143,6 +144,7 @@ function onStateChange(reason){
   if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
   if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
   if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
+  if(reason==='patient-rescued')chime();
   if(reason==='thief-caught'){chime();toast('잡았다! 도둑을 잡았어요!')}
   const newMessages={'train-walk':'승강장으로 기차를 타러 가요.','train-board':'다음 승강장에서 내려요. 조금만 기다려 주세요.','train-exit':'승강장에 도착했어요. 기차 여행 재미있었죠?','dog-follow':'강아지가 친구가 되었어요. 같이 산책해요!','cat-follow':'고양이가 친구가 되었어요. 같이 산책해요!'};
   if(newMessages[reason])toast(newMessages[reason]);
@@ -257,6 +259,7 @@ function pickPress({x,y,type}){
     const animal=city.animals.find(a=>belongs(a.root));if(animal)return ()=>state.visitZoo(animal.id);
     if(belongs(city.zoo)){const target=zooTapTarget(point);return ()=>target.animal?state.visitZoo(target.animal):moveTo(target)}
     const thief=city.thieves.findIndex(p=>belongs(p.root));if(thief>=0)return ()=>state.chaseThief(thief);
+    const patient=city.patients.findIndex(p=>belongs(p.root));if(patient>=0)return ()=>state.rescuePatient(patient);
     const stop=railway.platforms.find(p=>belongs(p.root));
     if(stop||railway.cars.some(belongs))return ()=>{if(!state.boardTrain(stop?.id??state.train.targetStation??state.train.stationId??'north')&&state.riding)toast('먼저 타고 있는 차에서 내려 주세요.')};
     const pet=railway.animals.find(p=>belongs(p.root));if(pet)return ()=>state.followPet(pet.id);
@@ -292,6 +295,7 @@ function ensureAudio(){
   if(audioCtx)return;const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
   audioCtx=new Audio();narrator.connect(audioCtx);
   backgroundMusic=createBackgroundMusic(audioCtx);
+  zooAudio=createZooAudio(audioCtx);
   const gain=audioCtx.createGain();gain.gain.value=0;gain.connect(audioCtx.destination);
   const osc=audioCtx.createOscillator();osc.type='triangle';osc.connect(gain);osc.start();engineOsc={osc,gain};
   const sirenGain=audioCtx.createGain();sirenGain.gain.value=0;sirenGain.connect(audioCtx.destination);const siren=audioCtx.createOscillator();siren.type='sine';siren.connect(sirenGain);siren.start();sirenOsc={osc:siren,gain:sirenGain};
@@ -309,7 +313,8 @@ function ensureAudio(){
 function updateSound(paused=false){
   if(!audioCtx)return;
   const mix=soundMix(state,audioCtx.currentTime,{paused,hidden:document.hidden,narrating:narrator.status==='speaking'});
-  backgroundMusic.setVolume(mix.musicGain);
+  zooAudio.update(state,{paused,hidden:document.hidden,narrating:['speaking','loading'].includes(narrator.status)});
+  backgroundMusic.setVolume(zooAudio.active?Math.min(mix.musicGain,.045):mix.musicGain);
   engineOsc.gain.gain.setTargetAtTime(mix.engineGain,audioCtx.currentTime,.08);engineOsc.osc.frequency.setTargetAtTime(mix.engineHz,audioCtx.currentTime,.08);
   sirenOsc.gain.gain.setTargetAtTime(mix.sirenGain,audioCtx.currentTime,.12);sirenOsc.osc.frequency.setTargetAtTime(mix.sirenHz,audioCtx.currentTime,.06);
   waterSound.gain.setTargetAtTime(mix.waterGain,audioCtx.currentTime,.08);
@@ -343,7 +348,7 @@ async function init(){
 $('exit').addEventListener('click',exitTruck);
 $('siren-toggle').addEventListener('click',()=>{if(!state.ready)return;if(state.sound)unlockAudio();state.toggleSiren();updateSound()});
 $('home').addEventListener('click',reset);
-const cityAtlas=createCityMap({dialog:$('city-map'),art:$('city-map-art'),list:$('destinations'),onStation:rideMapMetro,onSelect(place){narrator.say(place.description)},onTravel(place){
+const cityAtlas=createCityMap({dialog:$('city-map'),art:$('city-map-art'),list:$('destinations'),onStation:rideMapMetro,onTravel(place){
   $('city-map').close();
   if(state.drivingTrain||state.drivingPlane){state.cityNotice('도착해서 내린 뒤 목적지를 골라 주세요');return}
   if(!state.callHelicopter(place))state.cityNotice('지금 놀이가 끝나면 헬기를 불러 주세요');
@@ -401,6 +406,7 @@ function registerGameTools(){
     {name:'board_plane',description:'Walk to the airport and board a plane for a city sightseeing flight with automatic landing.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardPlane())throw new Error('Dismount first.');return gameSnapshot()}},
     {name:'call_helicopter',description:'Call the map helicopter for a pickup, flight and landing at one of the city map destinations.',inputSchema:{type:'object',properties:{destination:{type:'string',enum:cityLayout.destinations.map(p=>p.name)}},required:['destination'],additionalProperties:false},execute:({destination})=>{const p=cityLayout.destinations.find(p=>p.name===destination);if(!state.ready||!p||!state.callHelicopter(p))throw new Error('Finish the current activity first.');return gameSnapshot()}},
     {name:'cross_overpass',description:'Go to the curved overpass approach and cross it on foot or in your current road vehicle.',inputSchema:empty,execute:()=>{if(!state.ready||!state.startBridgeTour())throw new Error('Finish the current activity first.');return gameSnapshot()}},
+    {name:'rescue_patient',description:'While driving the ambulance, pick up a waiting patient and bring them to the hospital.',inputSchema:{type:'object',properties:{id:{type:'integer',minimum:0,maximum:2}},required:['id'],additionalProperties:false},execute:({id})=>{if(!state.ready||!state.rescuePatient(id))throw new Error('Board the ambulance and choose a waiting patient.');return gameSnapshot()}},
     {name:'visit_zoo',description:'Walk to the zoo or an animal viewing point.',inputSchema:{type:'object',properties:{animal:{type:'string',enum:cityLayout.zoo.animals.map(a=>a.id)}},additionalProperties:false},execute:({animal}={})=>{if(!state.ready||!state.visitZoo(animal))throw new Error('Choose a valid animal and dismount first.');return gameSnapshot()}},
     {name:'board_city_firetruck',description:'Summon and board the west or east fire station engine. It can respond to the village fire.',inputSchema:{type:'object',properties:{station:{type:'string',enum:['fire-west','fire-east']}},required:['station'],additionalProperties:false},execute:({station})=>{if(!state.ready||!state.boardService(station))throw new Error('Dismount first.');return gameSnapshot()}},
     {name:'chase_thief',description:'While driving the police car, pursue a thief and catch them at close range.',inputSchema:{type:'object',properties:{id:{type:'integer',minimum:0,maximum:1}},required:['id'],additionalProperties:false},execute:({id})=>{if(!state.ready||!state.chaseThief(id))throw new Error('Board the police car first.');return gameSnapshot()}},
