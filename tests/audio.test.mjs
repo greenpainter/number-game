@@ -13,7 +13,7 @@ test('dump and buses have a steady low engine, never an emergency siren; mute st
     for(let t=0;t<10;t+=.03){const m=soundMix(g,t);assert.equal(m.sirenGain,0);assert(m.engineGain>0);low=Math.min(low,m.engineHz);high=Math.max(high,m.engineHz)}
     assert(high<100);assert(high-low<=3.01);
   }
-  for(const vehicle of ['police','ambulance']){g.vehicle=vehicle;assert(soundMix(g,0).sirenGain>0);assert.equal(soundMix(g,0,{paused:true}).sirenGain,0)}
+  for(const vehicle of ['police','ambulance']){g.vehicle=vehicle;g.toggleSiren();assert(soundMix(g,0).sirenGain>0);assert.equal(soundMix(g,0,{paused:true}).sirenGain,0)}
   g.sound=false;const m=soundMix(g,0);assert.equal(m.sirenGain+m.engineGain+m.waterGain,0);
 });
 const messages=Object.keys(NARRATION_CLIPS),settle=()=>new Promise(resolve=>setImmediate(resolve));

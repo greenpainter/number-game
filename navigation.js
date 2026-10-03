@@ -1,6 +1,8 @@
 // Distances are metres. Pedestrians and vehicles use different clearances.
 import layout from './railway-layout.js';
 import city from './city-layout.js';
+import waterfront from './waterfront-layout.js';
+import {riverBlocked} from './river-geometry.js';
 export const HOME = {x:-7,z:.8};
 export const CHILD_START = {x:-7,z:5.7};
 export const FIRE = {x:7,z:6.3};
@@ -16,13 +18,16 @@ export const SERVICES={police:{name:'경찰차',building:{x:-7,z:-24},garage:{x:
 for(const station of city.fireStations)SERVICES[station.id]=station;
 export const ICE_VAN={x:3,z:-3.6}, ICE_STOP={x:3.6,z:.3};
 const rectangles = [
+  ...waterfront.homes.map(h=>{const c=Math.abs(Math.cos(h.rotation)),s=Math.abs(Math.sin(h.rotation)),w=h.width/2+.4,d=h.depth/2+1.2;return [h.x-c*w-s*d,h.x+c*w+s*d,h.z-s*w-c*d,h.z+s*w+c*d]}),
+  ...waterfront.stations.map(s=>[s.x-1.95,s.x+1.95,s.z-.1,s.z+4.4]),
   ...city.houses.map(([x,z])=>[x-3,x+3,z-2.8,z+2.8]),
+  ...city.residences.map(h=>{const c=Math.abs(Math.cos(h.rotation)),s=Math.abs(Math.sin(h.rotation)),w=h.width/2+.4,d=h.depth/2+1.2;return [h.x-c*w-s*d,h.x+c*w+s*d,h.z-s*w-c*d,h.z+s*w+c*d]}),
   ...city.fireStations.map(s=>[s.building.x-6,s.building.x+6,s.building.z-4,s.building.z+4]),
   [103,117,-58,-46],
-  ...city.zoo.animals.map(a=>[a.x-city.zoo.habitat.width/2-.1,a.x+city.zoo.habitat.width/2+.1,a.z-city.zoo.habitat.depth/2-.1,a.z+city.zoo.habitat.depth/2+.1]),
+  ...city.zoo.habitats.map(h=>[h.x-h.width/2-.1,h.x+h.width/2+.1,h.z-h.depth/2-.1,h.z+h.depth/2+.1]),
   [-23,23,-111,-91.5],[-23,23,-78.5,-59],
   ...city.parkedCars.map(([x,z,a])=>a?[x-2.1,x+2.1,z-.95,z+.95]:[x-.95,x+.95,z-2.1,z+2.1]),
-  ...layout.houses.map(([x,z])=>[x-2.8,x+2.8,z-2.6,z+2.6]),
+  ...layout.houses.map(([x,z],i)=>{const a=layout.houseRotations?.[i]??0,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),w=c*2.8+s*2.6,d=s*2.8+c*2.6;return [x-w,x+w,z-d,z+d]}),
   [layout.station.x-3,layout.station.x+3,layout.station.z-2.5,layout.station.z+2.5],
   ...layout.benches.map(([x,z])=>[x-1.2,x+1.2,z-.275,z+.275]),
   ...layout.stops.slice(1).flatMap(s=>[-5,4.8].map(x=>{
@@ -47,12 +52,12 @@ export function truckContains(x,z,truck,padding=.32){
 export function walkable(x,z,{radius=.86,truck=null,vehicles=[]}={}){
   const margin=radius+.15;
   if(!Number.isFinite(x)||!Number.isFinite(z)||x<WORLD.minX+margin||x>WORLD.maxX-margin||z<WORLD.minZ+margin||z>WORLD.maxZ-margin)return false;
+  if(riverBlocked(x,z,radius))return false;
   if(rectangles.some(([x0,x1,z0,z1])=>x>x0-radius&&x<x1+radius&&z>z0-radius&&z<z1+radius))return false;
   if(trees.some(([tx,tz])=>(x-tx)**2+(z-tz)**2<(.36+radius)**2))return false;
   return (!truck||!truckContains(x,z,truck,radius))&&!vehicles.some(v=>truckContains(x,z,v,radius));
 }
-const STEP=.5, MIN_X=WORLD.minX, MIN_Z=WORLD.minZ, COLS=Math.floor((WORLD.maxX-MIN_X)/STEP)+1, ROWS=Math.floor((WORLD.maxZ-MIN_Z)/STEP)+1;
-const point=i=>({x:MIN_X+(i%COLS)*STEP,z:MIN_Z+Math.floor(i/COLS)*STEP});
+const MIN_X=WORLD.minX,MIN_Z=WORLD.minZ;
 function crossesBox(ax,az,bx,bz,x0,x1,z0,z1){
   let lo=0,hi=1;
   for(const [start,delta,min,max] of [[ax,bx-ax,x0+1e-9,x1-1e-9],[az,bz-az,z0+1e-9,z1-1e-9]]){
@@ -71,6 +76,10 @@ function clearSegment(a,b,options,startIsValid=false){
   }
   const radius=options.radius??.86,margin=radius+.15;
   if(b.x<WORLD.minX+margin||b.x>WORLD.maxX-margin||b.z<WORLD.minZ+margin||b.z>WORLD.maxZ-margin)return false;
+  if(Math.max(a.x,b.x)>221-radius&&Math.min(a.x,b.x)<269+radius){
+    const steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.z-a.z)/.25));
+    for(let i=0;i<=steps;i++)if(riverBlocked(a.x+(b.x-a.x)*i/steps,a.z+(b.z-a.z)*i/steps,radius))return false;
+  }
   for(const [x0,x1,z0,z1] of rectangles)if(crossesBox(a.x,a.z,b.x,b.z,x0-radius,x1+radius,z0-radius,z1+radius))return false;
   const dx=b.x-a.x,dz=b.z-a.z,length2=dx*dx+dz*dz;
   for(const [x,z] of trees){
@@ -85,18 +94,26 @@ function clearSegment(a,b,options,startIsValid=false){
   return true;
 }
 const staticCells=new Map();
-function cellsFor(radius){
-  if(!staticCells.has(radius)){
+function cellsFor(radius,step,cols,rows){
+  const key=`${radius}:${step}`;
+  if(!staticCells.has(key)){
     if(staticCells.size===8)staticCells.delete(staticCells.keys().next().value);
-    staticCells.set(radius,new Uint8Array(COLS*ROWS));
+    staticCells.set(key,new Uint8Array(cols*rows));
   }
-  return staticCells.get(radius);
+  return staticCells.get(key);
 }
 export function findPath(start,target,options={}){
   if(!walkable(target.x,target.z,options))return null;
   if(clearSegment(start,target,options))return [{x:target.x,z:target.z}];
+  // Long journeys first use a coarse grid, checking the entire length of every
+  // edge against the same obstacles. Narrow alleys retain the fine-grid fallback.
+  if(!options.gridStep&&Math.hypot(target.x-start.x,target.z-start.z)>40){
+    const coarse=findPath(start,target,{...options,gridStep:4});if(coarse)return coarse;
+  }
+  const STEP=options.gridStep??.5,COLS=Math.floor((WORLD.maxX-MIN_X)/STEP)+1,ROWS=Math.floor((WORLD.maxZ-MIN_Z)/STEP)+1;
+  const point=i=>({x:MIN_X+(i%COLS)*STEP,z:MIN_Z+Math.floor(i/COLS)*STEP});
   // Evaluate only visited cells; expanding the map must not scan the entire world per tap.
-  const staticCache=cellsFor(options.radius??.86),cache=new Map(),valid=i=>{
+  const staticCache=cellsFor(options.radius??.86,STEP,COLS,ROWS),cache=new Map(),valid=i=>{
     if(!cache.has(i)){
       const p=point(i),radius=options.radius??.86;
       if(!staticCache[i])staticCache[i]=walkable(p.x,p.z,{radius})?1:2;

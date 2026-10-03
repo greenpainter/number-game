@@ -373,6 +373,498 @@
       "file": "487432e522ee.mp3",
       "durationSeconds": 4.115,
       "sha256": "712130bca6becfcbaf1eec6f6db3284539c0ff616d7d7658cd911608ad5b7cbc"
+    },
+    {
+      "text": "잡았다! 도둑을 잡았어요!",
+      "file": "94a8163f8c3c.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "c2a599c77f13e0c46a99c6c5489d7a20b274671be8d7cf46790f40d827a228bd"
+    },
+    {
+      "text": "헬리콥터가 데리러 와요.",
+      "file": "b8921e0f6586.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "0af9826fd50f21f47faca81581081e25aadf24b03acb7b3f00cafb8237baca35"
+    },
+    {
+      "text": "고가도로 입구로 가요. 곡선 다리를 건너요.",
+      "file": "8190b25979ea.mp3",
+      "durationSeconds": 4.18,
+      "sha256": "3ce4d804ab8e2de4091d70c71dacc0220985cbe1f08034151e7a461549fded19"
+    },
+    {
+      "text": "고가도로를 건넜어요!",
+      "file": "3f72c442d2b9.mp3",
+      "durationSeconds": 2.02,
+      "sha256": "dea7179084d8aed7962403b0a21711fd3ce09e7e169144e3c9885a58645177ff"
+    },
+    {
+      "text": "공항으로 걸어가서 비행기를 타요.",
+      "file": "f07c71eedd79.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "0e1077078b342166c04af988baa3d4c03cff354e16ed64f2f2d8980b55a134c2"
+    },
+    {
+      "text": "비행기를 타고 도시 하늘을 여행해요.",
+      "file": "d34c042516d4.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "040e016bcc8e1d3bb65383158352eee9f088af3cde08c688d2eeb2729f796bce"
+    },
+    {
+      "text": "공항에 도착했어요!",
+      "file": "5efbc7669bf0.mp3",
+      "durationSeconds": 2.02,
+      "sha256": "85e5f1601984341bb2579f6022f30d626a3028d7e7b4caa39aaee0572eee049f"
+    },
+    {
+      "text": "동물 친구는 차에서 내려서 만나러 가요.",
+      "file": "e89ccbc52ce8.mp3",
+      "durationSeconds": 3.692,
+      "sha256": "5702c4523a6f01e393b21ee4e85ee9d23903ff8611a729c90b8087396ad52c26"
+    },
+    {
+      "text": "동물원으로 가요. 동물 친구를 눌러 보세요.",
+      "file": "33375960426b.mp3",
+      "durationSeconds": 4.319,
+      "sha256": "98526373cb8cba5c0fefde38190df9e27770ea77336f7c4deb4e180639ca9d2a"
+    },
+    {
+      "text": "경찰차를 타고 도둑을 따라가요.",
+      "file": "bde4043a3390.mp3",
+      "durationSeconds": 2.856,
+      "sha256": "36b75ff17535f318887d234ff9f42884ec8e49b37c386be47576ed1a0af22f1b"
+    },
+    {
+      "text": "도둑을 따라가요! 가까이 가면 잡을 수 있어요.",
+      "file": "bf6838e97417.mp3",
+      "durationSeconds": 4.598,
+      "sha256": "efd35a539d14b29ef971bad9d98ca998b74117d25ecb583f30522d22e50b6359"
+    },
+    {
+      "text": "도둑 발견! 줄무늬 옷의 도둑을 눌러 따라가요.",
+      "file": "4e0bf8cf6df5.mp3",
+      "durationSeconds": 5.155,
+      "sha256": "7724f6af4dc62b0dafda8387ac6fba9a2221be04d7e8be5538249f86dadcc156"
+    },
+    {
+      "text": "비행기는 차에서 내려서 타요.",
+      "file": "220b9b494639.mp3",
+      "durationSeconds": 2.508,
+      "sha256": "318759b298144f7b74dbf89989918d0d80000c369445caeeb52425f7426e5eec"
+    },
+    {
+      "text": "도착해서 내린 뒤 목적지를 골라 주세요.",
+      "file": "c020ae7ab033.mp3",
+      "durationSeconds": 3.692,
+      "sha256": "18c0ade1798de55317d3214e6d5fd6d4f4841bb988bfacd16f4a2e9755251c86"
+    },
+    {
+      "text": "지금 놀이가 끝나면 헬기를 불러 주세요.",
+      "file": "933694b7ea04.mp3",
+      "durationSeconds": 3.692,
+      "sha256": "993d7c1057fd632a7b065c6564347e494a7b618937e258dbb27ed23c8654091c"
+    },
+    {
+      "text": "지하철 입구로 걸어가요.",
+      "file": "b91ca77ff952.mp3",
+      "durationSeconds": 2.229,
+      "sha256": "8d07c74adbd81e86d0387b2c707462737101a08a7e2e4a4c0b186096505ad840"
+    },
+    {
+      "text": "계단을 내려가 지하 승강장으로 가요.",
+      "file": "078ca4cc892a.mp3",
+      "durationSeconds": 3.274,
+      "sha256": "6e83b1a6af5ada321a90067a583c7ea76b3e9c6c4a09d92c1ad623cf0c2d8a5b"
+    },
+    {
+      "text": "지하철 문이 열렸어요. 타 볼까요?",
+      "file": "757a97fe1613.mp3",
+      "durationSeconds": 3.413,
+      "sha256": "5efdca98183ebde6f5065563083382fcc69bd4e78537cfb6beca31fc5c75a460"
+    },
+    {
+      "text": "지상에 도착했어요. 새 동네를 둘러봐요!",
+      "file": "7258218a15b6.mp3",
+      "durationSeconds": 3.971,
+      "sha256": "988e0227cc711c9da48a1ee0b22da7b911f2facc42549102299b6f5afdf6c4fa"
+    },
+    {
+      "text": "선착장으로 유람선을 타러 가요.",
+      "file": "1b26496e941c.mp3",
+      "durationSeconds": 3.065,
+      "sha256": "5e4c6017ae6726f7e0fb9fd2e5223dc9457ad3f2b9c98960dc51a377f5f644cf"
+    },
+    {
+      "text": "유람선에 탔어요. 강을 따라 여행해요!",
+      "file": "c951c1a6a16f.mp3",
+      "durationSeconds": 3.831,
+      "sha256": "60484ae985123897f0c3c2ab5d804a0c7f1ce280c34ef7d99afbd337b058b6aa"
+    },
+    {
+      "text": "선착장에 도착했어요. 조심히 내려요.",
+      "file": "81c0f130cd8b.mp3",
+      "durationSeconds": 3.831,
+      "sha256": "df520a26d5ec3a07a380150980e1da1773e7e7d40372a796685801d0c14b0337"
+    },
+    {
+      "text": "강은 다리로 건너요. 유람선은 선착장에서 타요.",
+      "file": "788db5de8d26.mp3",
+      "durationSeconds": 4.737,
+      "sha256": "29fa78666debe1b5d558ca60b511e67f891133d33b7c06b9004c38871ecb9e8a"
+    },
+    {
+      "text": "어느 역으로 갈까요? 도착할 역을 골라 주세요.",
+      "file": "1bf7ed5a02c1.mp3",
+      "durationSeconds": 4.458,
+      "sha256": "134e7e85196cbf6aeff3f20e858aaca1ee4abcb399f326bac3f5d50f91329afb"
+    },
+    {
+      "text": "헬리콥터를 타고 목적지로 날아가요.",
+      "file": "e0510dbd379c.mp3",
+      "durationSeconds": 3.274,
+      "sha256": "120fff53e6aea4e9c8ef44d66194ec4d0ec7818d093d298e2345f569aaf082e8"
+    },
+    {
+      "text": "목적지에 도착했어요. 즐겁게 놀아요!",
+      "file": "0ea23882ff0f.mp3",
+      "durationSeconds": 3.831,
+      "sha256": "d2698008f3e2d01cb7fe7cbcba0f35f11ba35e824418551deed11f9c94067e2e"
+    },
+    {
+      "text": "문이 닫힙니다. 다음 역은 중앙마을역입니다.",
+      "file": "cc42dbea8cfa.mp3",
+      "durationSeconds": 4.319,
+      "sha256": "46659c0c78fedd368ee30cfd89ed732fd674ca3be969d46f2e2ed398adfba8d7"
+    },
+    {
+      "text": "중앙마을역에 도착했어요.",
+      "file": "771af97a51b0.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "3fd611db586da296f6c8d0106a3dd110d5c3975948438c4e315b49f814523f41"
+    },
+    {
+      "text": "문이 닫힙니다. 다음 역은 동물원역입니다.",
+      "file": "7260b8262b4c.mp3",
+      "durationSeconds": 4.18,
+      "sha256": "237c08f4582b4236c0beb6e320d37522d6d35e4a7f1f4ff66852ffec29c66e0a"
+    },
+    {
+      "text": "동물원역에 도착했어요.",
+      "file": "95319e9899ec.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "bea222bd3c78b9ca1183c974dd4ad33c12a7f96b99475b5e8b9cfba1768f8544"
+    },
+    {
+      "text": "문이 닫힙니다. 다음 역은 공항역입니다.",
+      "file": "a29677afe3f6.mp3",
+      "durationSeconds": 3.901,
+      "sha256": "09f36aa345ddd07af2a15d2d59a1036ba3a87b04dc5daa0379a76a0d2aa3442d"
+    },
+    {
+      "text": "공항역에 도착했어요.",
+      "file": "26062054f020.mp3",
+      "durationSeconds": 2.09,
+      "sha256": "e0eefd3ea51ccdf2198b7daf6d374eeac7ddcc5714980e2967103456e4c95848"
+    },
+    {
+      "text": "문이 닫힙니다. 다음 역은 강변공원역입니다.",
+      "file": "e0d99b09d85e.mp3",
+      "durationSeconds": 4.319,
+      "sha256": "4686fe8c9c4d115db07fcdb91fdbd550f79749ee28c0013e0ffb915b3be8a310"
+    },
+    {
+      "text": "강변공원역에 도착했어요.",
+      "file": "70221fe63685.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "720b4727029753c5a85678f3e9ee90a47d1796b2c86330a3621806a731a6564b"
+    },
+    {
+      "text": "코끼리 만나러 가요.",
+      "file": "e64a02f2088c.mp3",
+      "durationSeconds": 1.95,
+      "sha256": "88244f0504ddf537a5ea0cd51edd2c7afe6fabf21e9eddd232140a515faa3e34"
+    },
+    {
+      "text": "아기 코끼리 만나러 가요.",
+      "file": "2e8c54871a70.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "401b9444ec6c6a5d333f524e5f320caf51284e565d7d36b66e81ff25aa2a1331"
+    },
+    {
+      "text": "기린 만나러 가요.",
+      "file": "e0e7cec0c2a6.mp3",
+      "durationSeconds": 1.811,
+      "sha256": "6244da0e6497474d4f692ab0456dd13e90127db60f5a1098bec4328f48722753"
+    },
+    {
+      "text": "아기 기린 만나러 가요.",
+      "file": "027aa08f0fed.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "77df213684e4b0ab98447924f11d5454a8a2e4367a3975dfbeb350589b92c15b"
+    },
+    {
+      "text": "얼룩말 만나러 가요.",
+      "file": "d00f7f177d56.mp3",
+      "durationSeconds": 2.09,
+      "sha256": "590bddbd9486c9698152768707aedede4cd0c82ac47411fc04b9e904996caa8f"
+    },
+    {
+      "text": "아기 얼룩말 만나러 가요.",
+      "file": "6e3c79dc27d9.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "5fd08532506d941259c23c5c44b31046316fff9697f5d93402d923f76d13840c"
+    },
+    {
+      "text": "사자 만나러 가요.",
+      "file": "47c44344ebbe.mp3",
+      "durationSeconds": 1.881,
+      "sha256": "288dba581406d02b2d86b7c9efd6a2844bdcc3c872865d5571bc3d790d0a53c3"
+    },
+    {
+      "text": "아기 사자 만나러 가요.",
+      "file": "47bf929b16be.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "2cc28ada120643c62d87c9851d2db5a8a43c6cf81e4cb70e4981d2f57b676544"
+    },
+    {
+      "text": "판다 만나러 가요.",
+      "file": "b5475395b5d5.mp3",
+      "durationSeconds": 1.881,
+      "sha256": "fe6eea21b9a32e18453c76f00056ca9d87c4c0137c09028efecd2aec0b479b36"
+    },
+    {
+      "text": "아기 판다 만나러 가요.",
+      "file": "ee0f13ce04a1.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "94f869a57add24cca36f7966645806af1ce55878c481d4ec784599de6f69aa53"
+    },
+    {
+      "text": "펭귄 만나러 가요.",
+      "file": "957d184221f1.mp3",
+      "durationSeconds": 1.95,
+      "sha256": "ba133d678092d08b028e3f2e6fdeb97272c8c20ba2a175b68a4991f22e73bf1b"
+    },
+    {
+      "text": "아기 펭귄 만나러 가요.",
+      "file": "bbdbf53e2f05.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "579b56dfd81f057acf658aaa830aacc07465ccbd2592d8dc75f876a456428fb1"
+    },
+    {
+      "text": "하마 만나러 가요.",
+      "file": "acea80667541.mp3",
+      "durationSeconds": 1.881,
+      "sha256": "ef34e12fa4e7a95e26abcc00cd65ba1c7a4b646c9ae1a15229a0e1721b85228f"
+    },
+    {
+      "text": "아기 하마 만나러 가요.",
+      "file": "807c99e14f84.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "8e394207d4b75aa2140c3c81fe730e451f18dc12ca99fe0cf1e1c5a85b9ffafb"
+    },
+    {
+      "text": "코뿔소 만나러 가요.",
+      "file": "921e12e3e791.mp3",
+      "durationSeconds": 2.09,
+      "sha256": "c88cd37927762bebfcd475de53b2c39ca0006a41f9ca466775e00c4a748fb8ae"
+    },
+    {
+      "text": "아기 코뿔소 만나러 가요.",
+      "file": "fdc4d26a1899.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "3bd33395e499c38a79a83bbc2d380f61006307cd8b9956518c1b06d0e3da7f2b"
+    },
+    {
+      "text": "곰 만나러 가요.",
+      "file": "13a721476962.mp3",
+      "durationSeconds": 1.741,
+      "sha256": "fbadb08de4b0159db7d82ec21fabd2fa4fbb4482326f3eb6b24ef665e17e4da9"
+    },
+    {
+      "text": "아기 곰 만나러 가요.",
+      "file": "c939582e6d91.mp3",
+      "durationSeconds": 2.09,
+      "sha256": "b57cc83f9bee4a336226f090fccc44108a509e658a742711cedb7fad48be310d"
+    },
+    {
+      "text": "홍학 만나러 가요.",
+      "file": "956da58aac4f.mp3",
+      "durationSeconds": 1.881,
+      "sha256": "6750e81565d0c62b9413c0203a9c9e2e1ca5ff40eb4d8b9bb89746a0b628405a"
+    },
+    {
+      "text": "아기 홍학 만나러 가요.",
+      "file": "b9cb5ff30bf4.mp3",
+      "durationSeconds": 2.229,
+      "sha256": "bb16806b5fd4aa95109662b0ff420127b83a23d1291544a98ac784daad5911e4"
+    },
+    {
+      "text": "캥거루 만나러 가요.",
+      "file": "4d1db9b4d806.mp3",
+      "durationSeconds": 2.02,
+      "sha256": "56c9da31516267cfe09ed3bd64f4e59a4725c591a838551d09998f0a71682ae5"
+    },
+    {
+      "text": "아기 캥거루 만나러 가요.",
+      "file": "a150ab58f0bd.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "f62361de1d2ed54a5717a33f088925868a3aa90d22e422fedf33435c48620acc"
+    },
+    {
+      "text": "육지거북 만나러 가요.",
+      "file": "3bdfe96584f6.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "4cacc877f7b32136f3dcdcf7c943c3035bd9de2f3d74a98e6c8988ecfcd39d7a"
+    },
+    {
+      "text": "아기 육지거북 만나러 가요.",
+      "file": "9cc9deba3a9c.mp3",
+      "durationSeconds": 2.577,
+      "sha256": "4eb05edd70e3af92c26d693d5e7928af2adc8f7e81412d4a88189dda5f50ea1f"
+    },
+    {
+      "text": "킥보드 출발! 바닥을 누르면 슝슝 달려요.",
+      "file": "89c8b47cb173.mp3",
+      "durationSeconds": 4.458,
+      "sha256": "60c675a594a501a5fd62a9df3485d29d08e322f64a544aa19c725c88c0661881"
+    },
+    {
+      "text": "킥보드에서 내렸어요. 걸어서 탐험해요.",
+      "file": "d4f4de3173fe.mp3",
+      "durationSeconds": 3.831,
+      "sha256": "08f12360d1d65dd1cb1053eef8a04bd605ef2ae2f0224256e668628213e2d9ae"
+    },
+    {
+      "text": "지금 놀이를 마치고 킥보드를 타요.",
+      "file": "ff120f8bca13.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "3d67c823705196c26370079b0383ecb0b09f420bbe77e0e6ef55725898b63bc8"
+    },
+    {
+      "text": "엄마랑 손잡고 걸어요!",
+      "file": "acd30ee1631f.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "844800bac8c790a08eae42c5a7d573501abc7a47242758a1247e1e218f9043db"
+    },
+    {
+      "text": "아빠랑 손잡고 걸어요!",
+      "file": "b80508a5abb5.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "21b392e8bbeb48bb6bee805ceb779f8fc47d97bb3593da73c4f78084ea61b714"
+    },
+    {
+      "text": "엄마 아빠랑 손잡고 걸어요!",
+      "file": "2b56004f8aab.mp3",
+      "durationSeconds": 2.786,
+      "sha256": "569e1f8318e434c2793614b36505746f619548482288b67adb8d54734a5fece3"
+    },
+    {
+      "text": "엄마는 잠깐 기다릴게요.",
+      "file": "c0dc6904ceed.mp3",
+      "durationSeconds": 2.368,
+      "sha256": "5c0012ad24a4d9fd46ab8e82ec55c5bf5f03cab120a159cf6128e7bcf0965fc0"
+    },
+    {
+      "text": "아빠는 잠깐 기다릴게요.",
+      "file": "e70c6658c9a2.mp3",
+      "durationSeconds": 2.368,
+      "sha256": "60c5550d821f5b8c2dc2ab4642597ea1ad8e4637fc22eb4bf9afa02fbd71c81b"
+    },
+    {
+      "text": "지금 놀이를 마치고 손을 잡아요.",
+      "file": "1761d271320d.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "e30314624b2a2141dd327a94f7678d04e971ca2c3c96985806e31f931bb2cca9"
+    },
+    {
+      "text": "역 입구를 누르면 다음 역으로 출발해요.",
+      "file": "c83654060e39.mp3",
+      "durationSeconds": 3.553,
+      "sha256": "f626fde3d418faa1154da8d828acee5c703b88468300763ed43fd2f7ba7c7d6a"
+    },
+    {
+      "text": "익숙한 우리 마을에서 다시 출발해요.",
+      "file": "90eebb038849.mp3",
+      "durationSeconds": 3.344,
+      "sha256": "c60cdd1d05cbccf8031df8a38d9c6b2e530285ce9a8e70f404a3df86c186e427"
+    },
+    {
+      "text": "빨강·파랑·초록 버스가 기다려요.",
+      "file": "248cf1caca04.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "48e81177b25dd7ce997f067f5eba1a9897dfba7ca762a4bc0acafecf4a2e8b3b"
+    },
+    {
+      "text": "경찰차를 타고 도시를 순찰해요.",
+      "file": "18bfb9c4a307.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "11a2700e37e77422c48e3df7e8eab520538fc6a8efaa74f3957e91b2ded604ae"
+    },
+    {
+      "text": "비행기를 타고 도시를 내려다봐요.",
+      "file": "c1eb1f2180df.mp3",
+      "durationSeconds": 2.786,
+      "sha256": "166e516f4a38b46906ddfd9a4c07e9efd2cbc23ff34ba35412b5c503ee8f763f"
+    },
+    {
+      "text": "열두 종류의 동물 가족을 만나요.",
+      "file": "69f764584d0b.mp3",
+      "durationSeconds": 3.065,
+      "sha256": "db69c39cd8498f6e96ca8839df6bbb4e8089865dba463d463e756b90ab7f34dd"
+    },
+    {
+      "text": "산 아래 어두운 터널을 탐험해요.",
+      "file": "447796ff4be4.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "f0fa958e422c2b5c1836e6c627ecc31a269f8d311c3d300c3482525f71e87d1a"
+    },
+    {
+      "text": "서쪽 마을을 지키는 소방서예요.",
+      "file": "1a2319dffba2.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "9a37a88e136e04b35e9aa537d3b94319abae8eecc11433538ac100f92871b050"
+    },
+    {
+      "text": "동쪽 마을에서 소방차를 불러요.",
+      "file": "37f338d92a3e.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "43c6a8c91e31670a5e4951a0d563f627491e30e65c8e8e2be1d872d2db98a1f3"
+    },
+    {
+      "text": "휘어진 고가도로 위로 올라가요.",
+      "file": "1cd554e912a5.mp3",
+      "durationSeconds": 2.786,
+      "sha256": "637108861fab182768efef67b1ef54b073e10e3540f9dbeb5c9dea0ddfd72b3d"
+    },
+    {
+      "text": "숲길을 따라 다양한 집을 구경해요.",
+      "file": "3b7b8167ecbe.mp3",
+      "durationSeconds": 3.135,
+      "sha256": "dfb0b2d31331a1f62b0eea2311a928c8a2a1329d1f92ea52aefb0bd662c28a31"
+    },
+    {
+      "text": "정원과 곡선 도로가 있는 동네예요.",
+      "file": "ca8c2900dc79.mp3",
+      "durationSeconds": 3.135,
+      "sha256": "86311c84d91280fbbda2439574f8e532736d40fb114158b8916e290f8655d0a1"
+    },
+    {
+      "text": "강변 산책길과 다리를 둘러봐요.",
+      "file": "c6ee6cab44f2.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "627a0d2bce23835f052a433794bb7254e48b0f1b300c7515325af45bd1a7a63b"
+    },
+    {
+      "text": "유람선을 타고 강을 여행해요.",
+      "file": "fe4723e3ef6f.mp3",
+      "durationSeconds": 2.647,
+      "sha256": "e1c01f61809361fd5c1fa4bd19b9050541b618b9bd8f3ff382242e85ec774f60"
+    },
+    {
+      "text": "강 건너 새로운 동네를 찾아가요.",
+      "file": "12e50cc6e0e2.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "3d21cb1cf6cee755b2e8ef9324a9bb067ebd3cd6186a3f76e6264c9aae9eea4d"
     }
   ]
 }

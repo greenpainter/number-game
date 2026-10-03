@@ -1,6 +1,7 @@
 import layout from './city-layout.js';
+import {noticeVoice} from './city-voice.js';
 import {walkable} from './navigation.js';
-import {trafficRoutes,bridgeRoute} from './road-layout.js';
+import {trafficRoutes,bridgeRoute,TRAFFIC_COUNT} from './road-layout.js';
 const overpass=bridgeRoute();
 const smooth=t=>t*t*(3-2*t);
 
@@ -15,8 +16,8 @@ export function routePoint(route,distance,closed=true){
 }
 export const cityActions={
   resetCity(){
-    this.city={time:0,notice:'',noticeTime:0,chase:null,chaseTimer:0,caught:0,
-      traffic:Array.from({length:12},(_,i)=>{const route=i%4,distance=Math.floor(i/4)*routeLength(trafficRoutes[route])/3;return {route,distance,car:routePoint(trafficRoutes[route],distance),moving:true}}),
+    this.city={time:0,notice:'',noticeTime:0,chase:null,chaseTimer:0,caught:0,viewing:null,
+      traffic:Array.from({length:TRAFFIC_COUNT},(_,i)=>{const route=i%trafficRoutes.length,distance=Math.floor(i/trafficRoutes.length)*routeLength(trafficRoutes[route],route<3)/3;return {route,distance,car:routePoint(trafficRoutes[route],distance,route<3),moving:true}}),
       people:layout.walkRoutes.map((route,i)=>({route:i,distance:i*4,car:routePoint(route,i*4),moving:true})),
       thieves:layout.thiefRoutes.map((route,i)=>({id:i,distance:0,car:routePoint(route,0),phase:'wandering',cooldown:0,seen:false})),
       bridge:{phase:'idle',distance:0},
@@ -29,6 +30,7 @@ export const cityActions={
     if(this.drivingTrain||this.drivingPlane||this.activityLocked||['loading','unloading'].includes(this.mode))return false;
     if(!Number.isFinite(destination.x)||!Number.isFinite(destination.z)||!walkable(destination.x,destination.z,{radius:.5}))return false;
     if(this.riding&&!this.exitTruck())return false;
+    for(const trip of Object.values(this.transit))if(trip.phase==='approach')trip.phase='idle';
     h.destination={x:destination.x,z:destination.z};h.name=destination.name??'목적지';h.phase='waiting';h.time=0;
     this.city.chase=null;this.city.bridge.phase='idle';
     this.cityNotice('헬기가 데리러 와요!');return true;
@@ -72,7 +74,7 @@ export const cityActions={
       this.child={...spot,angle:h.car.angle};this.riding=false;this.vehicle=null;this.mode='idle';h.phase='departing';this.cityNotice(h.name+' 도착!');
     }else h.phase='idle';
   },
-  cityNotice(text){this.city.notice=text;this.city.noticeTime=6;this.changed('city-notice')},
+  cityNotice(text){this.city.notice=text;this.city.speech=noticeVoice(text);this.city.noticeTime=6;this.changed('city-notice')},
   boardPlane(){
     if(this.drivingPlane)return true;
     if(this.riding||this.activityLocked)return false;
@@ -86,8 +88,10 @@ export const cityActions={
   },
   visitZoo(id){
     const animal=layout.zoo.animals.find(a=>a.id===id);
+    if(id!==undefined&&!animal)return false;
     if(this.riding){this.cityNotice('동물 친구는 차에서 내려서 만나러 가요');return false}
     if(!this.moveTo(animal?.view??layout.zoo.entrance))return false;
+    this.city.viewing=animal?.id??null;
     this.cityNotice(animal?`${animal.name} 만나러 가요`:'동물원으로 가요 · 동물을 눌러 가까이 가세요');return true;
   },
   chaseThief(id){
@@ -105,10 +109,14 @@ export const cityActions={
       city.bridge.distance+=dt*(this.riding?7:4.5);Object.assign(this.actor,routePoint(overpass,city.bridge.distance,false));
       if(city.bridge.distance>=routeLength(overpass,false)){this.actor.height=0;city.bridge.phase='idle';this.mode='idle';this.cityNotice('고가도로를 건넜어요!')}
     }
-    if(city.noticeTime>0){city.noticeTime-=dt;if(city.noticeTime<=0){city.notice='';this.changed('city-notice')}}
+    if(city.noticeTime>0){city.noticeTime-=dt;if(city.noticeTime<=0){city.notice='';city.speech=null;this.changed('city-notice')}}
     const actor=this.actor;
+    if(city.viewing&&!this.riding&&this.mode==='idle'){
+      const animal=layout.zoo.animals.find(a=>a.id===city.viewing);
+      if(animal&&Math.hypot(actor.x-animal.view.x,actor.z-animal.view.z)<1)actor.angle=Math.atan2(animal.x-actor.x,animal.z-actor.z);
+    }
     for(const traffic of city.traffic){
-      const route=trafficRoutes[traffic.route],closed=traffic.route!==3,total=routeLength(route,false);
+      const route=trafficRoutes[traffic.route],closed=traffic.route<3,total=routeLength(route,false);
       // Bridge traffic reverses at its approaches; it never cuts across the empty space below.
       const travel=traffic.distance+dt*5.1,leg=travel%(total*2),reverse=!closed&&leg>total;
       const next=routePoint(route,closed?travel:(reverse?total*2-leg:leg),closed);if(reverse)next.angle+=Math.PI;
@@ -129,6 +137,7 @@ export const cityActions={
       thief.distance+=dt*(thief.phase==='fleeing'?2.1:.7);Object.assign(thief.car,routePoint(layout.thiefRoutes[thief.id],thief.distance));
       if(city.chase===thief.id&&this.vehicle==='police'&&near<3.7){
         thief.phase='caught';thief.cooldown=90;city.caught++;city.chase=null;this.path=[];this.target=null;this.mode='idle';this.cityNotice(`도둑을 잡았어요! · ${city.caught}명 검거`);
+        this.changed('thief-caught');
       }
     }
     if(city.chase!==null){

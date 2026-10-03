@@ -1,4 +1,6 @@
 import layout from './city-layout.js';
+import waterfront from './waterfront-layout.js';
+import {riverHeight} from './river-geometry.js';
 
 // The same sampled curves are exported to Blender by build_city_refined.py.
 export function ringRoad(offset=0){
@@ -16,4 +18,6 @@ export function bridgeRoute(){
   }
   points.push(controls.at(-1));return points;
 }
-export const trafficRoutes=[ringRoad(-2.5),ringRoad(2.5).reverse(),layout.trafficRoutes[2],bridgeRoute()];
+const riverCrossing=Array.from({length:72},(_,i)=>{const x=196+i*2,z=-100;return [x,z,riverHeight(x,z)]});
+export const trafficRoutes=[ringRoad(-2.5),ringRoad(2.5).reverse(),layout.trafficRoutes[2],bridgeRoute(),...layout.districtRoads.map(r=>r.points),waterfront.road,riverCrossing];
+export const TRAFFIC_COUNT=trafficRoutes.length*3;

@@ -4,6 +4,11 @@ import {readFileSync} from 'node:fs';
 import {performance} from 'node:perf_hooks';
 import * as THREE from '../vendor/three.module.js';
 import {acceleratePicking} from '../picking.js';
+import cityLayout from '../city-layout.js';
+import {zooTapTarget} from '../zoo-interaction.js';
+import waterfrontLayout from '../waterfront-layout.js';
+import {METRO_PLATFORM,METRO_TRAIN_Z,metroPathPoint} from '../metro-path.js';
+import {riverHeight} from '../river-geometry.js';
 
 // Read actual shipped geometry without loading browser-only textures.
 function loadMeshes(name){
@@ -34,6 +39,15 @@ function loadMeshes(name){
   const root=new THREE.Group();for(const i of json.scenes[json.scene??0].nodes)root.add(nodes[i]);root.updateMatrixWorld(true);return root;
 }
 const native=THREE.Mesh.prototype.raycast;
+test('all six bridge piers stay below the exported driving surface',()=>{
+  const world=loadMeshes('waterfront-world');world.traverse(o=>{if(o.isMesh)acceleratePicking(o)});
+  // Sample both driving lanes, clear of the raised centre-line paint.
+  for(const b of waterfrontLayout.bridges)for(const dx of [-27,27])for(const edge of [-.65,0,.65])for(const dz of [-3,3]){
+    const x=b.x+dx+edge,z=b.z+dz,ray=new THREE.Raycaster(new THREE.Vector3(x,20,z),new THREE.Vector3(0,-1,0));
+    const hit=ray.intersectObject(world,true)[0];assert(hit);const deck=.20+riverHeight(x,z);
+    assert(Math.abs(hit.point.y-deck)<.06,`Pier protrudes at ${x},${z}: ${hit.point.y}, deck ${deck}`);
+  }
+});
 function compare(mesh,ray){
   const expected=[],actual=[];native.call(mesh,ray,expected);mesh.raycast(ray,actual);
   const order=(a,b)=>a.faceIndex-b.faceIndex;expected.sort(order);actual.sort(order);
@@ -63,5 +77,43 @@ test('picking respects clipping, sidedness, non-indexed geometry and shared clon
       compare(mesh,ray);compare(clone,ray);
     }
     geometry.setDrawRange(0,90);compare(mesh,new THREE.Raycaster(new THREE.Vector3(0,0,6),new THREE.Vector3(0,0,-1)));
+  }
+});
+
+test('actual exported elephant enclosure routes fence and floor hits to the elephant',()=>{
+  const world=loadMeshes('city-world'),h=cityLayout.zoo.habitats.find(h=>h.id==='elephant');
+  world.traverse(o=>{if(o.isMesh)acceleratePicking(o)});
+  for(const target of [new THREE.Vector3(h.x,.3,h.z),new THREE.Vector3(h.x,1,h.z+14),new THREE.Vector3(h.x,1.3,h.z+15.5)]){
+    const origin=new THREE.Vector3(h.x+10,20,h.z+35),ray=new THREE.Raycaster(origin,target.clone().sub(origin).normalize());
+    const hit=ray.intersectObject(world,true)[0];assert(hit);let root=hit.object;while(root.parent&&root.parent!==world)root=root.parent;
+    assert.equal(root.name,'Zoo');assert.deepEqual(zooTapTarget(hit.point),{animal:'elephant'});
+  }
+});
+
+test('all exported homes stand on the terrain with upright walls',()=>{
+  const world=loadMeshes('city-districts'),homes=world.children.filter(o=>o.name.startsWith('Home_'));
+  assert.equal(homes.length,cityLayout.residences.length);
+  for(const home of homes){const box=new THREE.Box3().setFromObject(home);assert(box.min.y>=-.001&&box.min.y<.15,`${home.name} base ${box.min.y}`);assert(box.max.y>3,home.name)}
+});
+
+test('rebuilt railway homes clear the connecting roads and relocated metro entrance',()=>{
+  const world=loadMeshes('expanded-ground'),homes=world.children.filter(o=>o.name.startsWith('StreetFacingHouse'));
+  assert.equal(homes.length,14);
+  const roads=[[-95,-43,15.5,24.5],[43,95,15.5,24.5],[-53,-43,-80,-33],[30,40,37,73]];
+  const central=waterfrontLayout.stations.find(s=>s.id==='central');
+  const entrance=loadMeshes('metro-entrance');entrance.position.set(central.x,.12,central.z);
+  const stationBox=new THREE.Box3().setFromObject(entrance);
+  for(const home of homes){
+    const box=new THREE.Box3().setFromObject(home);assert(box.min.y>=0&&box.max.y>3);
+    assert(!box.intersectsBox(stationBox),home.name+' overlaps the metro');
+    for(const [x0,x1,z0,z1] of roads)assert(box.max.x<=x0||box.min.x>=x1||box.max.z<=z0||box.min.z>=z1,home.name+' overlaps a connector');
+  }
+  const stairs=loadMeshes('metro-stairs'),train=loadMeshes('metro-train');train.position.set(2,-12,METRO_TRAIN_Z);
+  assert(!new THREE.Box3().setFromObject(stairs).intersectsBox(new THREE.Box3().setFromObject(train)),'stairs intersect the stopped train');
+  stairs.traverse(o=>{if(o.isMesh){o.material.side=THREE.DoubleSide;acceleratePicking(o)}});
+  for(let i=0;i<=100;i++){
+    const p=metroPathPoint(METRO_PLATFORM,i/100,{x:0,z:0});
+    const ray=new THREE.Raycaster(new THREE.Vector3(p.x,p.height+.33,p.z),new THREE.Vector3(0,1,0),0,1.6);
+    assert.equal(ray.intersectObject(stairs,true).length,0,'platform walk passes through stair treads');
   }
 });

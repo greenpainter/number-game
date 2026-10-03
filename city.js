@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import layout from './city-layout.js';
+import {TRAFFIC_COUNT} from './road-layout.js';
 
 export async function createCity(loader,scene,prepare){
-  const names=['world','car','plane','helicopter','citizen',...layout.zoo.animals.map(a=>a.id)];
+  const names=['world','districts','car','plane','helicopter','citizen',...new Set(layout.zoo.animals.map(a=>a.species))];
   const assets=await Promise.all(names.map(n=>loader.loadAsync(`./models/city-${n}.glb`)));
   const models=Object.fromEntries(names.map((n,i)=>[n,prepare(assets[i].scene)]));
-  const world=models.world;scene.add(world);
+  const world=models.world;scene.add(world,models.districts);
   const colors=[0xf2cd66,0xdf6d51,0x82a4b2,0xe8e1ce,0x679480,0xa193b8];
   function car(index){const root=prepare(models.car.clone(true));root.traverse(o=>{if(o.isMesh&&o.material.name==='Traffic paint'){o.material=o.material.clone();o.material.color.setHex(colors[index%colors.length])}});scene.add(root);return root}
   const parked=layout.parkedCars.map(([x,z,angle],i)=>{const root=car(i);root.position.set(x,.13,z);root.rotation.y=angle;return root});
-  const traffic=Array.from({length:12},(_,i)=>car(i+2));
+  const traffic=Array.from({length:TRAFFIC_COUNT},(_,i)=>car(i+2));
   function person(index,thief=false){
     const root=prepare(models.citizen.clone(true));
     root.traverse(o=>{if(o.isMesh&&o.material.name==='Citizen shirt'){o.material=o.material.clone();o.material.color.setHex(thief?0x333b47:colors[index%colors.length])}});
@@ -22,7 +23,7 @@ export async function createCity(loader,scene,prepare){
     scene.add(root);return {root,limbs};
   }
   const people=layout.walkRoutes.map((_,i)=>person(i)),thieves=layout.thiefRoutes.map((_,i)=>person(i,true));
-  const animals=layout.zoo.animals.map(a=>{const root=models[a.id];root.position.set(a.x,.13,a.z);scene.add(root);return {root,...a}});
+  const animals=layout.zoo.animals.map(a=>{const root=prepare(models[a.species].clone(true));root.scale.setScalar(a.scale);root.position.set(a.x,.13,a.z);scene.add(root);return {root,...a}});
   const plane=models.plane;scene.add(plane);
   const helicopter=models.helicopter;scene.add(helicopter);
   const rotor=helicopter.getObjectByName('MainRotor'),tailRotor=helicopter.getObjectByName('TailRotor');
@@ -30,7 +31,7 @@ export async function createCity(loader,scene,prepare){
   const caveLights=[-10,0,10].map(x=>{const light=new THREE.PointLight(0xffbf70,12,14,1.5);light.position.set(x,3,-88);scene.add(light);return light});
   const bridge=world.getObjectByName('Overpass');
   const airport=world.getObjectByName('Airport'),zoo=world.getObjectByName('Zoo'),roof=world.getObjectByName('TunnelRoof'),mountain=world.getObjectByName('TunnelMountain');
-  const pickRoots=[world,plane,...animals.map(a=>a.root),...thieves.map(p=>p.root),...parked];
+  const pickRoots=[world,models.districts,plane,...animals.map(a=>a.root),...thieves.map(p=>p.root),...parked];
   function pose(p,state,time){p.root.position.set(state.car.x,.13,state.car.z);p.root.rotation.y=state.car.angle;p.limbs.forEach((limb,i)=>{if(limb)limb.rotation.x=state.moving?Math.sin(time*7+i%2*Math.PI)*.42:0})}
   return {world,plane,airport,zoo,bridge,animals,thieves,pickRoots,update(state){
     const c=state.city,time=c.time;
@@ -41,7 +42,11 @@ export async function createCity(loader,scene,prepare){
     const h=c.helicopter;helicopter.visible=h.phase!=='idle'&&h.phase!=='waiting';helicopter.position.set(h.car.x,.2+h.car.height,h.car.z);helicopter.rotation.y=h.car.angle;
     if(rotor)rotor.rotation.y=time*32;if(tailRotor)tailRotor.rotation.x=time*40;
     landingRing.visible=helicopter.visible&&h.car.height<15;landingRing.position.set(h.car.x,.28,h.car.z);landingRing.scale.setScalar(1+h.car.height*.08);
-    for(const a of animals){a.root.rotation.y=Math.sin(time*.26+a.x)*.18;a.root.position.y=.13+Math.sin(time*1.2+a.z)*.035}
+    for(const [i,a] of animals.entries()){
+      const phase=time*.18+i*1.7;
+      a.root.position.set(a.x+Math.sin(phase)*1.1,.13+Math.sin(time*1.2+i)*.035,a.z+Math.cos(phase)*.65);
+      a.root.rotation.y=Math.sin(phase*.6)*.55;
+    }
     const tunnelOutside=Math.abs(state.actor.x)>19||Math.abs(state.actor.z+85)>7||(state.actor.height??0)>4;
     if(roof)roof.visible=tunnelOutside;
     if(mountain)mountain.visible=tunnelOutside;

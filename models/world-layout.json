@@ -1,17 +1,17 @@
 {
-  "minX": -188,
-  "maxX": 152,
-  "minZ": -119.2,
-  "maxZ": 109.6,
+  "minX": -270,
+  "maxX": 390,
+  "minZ": -176,
+  "maxZ": 182,
   "previousArea": 17388.8,
-  "area": 77792,
-  "width": 340,
-  "depth": 228.8,
-  "ratio": 4.473684210526316,
+  "area": 236280,
+  "width": 660,
+  "depth": 358,
+  "ratio": 13.588056680161944,
   "bounds": {
-    "minX": -188,
-    "maxX": 152,
-    "minZ": -119.2,
-    "maxZ": 109.6
+    "minX": -270,
+    "maxX": 390,
+    "minZ": -176,
+    "maxZ": 182
   }
 }
