@@ -1,4 +1,6 @@
 import {createPlayground} from './playground.js';
+import {createAdventure} from './adventure.js';
+import {VILLAGE_EVENTS} from './adventure-layout.js';
 import {PARK,PLAY_ACTIVITIES} from './playground-layout.js';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -45,7 +47,7 @@ let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
 const flameParts=[], smokeParts=[];
-let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground;
+let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground,adventure;
 const tapFeedback=document.createElement('div');tapFeedback.id='tap-feedback';tapFeedback.setAttribute('aria-hidden','true');document.body.append(tapFeedback);
 
 function toast(message){narrator.say(message)}
@@ -147,7 +149,7 @@ function onStateChange(reason){
   if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
   if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
   if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
-  if(reason==='patient-rescued'||reason==='play-complete')chime();
+  if(['patient-rescued','play-complete','event-complete','forest-meet'].includes(reason))chime();
   if(reason==='thief-caught'){chime();toast('잡았다! 도둑을 잡았어요!')}
   const newMessages={'train-walk':'승강장으로 기차를 타러 가요.','train-board':'다음 승강장에서 내려요. 조금만 기다려 주세요.','train-exit':'승강장에 도착했어요. 기차 여행 재미있었죠?','dog-follow':'강아지가 친구가 되었어요. 같이 산책해요!','cat-follow':'고양이가 친구가 되었어요. 같이 산책해요!'};
   if(newMessages[reason])toast(newMessages[reason]);
@@ -226,7 +228,7 @@ function tick(now){
   if(pendingPress){const action=pendingPress;pendingPress=null;if(!paused)action()}
   if(!paused)state.update(dt);
   syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);family?.update(state,time,paused?0:dt);followCamera(dt);railway.update(state,time,camera);
-  city.update(state);coast?.update(time);playground?.update(state,child,limbs,childRing);
+  city.update(state);coast?.update(time);playground?.update(state,child,limbs,childRing);adventure?.update(state,child,limbs,childRing,paused,camera);
   flames.visible=state.fireActive;
   water.visible=state.riding&&state.mode==='extinguishing';
   const strength=.12+.88*(state.hp/100);
@@ -246,13 +248,14 @@ function tick(now){
   waterfront.update(state,child,childRing);updateSound(paused);renderer.render(scene,camera);
 }
 function pickPress({x,y,type}){
-  if(state.playing||state.metroTrip||state.ferryTrip||state.helicopterTrip||state.crossingBridge)return;
+  if(state.adventureBusy||state.playing||state.metroTrip||state.ferryTrip||state.helicopterTrip||state.crossingBridge)return;
   if(!state.ready||$('help-dialog').open||$('city-map').open||['eating','fishing','fish-celebrate','pulling-over','loading','unloading'].includes(state.mode))return;
   const bounds=canvas.getBoundingClientRect();
   const cast=(px,py)=>raycaster.setFromCamera(new THREE.Vector2((px-bounds.left)/bounds.width*2-1,-(py-bounds.top)/bounds.height*2+1),camera);
   const roots=[...railway.platforms.map(p=>p.root),...railway.cars,...railway.animals.map(p=>p.root),fishing.dock,rectGround,village,truck,wood,services.ground,services.van,...Object.values(services.entries).flatMap(v=>[v.building,v.car]),expansion.ground,expansion.dump,expansion.excavator,expansion.pile,...expansion.buses,...(state.fireActive?flameParts:[])];
   const actionFor=(object,point)=>{
     const belongs=root=>{for(let o=object;o;o=o.parent)if(o===root)return true;return false};
+    const event=adventure?.actionFor(belongs);if(event)return event;
     const play=playground?.entries.find(p=>belongs(p.root)||belongs(p.marker));if(play)return ()=>{if(!state.startPlay(play.id))state.cityNotice('먼저 차에서 내린 뒤 놀아요.')};
     const metroStop=waterfront.entrances.find(e=>belongs(e.root));if(metroStop)return ()=>rideNextMetro(metroStop.id);
     if(belongs(waterfront.boat))return ()=>{if(!state.boardFerry())toast('먼저 타고 있는 차에서 내려 주세요.')};
@@ -281,6 +284,7 @@ function pickPress({x,y,type}){
     return null;
   };
   roots.push(...playground.pickRoots);
+  roots.push(...adventure.pickRoots.filter(r=>r.visible));
   roots.push(...waterfront.pickRoots);
   roots.push(...city.pickRoots.filter(r=>r.visible));
   scene.updateMatrixWorld(true);
@@ -349,6 +353,7 @@ async function init(){
     city=await createCity(loader,scene,prepareModel);city.update(state);
     waterfront=await createWaterfront(loader,scene,prepareModel);coast=createCoast(scene);family=await createFamily(loader,scene,prepareModel,child,limbs);
     playground=await createPlayground(loader,scene,prepareModel);
+    adventure=await createAdventure(loader,scene,prepareModel,city.models,state);
     addEffects();resize();syncActors();state.ready=true;$('loading').hidden=true;updateUI();registerGameTools();lastTime=performance.now();requestAnimationFrame(tick);
   }catch(error){console.error(error);$('loading').innerHTML='<div class="error-message"><strong>마을을 불러오지 못했어요.</strong><br>인터넷 연결과 Safari 업데이트를 확인하고 다시 열어 주세요.<button class="primary-button" id="retry">다시 열기</button></div>';$('retry').onclick=()=>location.reload()}
 }
@@ -359,6 +364,7 @@ const cityAtlas=createCityMap({dialog:$('city-map'),art:$('city-map-art'),list:$
   $('city-map').close();
   if(state.drivingTrain||state.drivingPlane){state.cityNotice('도착해서 내린 뒤 목적지를 골라 주세요');return}
   if(!state.callHelicopter(place))state.cityNotice('지금 놀이가 끝나면 헬기를 불러 주세요');
+  else state.pendingEvent=place.eventId??null;
 }});
 $('open-map').addEventListener('click',()=>{if(state.sound)unlockAudio();cityAtlas.open(state.actor)});
 $('close-map').addEventListener('click',()=>$('city-map').close());

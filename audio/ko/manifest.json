@@ -979,6 +979,312 @@
       "file": "016150d94f33.mp3",
       "durationSeconds": 2.647,
       "sha256": "6d5ae6cf7079757e86217f1d71ee2e4792d8040b241335b72e3d819af4f3fe48"
+    },
+    {
+      "text": "도토리를 모아 바구니에 넣어요.",
+      "file": "fe68aa5bbf22.mp3",
+      "durationSeconds": 2.647,
+      "sha256": "68b24302ec92db49c658a621731e9b6d415a1a459c10ba9cdef2af8bf550dbc8"
+    },
+    {
+      "text": "다람쥐의 겨울 간식이 준비됐어요!",
+      "file": "470d801ee941.mp3",
+      "durationSeconds": 3.204,
+      "sha256": "49e53482f615b70b102675aa1e8fe0ea3944faa08d374163ae3a8fb79723d7b6"
+    },
+    {
+      "text": "새 친구에게 모이를 나눠 줘요.",
+      "file": "54a22a62e7a0.mp3",
+      "durationSeconds": 2.856,
+      "sha256": "90176b22d47a4b32086203e257b3ab7912535aac453f51d272471b0dc71ce7cd"
+    },
+    {
+      "text": "새들이 고맙다고 노래해요!",
+      "file": "0731ee7456b0.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "c2df80bd6ab1a0ce2dd20ae160f6b892129a1e6fe830b4281a50e89a43001c10"
+    },
+    {
+      "text": "아기 거북과 연못까지 걸어가요.",
+      "file": "e159930da1d7.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "2359cbc4b3893262ae1db7a2b25a9497f085f7575aab83c3b0127008c4ccbd03"
+    },
+    {
+      "text": "거북이가 연못에 도착했어요!",
+      "file": "07cbcdace4b9.mp3",
+      "durationSeconds": 2.717,
+      "sha256": "d6b2518837149ff9f07895d770cf335dd049f06f60da755d60549d6ac9d4c6ab"
+    },
+    {
+      "text": "흙을 파고 나무를 심고 물을 줘요.",
+      "file": "445a831755f6.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "c7e40367b1e1377bf360f8ae45af0478769ce894bfa02e250302b5a12d55c70d"
+    },
+    {
+      "text": "작은 나무가 쑥쑥 자랐어요!",
+      "file": "6fccb6d35d48.mp3",
+      "durationSeconds": 2.717,
+      "sha256": "d4f3add60dacd0060138d86f84063b41db54e00aac5d21f5e55405a52ec8f247"
+    },
+    {
+      "text": "꽃에 앉은 나비 사진을 찍어요.",
+      "file": "9d9176c3b229.mp3",
+      "durationSeconds": 3.135,
+      "sha256": "755e6ed44a84fc192ea9ef2a3cb5241670d8f9f205ddf5a45fbc79e1319b0a65"
+    },
+    {
+      "text": "예쁜 나비 사진 세 장을 찍었어요!",
+      "file": "e810ceaa121f.mp3",
+      "durationSeconds": 3.413,
+      "sha256": "dc86def096a732813499c4391811969e11560451364fead75651b31af549eaa7"
+    },
+    {
+      "text": "우체통에 편지를 배달해요.",
+      "file": "11991eddf406.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "8b3912c830e3a333b262dbe6e120984a4777889742e7229a75ce067cccb3d9a7"
+    },
+    {
+      "text": "편지 세 통을 모두 배달했어요!",
+      "file": "7614d21b8555.mp3",
+      "durationSeconds": 2.786,
+      "sha256": "6d834ae7f6500dcd5580ac857d101495d188374150cdaebfcc52e5244e10d5cc"
+    },
+    {
+      "text": "택배 상자를 수레에 실어요.",
+      "file": "a88974ea4b3e.mp3",
+      "durationSeconds": 2.577,
+      "sha256": "32e7895d268fab3f682ba0330d3d9efa0407604456cc31c07c7dbab6a8694d05"
+    },
+    {
+      "text": "택배 수레가 출발할 준비를 마쳤어요!",
+      "file": "7ec07dc81dba.mp3",
+      "durationSeconds": 3.413,
+      "sha256": "5acc7928f9de615bab661b750699c4ff5c7475ef1b730e53ca9183d9aa8b3be6"
+    },
+    {
+      "text": "비눗방울로 자동차를 깨끗하게 씻어요.",
+      "file": "7cd82d81e348.mp3",
+      "durationSeconds": 3.831,
+      "sha256": "8d3a3aef679302a476b60a452884cece07b99766525b40829d801f4b5795eafd"
+    },
+    {
+      "text": "자동차가 반짝반짝 깨끗해졌어요!",
+      "file": "8d590791c337.mp3",
+      "durationSeconds": 3.553,
+      "sha256": "1b697b452afe38f93991374d37b12cfd4d68a1022bc529a79f67fa7454f89f0f"
+    },
+    {
+      "text": "타이어를 굴려 정비소에 가져다줘요.",
+      "file": "eecf508019ef.mp3",
+      "durationSeconds": 3.065,
+      "sha256": "cc05106754528bde4983ee38358d8def8cec1dbac5094cec547fd3b039001edc"
+    },
+    {
+      "text": "타이어 준비 완료! 고마워요!",
+      "file": "cd3deffd1a7b.mp3",
+      "durationSeconds": 3.274,
+      "sha256": "6db8b9fc20c187e5710080a8739c9d1682151ff2825020b40fdfbb8139b0c147"
+    },
+    {
+      "text": "울타리에 예쁜 색을 칠해요.",
+      "file": "9a7b060f2633.mp3",
+      "durationSeconds": 2.717,
+      "sha256": "bf1afd57444e89b7b1dce9fd8f57bcf09352b4763eb86cda9537b973012df4da"
+    },
+    {
+      "text": "알록달록 무지개 울타리가 됐어요!",
+      "file": "92c77ea8ddda.mp3",
+      "durationSeconds": 3.135,
+      "sha256": "cce4cafc644ebc4ef7e8d701135dd00f59e67af2e19fcd8614e249a5643f5efb"
+    },
+    {
+      "text": "잘 익은 사과를 따서 모아요.",
+      "file": "27e09eb0ac36.mp3",
+      "durationSeconds": 2.508,
+      "sha256": "b3bc14b9e9c6963b5e6cd2b74ca99a957ddb2181d6a9cee3409e89ef84ee43c1"
+    },
+    {
+      "text": "사과 바구니가 가득 찼어요!",
+      "file": "fc8b32d58bf6.mp3",
+      "durationSeconds": 2.508,
+      "sha256": "15be10d9d589acc40d744c31f43b7e7ec231158b45e80db9e8804fa752ecba10"
+    },
+    {
+      "text": "흙에서 당근을 쏙쏙 뽑아요.",
+      "file": "015f994e06dc.mp3",
+      "durationSeconds": 2.577,
+      "sha256": "47dc317e254fb4e64bf8aea2c4ad495a113de572e44898893feb8edf7454a748"
+    },
+    {
+      "text": "커다란 당근을 세 개 뽑았어요!",
+      "file": "400e12c11f9b.mp3",
+      "durationSeconds": 2.856,
+      "sha256": "54d2314777e5aa3b65200831ef485b0d64ed3f562fa2c98dbaf58d1396080cf0"
+    },
+    {
+      "text": "과일을 넣고 갈아서 주스를 따라요.",
+      "file": "9a3700aa1bb4.mp3",
+      "durationSeconds": 3.065,
+      "sha256": "896d2db6fc9ced99be77fedae2598b208307e9365ca55ddbe0507e8341b6bb85"
+    },
+    {
+      "text": "달콤한 과일 주스 완성!",
+      "file": "c4192b1067be.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "c834e8b1e9c3b808f34cc09d02a890ce76c98a4bc59ce38a97e3de2ac43314d4"
+    },
+    {
+      "text": "반죽하고 빵을 굽고 접시에 담아요.",
+      "file": "a2e4f98dae41.mp3",
+      "durationSeconds": 3.204,
+      "sha256": "8f10010e21d090ab352973a5b01b8d786a78045ee521692558111cf333411219"
+    },
+    {
+      "text": "따끈따끈한 빵이 나왔어요!",
+      "file": "cfc7546a865f.mp3",
+      "durationSeconds": 2.508,
+      "sha256": "da6ca24c6caee649eef7b98013eea4f3561604c2d867e59270c8a642e2ff2601"
+    },
+    {
+      "text": "소풍 돗자리에 맛있는 간식을 놓아요.",
+      "file": "a632574eebd3.mp3",
+      "durationSeconds": 3.413,
+      "sha256": "4931b0bcadcb02198204bb89e640498ea2fa5adf6ecabace83c51f4838a3a1e1"
+    },
+    {
+      "text": "친구들과 함께 소풍을 즐겨요!",
+      "file": "352a6d03dca4.mp3",
+      "durationSeconds": 2.995,
+      "sha256": "0caf47921e2626ebbab1b9ea43a5817286d5f201eced081be8428a3b11dcb7b0"
+    },
+    {
+      "text": "공을 톡 차서 골대에 넣어요.",
+      "file": "c47af0dd90a4.mp3",
+      "durationSeconds": 2.577,
+      "sha256": "fcbd0c12bc5de6847a04c67d48570bc6fa305d51cbe3e41aea82d84cfc9b7967"
+    },
+    {
+      "text": "골인! 세 골을 넣었어요!",
+      "file": "ce20e2750bf1.mp3",
+      "durationSeconds": 2.926,
+      "sha256": "a8d3b55cdd89a76450ec06b814b2ed8619eee107333fc52790860b092bd83eb5"
+    },
+    {
+      "text": "공을 굴려 볼링 핀을 쓰러뜨려요.",
+      "file": "c1cdbed55ceb.mp3",
+      "durationSeconds": 2.856,
+      "sha256": "acd90e17633df4e17291000cb33a2e2634244dddec7d0e1bb9fe9b41248f6a01"
+    },
+    {
+      "text": "우르르! 볼링 핀이 쓰러졌어요!",
+      "file": "47c9555abded.mp3",
+      "durationSeconds": 3.413,
+      "sha256": "a4c95e0fa2bcec26135dcd6fb36f35d9d1926f987e201f28e2c0001c86c61810"
+    },
+    {
+      "text": "세 개의 북을 두드려 음악을 만들어요.",
+      "file": "5eb1c40d2a26.mp3",
+      "durationSeconds": 3.344,
+      "sha256": "320fd1c4b7f332d429abc08973788b8ce76bae8db6be3d0125fd4d7c1a6d2049"
+    },
+    {
+      "text": "멋진 음악회였어요!",
+      "file": "016616e52552.mp3",
+      "durationSeconds": 2.02,
+      "sha256": "49de945df83da25fb719cbc06329ef2222ea2c93ab143203cd9cd1279305011f"
+    },
+    {
+      "text": "바람 그림을 따라 달리며 연을 날려요.",
+      "file": "5ce960d051b5.mp3",
+      "durationSeconds": 3.344,
+      "sha256": "a15043cf43c36c1e01d8e7eb0e070a79ae7e39059ded51e0b3dfb82da7e140b6"
+    },
+    {
+      "text": "연이 하늘 높이 날아올랐어요!",
+      "file": "0b68da3e5d28.mp3",
+      "durationSeconds": 2.786,
+      "sha256": "2198440914d687f24df4757491ba45a5ebbfe6fa7279d99d36027e187a598bac"
+    },
+    {
+      "text": "반짝이는 보석을 찾아 보물 상자에 모아요.",
+      "file": "4acbd06f2a96.mp3",
+      "durationSeconds": 4.04,
+      "sha256": "a719cf44f5d84007dc70563d307f7e5e3b49592e446d0c875d9ede93cc1d1f74"
+    },
+    {
+      "text": "보물 상자를 모두 채웠어요!",
+      "file": "5a18b6525519.mp3",
+      "durationSeconds": 2.508,
+      "sha256": "6fd8b64377969f8002fcd44181051b5ad25d18487a0afd06989f024a066092fb"
+    },
+    {
+      "text": "반짝이는 그림을 눌러 주세요.",
+      "file": "e673b94e7bc1.mp3",
+      "durationSeconds": 2.786,
+      "sha256": "84037be60727f06a22a9ce6d04ebdc5cb26bed8e85786d08e26feb488220ea60"
+    },
+    {
+      "text": "놀이를 마쳤어요. 다른 곳도 구경해요.",
+      "file": "0a9d32872006.mp3",
+      "durationSeconds": 3.692,
+      "sha256": "9323c8d0f6717e6ed4dc887be04d706425257410abfe1918302fb55d75672092"
+    },
+    {
+      "text": "곰 친구야, 안녕!",
+      "file": "259e5815f01e.mp3",
+      "durationSeconds": 2.02,
+      "sha256": "bb5c55b22dfd13133792ef3cd1d059fdd829e1c71e788ea9c05ec2c5e92fbd39"
+    },
+    {
+      "text": "판다 친구야, 안녕!",
+      "file": "df9465c0aed9.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "64aee4fde9c04c14aa2300988c4107326be0ecc7c25f64b37d9ebec98dbbc024"
+    },
+    {
+      "text": "거북이 친구야, 안녕!",
+      "file": "d09cb8729ade.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "08a9bb7d49f3eb91b46c84f8ea7d3a2572bdc64037c0eed5550758f8f4506d3c"
+    },
+    {
+      "text": "코뿔소 친구야, 안녕!",
+      "file": "f007ef697ae8.mp3",
+      "durationSeconds": 2.438,
+      "sha256": "b7ba84085f63f599c07f4ed0b818f3b7258c5addefb959c79f6a8886ada1ffa7"
+    },
+    {
+      "text": "코끼리 친구야, 안녕!",
+      "file": "a5a544db6f04.mp3",
+      "durationSeconds": 2.229,
+      "sha256": "e66e729c5c4e37b81363a3cf246bf51db551638982c0a33702a1b6c9c75ad982"
+    },
+    {
+      "text": "캥거루 친구야, 안녕!",
+      "file": "668ddad87e0b.mp3",
+      "durationSeconds": 2.299,
+      "sha256": "1959b5e7f1d6daebe005ca0ed527ee077d8890ef4e69281e52e3fe0cacc63a9d"
+    },
+    {
+      "text": "기린 친구야, 안녕!",
+      "file": "72abff740e18.mp3",
+      "durationSeconds": 2.159,
+      "sha256": "92bba5248879dc7c9da7094e0c2a51ccba59e1858290722cc77adc923b68a96b"
+    },
+    {
+      "text": "얼룩말 친구야, 안녕!",
+      "file": "e34b4bd46ad7.mp3",
+      "durationSeconds": 2.508,
+      "sha256": "af8e76669209f3bae6d305182ac197d823dbaae17ede49be8b81079bd6a15d18"
+    },
+    {
+      "text": "동물 친구 숲에 왔어요. 동물을 누르면 인사하러 가요.",
+      "file": "fc20c0e18db0.mp3",
+      "durationSeconds": 5.016,
+      "sha256": "9ecaa54407d27e6990b503335f11d31e0e4f944aff4d13c4daba5ca2bc3b795c"
     }
   ]
 }

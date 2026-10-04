@@ -1,6 +1,7 @@
 import layout from './city-layout.js';
 
-const sizes={elephant:3.65,giraffe:2.8,zebra:2.8,lion:2.9,panda:2.9,penguin:1.65,hippo:2.95,rhino:2.9,bear:2.9,flamingo:1.7,kangaroo:3.2,tortoise:2.6};
+export const ANIMAL_RADII={elephant:3.65,giraffe:2.8,zebra:2.8,lion:2.9,panda:2.9,penguin:1.65,hippo:2.95,rhino:3.25,bear:2.9,flamingo:1.7,kangaroo:3.2,tortoise:2.6};
+const sizes=ANIMAL_RADII;
 const speeds={elephant:.7,giraffe:.82,zebra:1.0,lion:.8,panda:.6,penguin:.58,hippo:.55,rhino:.68,bear:.65,flamingo:.62,kangaroo:1.15,tortoise:.22};
 const habitats=new Map(layout.zoo.habitats.map(h=>[h.id,h]));
 function random(a){a.seed=(Math.imul(a.seed,1664525)+1013904223)>>>0;return a.seed/4294967296}

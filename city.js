@@ -39,7 +39,7 @@ export async function createCity(loader,scene,prepare){
   const airport=world.getObjectByName('Airport'),zoo=world.getObjectByName('Zoo'),roof=world.getObjectByName('TunnelRoof'),mountain=world.getObjectByName('TunnelMountain');
   const pickRoots=[world,models.districts,plane,...animals.map(a=>a.root),...thieves.map(p=>p.root),...patients.map(p=>p.root),...parked];
   function pose(p,state,time){p.root.position.set(state.car.x,.13,state.car.z);p.root.rotation.y=state.car.angle;p.limbs.forEach((limb,i)=>{if(limb)limb.rotation.x=state.moving?Math.sin(time*7+i%2*Math.PI)*.42:0})}
-  return {world,plane,airport,zoo,bridge,animals,thieves,patients,pickRoots,update(state){
+  return {models,world,plane,airport,zoo,bridge,animals,thieves,patients,pickRoots,update(state){
     const c=state.city,time=c.time;
     traffic.forEach((root,i)=>{const p=c.traffic[i].car;root.position.set(p.x,.19+(p.height??0),p.z);root.rotation.y=p.angle});
     people.forEach((p,i)=>pose(p,c.people[i],time+i));

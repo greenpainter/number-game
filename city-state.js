@@ -32,6 +32,7 @@ export const cityActions={
     if(this.drivingTrain||this.drivingPlane||this.activityLocked||['loading','unloading'].includes(this.mode))return false;
     if(!Number.isFinite(destination.x)||!Number.isFinite(destination.z)||!walkable(destination.x,destination.z,{radius:.5}))return false;
     if(this.riding&&!this.exitTruck())return false;
+    this.cancelAdventure();
     for(const trip of Object.values(this.transit))if(trip.phase==='approach')trip.phase='idle';
     if(this.play.phase==='approach')this.play.phase='idle';
     h.destination={x:destination.x,z:destination.z};h.name=destination.name??'목적지';h.phase='waiting';h.time=0;

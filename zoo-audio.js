@@ -40,9 +40,10 @@ export function createZooAudio(context){
     if(narrating){gain.gain.setTargetAtTime(.08,context.currentTime,.06);return}
     gain.gain.setTargetAtTime(.32,context.currentTime,.1);
     if(current||context.currentTime<nextAt)return;
-    const near=state.city.animals.filter(a=>Math.hypot(a.x-state.actor.x,a.z-state.actor.z)<25);
-    const selected=near.find(a=>a.id===state.city.viewing);
-    if(selected&&heardRequest!==state.city.animalSoundRequest){heardRequest=state.city.animalSoundRequest;play(selected.species);nextAt=context.currentTime+4;return}
+    const near=[...state.city.animals,...(state.forest?.animals??[])].filter(a=>Math.hypot(a.x-state.actor.x,a.z-state.actor.z)<25);
+    const selected=near.find(a=>a.id===(state.forest?.selected??state.city.viewing));
+    const request=state.city.animalSoundRequest+(state.forest?.soundRequest??0);
+    if(selected&&heardRequest!==request){heardRequest=request;play(selected.species);nextAt=context.currentTime+4;return}
     const closest=near.reduce((best,a)=>!best||Math.hypot(a.x-state.actor.x,a.z-state.actor.z)<Math.hypot(best.x-state.actor.x,best.z-state.actor.z)?a:best,null);
     if(closest){play(closest.species);nextAt=context.currentTime+13}
   }};
