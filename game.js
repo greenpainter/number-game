@@ -1,3 +1,5 @@
+import {createPlayground} from './playground.js';
+import {PARK,PLAY_ACTIVITIES} from './playground-layout.js';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {FIRE,SERVICES,WORLD} from './navigation.js';
@@ -43,7 +45,7 @@ let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
 const flameParts=[], smokeParts=[];
-let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family;
+let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground;
 const tapFeedback=document.createElement('div');tapFeedback.id='tap-feedback';tapFeedback.setAttribute('aria-hidden','true');document.body.append(tapFeedback);
 
 function toast(message){narrator.say(message)}
@@ -77,6 +79,7 @@ function updateUI(){
   if(state.metroTrip)$('badge-text').textContent='지하철 여행 중 · 도착하면 내려요';
   if(state.ferryTrip)$('badge-text').textContent='유람선 타고 강변 여행 중';
   if(state.onScooter)$('badge-text').textContent='킥보드로 슝슝!';
+  if(state.playing)$('badge-text').textContent=PLAY_ACTIVITIES.find(p=>p.id===state.play.id).icon+' '+PLAY_ACTIVITIES.find(p=>p.id===state.play.id).name+' 놀이 중';
   if(state.city.notice)$('badge-text').textContent=state.city.notice;
   $('city-notice').textContent=state.city.notice;$('city-notice').hidden=!state.city.notice;
   $('exit').querySelector('span').textContent='내리기';
@@ -144,7 +147,7 @@ function onStateChange(reason){
   if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
   if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
   if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
-  if(reason==='patient-rescued')chime();
+  if(reason==='patient-rescued'||reason==='play-complete')chime();
   if(reason==='thief-caught'){chime();toast('잡았다! 도둑을 잡았어요!')}
   const newMessages={'train-walk':'승강장으로 기차를 타러 가요.','train-board':'다음 승강장에서 내려요. 조금만 기다려 주세요.','train-exit':'승강장에 도착했어요. 기차 여행 재미있었죠?','dog-follow':'강아지가 친구가 되었어요. 같이 산책해요!','cat-follow':'고양이가 친구가 되었어요. 같이 산책해요!'};
   if(newMessages[reason])toast(newMessages[reason]);
@@ -193,7 +196,8 @@ function followCamera(dt,snap=false){
   if(sun)sun.intensity=underground?.4:2.8-caveBlend*2.2;
   if(snap)cameraTarget.copy(target);else cameraTarget.lerp(target,1-Math.exp(-dt*9));
   if(sun){sun.position.set(cameraTarget.x-15,28,cameraTarget.z+16);sun.target.position.set(cameraTarget.x,0,cameraTarget.z);sun.target.updateMatrixWorld(true)}
-  const scenicZoom=underground?.85:state.ferryTrip?.78:inCave?1.35:inZoo?.75:state.crossingBridge?.82:null;
+  const inPark=Math.abs(actor.x-PARK.x)<32&&Math.abs(actor.z-PARK.z)<42;
+  const scenicZoom=inPark?.78:underground?.85:state.ferryTrip?.78:inCave?1.35:inZoo?.75:state.crossingBridge?.82:null;
   camera.zoom=state.drivingPlane||state.ridingHelicopter?THREE.MathUtils.lerp(camera.zoom,.58,1-Math.exp(-dt*2)):scenicZoom!==null?THREE.MathUtils.lerp(camera.zoom,scenicZoom,1-Math.exp(-dt*3)):iceCreamZoom(camera.zoom,state.mode==='eating',dt);camera.updateProjectionMatrix();
   camera.position.copy(cameraTarget).add(new THREE.Vector3().copy(underground?new THREE.Vector3(22,22,26):cameraOffset).lerp(new THREE.Vector3(9,6.5,12),caveBlend));camera.lookAt(cameraTarget);camera.updateMatrixWorld(true);
 }
@@ -206,7 +210,7 @@ function syncActors(time=0,paused=false){
   const walking=!state.riding&&!scooting&&(['moving','bridge'].includes(state.mode)||state.metroTrip&&state.transit.metro.walking)&&!paused;
   const swing=walking?Math.sin(time*10)*.62:0;
   const height=groundHeight(state.child.x,state.child.z)+(state.child.height??0);
-  child.position.set(state.child.x,height+(kickPose?.body??(walking?Math.abs(Math.sin(time*10))*.045:0)),state.child.z);child.rotation.y=state.child.angle;
+  child.position.set(state.child.x,height+(kickPose?.body??(walking?Math.abs(Math.sin(time*10))*.045:0)),state.child.z);child.rotation.set(0,state.child.angle,0);
   for(const name of ['Knee_L','Knee_R','Ankle_L','Ankle_R'])if(limbs[name])limbs[name].rotation.x=0;
   for(const side of ['L','R'])if(limbs['Leg_'+side])limbs['Leg_'+side].position.x=limbs['Leg_'+side].userData.restX+(scooting?(side==='R'?.12:.045):0);
   for(const [name,sign] of [['Arm_L',-1],['Arm_R',1],['Leg_L',1],['Leg_R',-1]])if(limbs[name])limbs[name].rotation.set(swing*sign,0,0);
@@ -222,7 +226,7 @@ function tick(now){
   if(pendingPress){const action=pendingPress;pendingPress=null;if(!paused)action()}
   if(!paused)state.update(dt);
   syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);family?.update(state,time,paused?0:dt);followCamera(dt);railway.update(state,time,camera);
-  city.update(state);coast?.update(time);
+  city.update(state);coast?.update(time);playground?.update(state,child,limbs,childRing);
   flames.visible=state.fireActive;
   water.visible=state.riding&&state.mode==='extinguishing';
   const strength=.12+.88*(state.hp/100);
@@ -242,13 +246,14 @@ function tick(now){
   waterfront.update(state,child,childRing);updateSound(paused);renderer.render(scene,camera);
 }
 function pickPress({x,y,type}){
-  if(state.metroTrip||state.ferryTrip||state.helicopterTrip||state.crossingBridge)return;
+  if(state.playing||state.metroTrip||state.ferryTrip||state.helicopterTrip||state.crossingBridge)return;
   if(!state.ready||$('help-dialog').open||$('city-map').open||['eating','fishing','fish-celebrate','pulling-over','loading','unloading'].includes(state.mode))return;
   const bounds=canvas.getBoundingClientRect();
   const cast=(px,py)=>raycaster.setFromCamera(new THREE.Vector2((px-bounds.left)/bounds.width*2-1,-(py-bounds.top)/bounds.height*2+1),camera);
   const roots=[...railway.platforms.map(p=>p.root),...railway.cars,...railway.animals.map(p=>p.root),fishing.dock,rectGround,village,truck,wood,services.ground,services.van,...Object.values(services.entries).flatMap(v=>[v.building,v.car]),expansion.ground,expansion.dump,expansion.excavator,expansion.pile,...expansion.buses,...(state.fireActive?flameParts:[])];
   const actionFor=(object,point)=>{
     const belongs=root=>{for(let o=object;o;o=o.parent)if(o===root)return true;return false};
+    const play=playground?.entries.find(p=>belongs(p.root)||belongs(p.marker));if(play)return ()=>{if(!state.startPlay(play.id))state.cityNotice('먼저 차에서 내린 뒤 놀아요.')};
     const metroStop=waterfront.entrances.find(e=>belongs(e.root));if(metroStop)return ()=>rideNextMetro(metroStop.id);
     if(belongs(waterfront.boat))return ()=>{if(!state.boardFerry())toast('먼저 타고 있는 차에서 내려 주세요.')};
     if(object.material?.name==='River jade')return ()=>state.cityNotice('강은 다리로 건너요. 유람선은 선착장에서 타요.');
@@ -275,6 +280,7 @@ function pickPress({x,y,type}){
     if(belongs(wood)||flameParts.includes(object))return ()=>{if(!state.fireMission)fireAction()};
     return null;
   };
+  roots.push(...playground.pickRoots);
   roots.push(...waterfront.pickRoots);
   roots.push(...city.pickRoots.filter(r=>r.visible));
   scene.updateMatrixWorld(true);
@@ -342,6 +348,7 @@ async function init(){
     railway=await createRailway(loader,scene,prepareModel);railway.update(state,0,camera);
     city=await createCity(loader,scene,prepareModel);city.update(state);
     waterfront=await createWaterfront(loader,scene,prepareModel);coast=createCoast(scene);family=await createFamily(loader,scene,prepareModel,child,limbs);
+    playground=await createPlayground(loader,scene,prepareModel);
     addEffects();resize();syncActors();state.ready=true;$('loading').hidden=true;updateUI();registerGameTools();lastTime=performance.now();requestAnimationFrame(tick);
   }catch(error){console.error(error);$('loading').innerHTML='<div class="error-message"><strong>마을을 불러오지 못했어요.</strong><br>인터넷 연결과 Safari 업데이트를 확인하고 다시 열어 주세요.<button class="primary-button" id="retry">다시 열기</button></div>';$('retry').onclick=()=>location.reload()}
 }
@@ -420,6 +427,7 @@ function registerGameTools(){
     {name:'board_policecar',description:'Call the police car out of its garage and walk over to board for a patrol.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('police'))throw new Error('Cannot board police car.');return gameSnapshot()}},
     {name:'board_ambulance',description:'Call the ambulance out of the hospital and board it.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('ambulance'))throw new Error('Cannot board ambulance.');return gameSnapshot()}},
     {name:'get_icecream',description:'Walk to the ice cream van, receive a cone and eat it facing the camera.',inputSchema:empty,execute:()=>{if(!state.ready||!state.getIceCream())throw new Error('Dismount first or finish eating.');return gameSnapshot()}},
+    {name:'play_at_park',description:'Walk to a playground activity and play, then return safely to its entrance.',inputSchema:{type:'object',properties:{id:{type:'string',enum:PLAY_ACTIVITIES.map(p=>p.id)}},required:['id'],additionalProperties:false},execute:({id})=>{if(!state.ready||!state.startPlay(id))throw new Error('Finish the current activity or dismount first.');return gameSnapshot()}},
     {name:'go_fishing',description:'Walk to the pond, catch a fish and lift it in celebration.',inputSchema:empty,execute:()=>{if(!state.ready||!state.startFishing())throw new Error('Dismount or finish playing first.');return gameSnapshot()}},
     {name:'board_bus',description:'Walk to a parked bus and board it. Index 0 is red, 1 blue, 2 green.',inputSchema:{type:'object',properties:{index:{type:'integer',minimum:0,maximum:2}},required:['index'],additionalProperties:false},execute:({index})=>{if(!state.ready||!state.boardBus(index))throw new Error('Bus is unavailable.');return gameSnapshot()}},
     {name:'board_dumptruck',description:'Walk to the parked dump truck and board it.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardDump())throw new Error('Dump truck is unavailable.');return gameSnapshot()}},

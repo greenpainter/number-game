@@ -148,5 +148,18 @@ export const NARRATION_CLIPS = Object.freeze({
   "조심조심 구급차에 타요.": "./audio/ko/3397a273a867.mp3",
   "병원으로 출발해요!": "./audio/ko/aab6ab56417b.mp3",
   "병원에 도착했어요. 이제 괜찮아요!": "./audio/ko/4b96001317ec.mp3",
-  "친구를 병원에 데려다준 뒤 내려요.": "./audio/ko/4e027a3bcd66.mp3"
+  "친구를 병원에 데려다준 뒤 내려요.": "./audio/ko/4e027a3bcd66.mp3",
+  "계단을 올라가서 미끄럼틀을 슝 타요!": "./audio/ko/30da0ef3c365.mp3",
+  "그네를 타고 앞뒤로 살랑살랑!": "./audio/ko/3eabf6c1b93f.mp3",
+  "친구와 시소를 타요. 올라갔다 내려갔다!": "./audio/ko/c3083a4bee24.mp3",
+  "회전목마를 타고 빙글빙글 돌아요!": "./audio/ko/9ed0b7861b0e.mp3",
+  "트램펄린에서 폴짝폴짝 뛰어요!": "./audio/ko/9e6447267dbe.mp3",
+  "후우! 무지개 비눗방울을 불어요!": "./audio/ko/cd7c771af0e9.mp3",
+  "손잡이를 꼭 잡고 짚라인을 슝 타요!": "./audio/ko/bdce46302e92.mp3",
+  "꽃에 물을 줘요. 예쁜 꽃이 활짝 피어요!": "./audio/ko/de9d91b0c78a.mp3",
+  "열기구를 타고 하늘로 둥실 올라가요!": "./audio/ko/81d957f3c115.mp3",
+  "페달카를 타고 전용 길을 한 바퀴 달려요!": "./audio/ko/8f98af44eafa.mp3",
+  "놀이공원으로 놀러 가요!": "./audio/ko/3c2629af33b0.mp3",
+  "놀이가 끝났어요. 또 놀아 볼까요?": "./audio/ko/cecf493e287d.mp3",
+  "먼저 차에서 내린 뒤 놀아요.": "./audio/ko/016150d94f33.mp3"
 });

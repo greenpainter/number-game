@@ -1,3 +1,4 @@
+import {PARK,PLAY_ACTIVITIES} from './playground-layout.js';
 import city from './city-layout.js';
 import water from './waterfront-layout.js';
 import rail from './railway-layout.js';
@@ -23,11 +24,14 @@ export function createCityMap({dialog,art,list,onTravel,onStation}){
   let selected=null,filter='전체',travelStarted=false;
   const places=city.destinations.map((p,i)=>({...p,index:i,icon:details[i][0],category:details[i][1],description:details[i][2]}));
   for(const id of METRO_LOOP){const station=water.stations.find(s=>s.id===id);places.push({...station.boarding,name:station.name,index:places.length,stationId:id,icon:'🚇',category:'지하철',description:'헬기를 타고 지하철역 입구로 가요.'})}
+  places.push({...PARK.entry,name:'무지개 놀이터',icon:'🛝',category:'놀거리',index:places.length,description:'열 가지 놀이가 기다려요.'});
+  for(const p of PLAY_ACTIVITIES)places.push({...p.entry,name:p.name,icon:p.icon,category:'놀거리',index:places.length,description:p.line,listOnly:true});
   dialog.querySelector('.atlas-directory-heading span').textContent=places.length+'곳';
   const svg=[];
   const path=(points,cls,extra='')=>svg.push(`<polyline points="${line(points)}" class="${cls}" ${extra}/>`);
   const rect=(x,z,w,d,cls,r=0)=>{const [px,py]=P(x-w/2,z-d/2);svg.push(`<rect x="${px}" y="${py}" width="${w*1.28}" height="${d*1.28}" rx="${r}" class="${cls}"/>`)};
   svg.push('<rect width="900" height="520" rx="20" fill="#eaf0d9"/><path d="M0 65 Q150 30 280 80 T600 32 L600 0 H0Z" fill="#d2e0bd"/><path d="M0 440 Q230 385 445 464 T900 441 V520 H0Z" fill="#dde8ca"/>');
+  rect(PARK.x,PARK.z,PARK.width,PARK.depth,'atlas-zoo',9);
   rect(-191,74,142,183,'atlas-zoo',14);
   for(const h of city.zoo.habitats)rect(h.x,h.z,32,28,'atlas-habitat',6);
   for(const [i,h] of city.zoo.habitats.entries()){const [x,y]=P(h.x,h.z);svg.push(`<text x="${x}" y="${y+4}" class="atlas-animal">${['🐘','🦒','🦓','🦁','🐼','🐧','🦛','🦏','🐻','🦩','🦘','🐢'][i]}</text>`)}
@@ -56,16 +60,12 @@ export function createCityMap({dialog,art,list,onTravel,onStation}){
   const stationTravel=id=>travel(places.find(p=>p.stationId===id));
   const pins=art.querySelector('#atlas-pins'),buttons=[];
   for(const station of art.querySelectorAll('[data-station]')){station.addEventListener('click',()=>stationTravel(station.dataset.station));station.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();stationTravel(station.dataset.station)}})}
-  const loop=document.createElement('div');loop.className='atlas-metro-loop';loop.setAttribute('aria-label','순환 지하철 역 선택');
-  loop.innerHTML='<span aria-hidden="true">🚇 🔁</span>';
-  for(const station of stationOrder){const b=document.createElement('button');b.type='button';b.setAttribute('aria-label',station.name+' 헬기로 가기');b.innerHTML=`<span aria-hidden="true">🚇</span><small>${esc(station.name)}</small>`;b.addEventListener('click',()=>stationTravel(station.id));loop.append(b);const arrow=document.createElement('span');arrow.textContent='→';arrow.setAttribute('aria-hidden','true');loop.append(arrow)}
-  art.after(loop);
   // Three central facilities are close together: small leader lines keep targets apart.
   const offsets={0:[10,20],1:[-16,4],2:[0,-14],8:[-4,-5]};
-  places.forEach(p=>{if(p.stationId){buttons.push(art.querySelector('[data-station="'+p.stationId+'"]'));return}const [x,y]=P(p.x,p.z),[dx,dy]=offsets[p.index]??[0,0];const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('transform',`translate(${x+dx} ${y+dy})`);g.setAttribute('class','atlas-pin');g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',p.name+' 헬기로 가기');g.innerHTML=`<title>${esc(p.name)}</title>${dx||dy?`<path d="M0 0 L${-dx} ${-dy}" class="atlas-leader"/>`:''}<circle r="15"/><text y="5">${p.icon}</text>`;g.addEventListener('click',()=>select(p.index));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(p.index)}});pins.append(g);buttons.push(g)});
+  places.forEach(p=>{if(p.listOnly){buttons.push(null);return}if(p.stationId){buttons.push(art.querySelector('[data-station="'+p.stationId+'"]'));return}const [x,y]=P(p.x,p.z),[dx,dy]=offsets[p.index]??[0,0];const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('transform',`translate(${x+dx} ${y+dy})`);g.setAttribute('class','atlas-pin');g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',p.name+' 헬기로 가기');g.innerHTML=`<title>${esc(p.name)}</title>${dx||dy?`<path d="M0 0 L${-dx} ${-dy}" class="atlas-leader"/>`:''}<circle r="15"/><text y="5">${p.icon}</text>`;g.addEventListener('click',()=>select(p.index));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(p.index)}});pins.append(g);buttons.push(g)});
   const filters=dialog.querySelector('.atlas-filters');
   for(const cat of ['전체','마을','놀거리','탈것','시설','지하철']){const b=document.createElement('button');b.textContent=cat;b.type='button';b.setAttribute('aria-pressed',cat===filter);b.addEventListener('click',()=>{filter=cat;for(const c of filters.children)c.setAttribute('aria-pressed',c===b);renderList()});filters.append(b)}
-  function renderList(){list.replaceChildren();places.forEach(p=>{const show=filter==='전체'||p.category===filter;buttons[p.index].classList.toggle('dimmed',!show);if(!show)return;const b=document.createElement('button');b.className='atlas-place';b.dataset.index=p.index;b.setAttribute('aria-pressed',selected===p.index);b.innerHTML=`<span class="atlas-place-icon">${p.icon}</span><span><strong>${esc(p.name)}</strong><small>${p.category}</small></span><span class="atlas-place-number">${p.index+1}</span>`;b.addEventListener('click',()=>select(p.index));list.append(b)})}
+  function renderList(){list.replaceChildren();places.forEach(p=>{const show=filter==='전체'||p.category===filter;buttons[p.index]?.classList.toggle('dimmed',!show);if(!show)return;const b=document.createElement('button');b.className='atlas-place';b.dataset.index=p.index;b.setAttribute('aria-pressed',selected===p.index);b.innerHTML=`<span class="atlas-place-icon">${p.icon}</span><span><strong>${esc(p.name)}</strong><small>${p.category}</small></span><span class="atlas-place-number">${p.index+1}</span>`;b.addEventListener('click',()=>select(p.index));list.append(b)})}
   function select(index){selected=index;travel(places[index])}
   renderList();
   return {open(actor){travelStarted=false;viewport.reset();const [x,y]=P(actor.x,actor.z);art.querySelector('#atlas-player').setAttribute('transform',`translate(${x} ${y})`);dialog.showModal()}};

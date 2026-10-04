@@ -1,3 +1,4 @@
+import {PLAY_OBSTACLES,PARK_TREES} from './playground-layout.js';
 // Distances are metres. Pedestrians and vehicles use different clearances.
 import layout from './railway-layout.js';
 import city from './city-layout.js';
@@ -18,6 +19,7 @@ export const SERVICES={police:{name:'경찰차',building:{x:-7,z:-24},garage:{x:
 for(const station of city.fireStations)SERVICES[station.id]=station;
 export const ICE_VAN={x:3,z:-3.6}, ICE_STOP={x:3.6,z:.3};
 const rectangles = [
+  ...PLAY_OBSTACLES,
   ...waterfront.homes.map(h=>{const c=Math.abs(Math.cos(h.rotation)),s=Math.abs(Math.sin(h.rotation)),w=h.width/2+.4,d=h.depth/2+1.2;return [h.x-c*w-s*d,h.x+c*w+s*d,h.z-s*w-c*d,h.z+s*w+c*d]}),
   ...waterfront.stations.map(s=>[s.x-1.95,s.x+1.95,s.z-.1,s.z+4.4]),
   ...city.houses.map(([x,z])=>[x-3,x+3,z-2.8,z+2.8]),
@@ -44,7 +46,7 @@ const rectangles = [
   [-2.2,-.2,14,15], [16,18,11.5,12.5],
   [28.75,31.25,-8.1,-4.7], [26.25,30.95,-12.2,-9.3],
 ];
-const trees = [...layout.trees,[-11.2,-10.8],[-20,10],[-1,-10],[5,-10.4],[22,6],[13,7],[6,10.5],[-2.6,12.7],[-14,11],[-.6,-4]];
+const trees = [...PARK_TREES,...layout.trees,[-11.2,-10.8],[-20,10],[-1,-10],[5,-10.4],[22,6],[13,7],[6,10.5],[-2.6,12.7],[-14,11],[-.6,-4]];
 export function truckContains(x,z,truck,padding=.32){
   const dx=x-truck.x,dz=z-truck.z,c=Math.cos(truck.angle),s=Math.sin(truck.angle);
   return Math.abs(dx*c-dz*s)<(truck.halfWidth??.84)+padding&&Math.abs(dx*s+dz*c)<(truck.halfLength??1.65)+padding;

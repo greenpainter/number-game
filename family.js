@@ -20,7 +20,7 @@ export async function createFamily(loader,scene,prepare,child,limbs){
     enabled(id){return parents.find(p=>p.id===id)?.enabled??false},
     reset(){for(const p of parents){p.enabled=false;p.placed=false;p.root.visible=false}},
     update(state,time,dt){
-      const show=!state.riding&&!state.metroTrip&&!state.helicopterTrip&&!state.ferryTrip;
+      const show=!state.playing&&!state.riding&&!state.metroTrip&&!state.helicopterTrip&&!state.ferryTrip;
       const holding=show&&!state.onScooter&&['idle','moving','bridge'].includes(state.mode);
       for(const p of parents){
         p.root.visible=p.enabled&&show;if(!p.root.visible){p.placed=false;continue}

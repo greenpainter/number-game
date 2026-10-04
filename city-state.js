@@ -33,6 +33,7 @@ export const cityActions={
     if(!Number.isFinite(destination.x)||!Number.isFinite(destination.z)||!walkable(destination.x,destination.z,{radius:.5}))return false;
     if(this.riding&&!this.exitTruck())return false;
     for(const trip of Object.values(this.transit))if(trip.phase==='approach')trip.phase='idle';
+    if(this.play.phase==='approach')this.play.phase='idle';
     h.destination={x:destination.x,z:destination.z};h.name=destination.name??'목적지';h.phase='waiting';h.time=0;
     this.city.chase=null;this.city.bridge.phase='idle';
     this.cityNotice('헬기가 데리러 와요!');return true;
