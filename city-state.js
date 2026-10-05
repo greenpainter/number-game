@@ -1,6 +1,6 @@
 import layout from './city-layout.js';
 import {noticeVoice} from './city-voice.js';
-import {walkable} from './navigation.js';
+import {walkable,SERVICES} from './navigation.js';
 import {trafficRoutes,bridgeRoute,TRAFFIC_COUNT} from './road-layout.js';
 import {createZooAnimals,updateZooAnimals} from './zoo-wildlife.js';
 const overpass=bridgeRoute();
@@ -22,6 +22,7 @@ export const cityActions={
       traffic:Array.from({length:TRAFFIC_COUNT},(_,i)=>{const route=i%trafficRoutes.length,distance=Math.floor(i/trafficRoutes.length)*routeLength(trafficRoutes[route],route<3)/3;return {route,distance,car:routePoint(trafficRoutes[route],distance,route<3),moving:true}}),
       people:layout.walkRoutes.map((route,i)=>({route:i,distance:i*4,car:routePoint(route,i*4),moving:true})),
       thieves:layout.thiefRoutes.map((route,i)=>({id:i,distance:0,car:routePoint(route,0),phase:'wandering',cooldown:0,seen:false})),
+      custody:{phase:'idle',thief:null,time:0,delivered:0},
       bridge:{phase:'idle',distance:0},
       helicopter:{phase:'idle',time:0,car:{x:0,z:0,height:28,angle:0}},
       plane:{car:{...layout.airport.home,height:0,angle:Math.PI},phase:'parked',distance:0}};
@@ -103,6 +104,7 @@ export const cityActions={
     this.cityNotice(animal?`${animal.name} 만나러 가요`:'동물원으로 가요 · 동물을 눌러 가까이 가세요');return true;
   },
   chaseThief(id){
+    if(this.activityLocked)return false;
     const thief=this.city.thieves[id];if(!thief||thief.phase==='caught')return false;
     if(this.vehicle!=='police'){this.cityNotice('경찰차를 타고 도둑을 따라가요');return false}
     this.city.chase=id;this.city.chaseTimer=1;thief.phase='fleeing';this.cityNotice('도둑을 따라가요! 가까이 가면 잡을 수 있어요');return true;
@@ -140,14 +142,22 @@ export const cityActions={
       if(person.moving){person.distance+=dt*1.15;Object.assign(person.car,next)}
     }
     for(const thief of city.thieves){
+      if(['boarding','aboard','unloading'].includes(thief.phase))continue;
       if(thief.phase==='caught'){thief.cooldown-=dt;if(thief.cooldown<=0){thief.phase='wandering';thief.seen=false}continue}
       const near=Math.hypot(thief.car.x-actor.x,thief.car.z-actor.z);
       if(this.vehicle==='police'&&near<23&&!thief.seen){thief.seen=true;thief.phase='fleeing';this.cityNotice('도둑 발견! 줄무늬 옷의 도둑을 눌러 따라가요')}
       thief.distance+=dt*(thief.phase==='fleeing'?2.1:.7);Object.assign(thief.car,routePoint(layout.thiefRoutes[thief.id],thief.distance));
       if(city.chase===thief.id&&this.vehicle==='police'&&near<3.7){
-        thief.phase='caught';thief.cooldown=90;city.caught++;city.chase=null;this.path=[];this.target=null;this.mode='idle';this.cityNotice(`도둑을 잡았어요! · ${city.caught}명 검거`);
+        thief.phase='boarding';Object.assign(city.custody,{phase:'boarding',thief:thief.id,time:0});city.caught++;city.chase=null;this.path=[];this.target=null;this.mode='thief-boarding';this.cityNotice('잡았다! 경찰차에 타요.');
         this.changed('thief-caught');
       }
+    }
+    const custody=city.custody;
+    if(custody.phase!=='idle'){
+      custody.time+=dt;const thief=city.thieves[custody.thief];
+      if(custody.phase==='boarding'&&custody.time>=2.2){custody.phase='transporting';thief.phase='aboard';this.mode='idle';this.cityNotice('경찰서까지 안내선을 따라 운전해요.')}
+      else if(custody.phase==='transporting'&&Math.hypot(actor.x-SERVICES.police.home.x,actor.z-SERVICES.police.home.z)<2.5){custody.phase='unloading';custody.time=0;thief.phase='unloading';this.path=[];this.target=null;this.mode='thief-unloading';this.changed('thief-unloading')}
+      else if(custody.phase==='unloading'&&custody.time>=2.5){custody.phase='idle';custody.delivered++;thief.phase='caught';thief.cooldown=90;this.mode='idle';this.cityNotice('경찰서 도착! 함께 마을을 지켰어요.');this.changed('thief-delivered')}
     }
     if(city.chase!==null){
       if(this.vehicle!=='police')city.chase=null;

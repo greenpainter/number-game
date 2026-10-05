@@ -43,7 +43,13 @@ export async function createCity(loader,scene,prepare){
     const c=state.city,time=c.time;
     traffic.forEach((root,i)=>{const p=c.traffic[i].car;root.position.set(p.x,.19+(p.height??0),p.z);root.rotation.y=p.angle});
     people.forEach((p,i)=>pose(p,c.people[i],time+i));
-    thieves.forEach((p,i)=>{const t=c.thieves[i];p.root.visible=t.phase!=='caught';pose(p,{car:t.car,moving:t.phase!=='caught'},time*1.6)});
+    thieves.forEach((p,i)=>{
+      const t=c.thieves[i],car=state.services.police.car;let position=t.car;
+      p.root.visible=!['caught','aboard'].includes(t.phase);
+      if(t.phase==='boarding'){const k=Math.min(1,c.custody.time/2.2);position={x:t.car.x+(car.x-t.car.x)*k,z:t.car.z+(car.z-t.car.z)*k,angle:Math.atan2(car.x-t.car.x,car.z-t.car.z)}}
+      if(t.phase==='unloading'){const k=Math.min(1,c.custody.time/2.5);position={x:car.x+(-10-car.x)*k,z:car.z+(-15-car.z)*k,angle:Math.atan2(-10-car.x,-15-car.z)}}
+      pose(p,{car:position,moving:p.root.visible},time*1.6);
+    });
     patients.forEach((p,i)=>{
       const s=state.patients[i],car=state.services.ambulance.car;
       p.root.visible=s.phase!=='aboard'&&(s.phase!=='recovered'||s.time<5);p.icon.visible=s.phase==='waiting';

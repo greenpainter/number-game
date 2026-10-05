@@ -1285,6 +1285,24 @@
       "file": "fc20c0e18db0.mp3",
       "durationSeconds": 5.016,
       "sha256": "9ecaa54407d27e6990b503335f11d31e0e4f944aff4d13c4daba5ca2bc3b795c"
+    },
+    {
+      "text": "병원까지 안내선을 따라 운전해요.",
+      "file": "0ef5b65ae2d1.mp3",
+      "durationSeconds": 3.204,
+      "sha256": "7d421562bd822755baa75108fab8f309480754140b4e04fdd6c2114d7769cb0f"
+    },
+    {
+      "text": "경찰서까지 안내선을 따라 운전해요.",
+      "file": "d9439039319c.mp3",
+      "durationSeconds": 3.483,
+      "sha256": "3b74c5cc07f9e590a27beeef81627270f46799e9f3f31816e69c5e64304fd6cd"
+    },
+    {
+      "text": "경찰서 도착! 함께 마을을 지켰어요.",
+      "file": "47f22dfa4801.mp3",
+      "durationSeconds": 4.18,
+      "sha256": "7191cc08d2fa90e2ff3b971f87d2d4e063d35a712998a894119ce1ccfc2e5d33"
     }
   ]
 }

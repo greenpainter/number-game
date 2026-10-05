@@ -17,6 +17,7 @@ export const serviceActions={
     if(!path)return false;s.path=path;s.phase='returning';return true;
   },
   exitService(){
+    if(this.carryingThief){this.cityNotice('경찰서까지 안내선을 따라 운전해요.');return false}
     if(this.carryingPatient){this.cityNotice('친구를 병원에 데려다준 뒤 내려요.');return false}
     const id=this.vehicle,s=this.services[id];if(!s)return false;
     const route=findPath(s.car,SERVICES[id].home,{radius:1,vehicles:this.otherVehicles(id)});if(!route)return false;

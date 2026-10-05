@@ -212,5 +212,8 @@ export const NARRATION_CLIPS = Object.freeze({
   "캥거루 친구야, 안녕!": "./audio/ko/668ddad87e0b.mp3",
   "기린 친구야, 안녕!": "./audio/ko/72abff740e18.mp3",
   "얼룩말 친구야, 안녕!": "./audio/ko/e34b4bd46ad7.mp3",
-  "동물 친구 숲에 왔어요. 동물을 누르면 인사하러 가요.": "./audio/ko/fc20c0e18db0.mp3"
+  "동물 친구 숲에 왔어요. 동물을 누르면 인사하러 가요.": "./audio/ko/fc20c0e18db0.mp3",
+  "병원까지 안내선을 따라 운전해요.": "./audio/ko/0ef5b65ae2d1.mp3",
+  "경찰서까지 안내선을 따라 운전해요.": "./audio/ko/d9439039319c.mp3",
+  "경찰서 도착! 함께 마을을 지켰어요.": "./audio/ko/47f22dfa4801.mp3"
 });

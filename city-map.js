@@ -7,6 +7,7 @@ import {ringRoad,bridgeRoute} from './road-layout.js';
 import townRoads from './town-roads.js';
 import roadConnectors from './road-connectors.js';
 import {attachMapViewport} from './map-viewport.js';
+import {arrangeMapPins,nearestMapPin} from './map-pins.js';
 import {METRO_LOOP} from './metro-loop.js';
 
 const details=[
@@ -56,23 +57,41 @@ export function createCityMap({dialog,art,list,onTravel,onStation}){
   rect(122,-63,12,78,'atlas-runway',4);path([[122,-97],[122,-29]],'atlas-runway-line');
   // Station locations follow the same layout as the playable entrances.
   const stationOrder=METRO_LOOP.map(id=>water.stations.find(s=>s.id===id));path([...stationOrder,stationOrder[0]].map(s=>[s.x,s.z]),'atlas-metro');
-  for(const s of water.stations){const [x,y]=P(s.x,s.z);svg.push(`<g class="atlas-station" data-station="${s.id}" role="button" tabindex="0" aria-label="${esc(s.name)} 헬기로 가기"><title>${esc(s.name)}</title><circle cx="${x}" cy="${y}" r="18" class="atlas-metro-stop"/><text x="${x}" y="${y+7}" class="atlas-station-picture">🚇</text></g>`)}
   for(const [name,x,z] of [['숲마을',-171,-142],['정원마을',-45,165],['동물원',-190,-27],['중앙 마을',-4,-57],['공항',139,-84],['강동 마을',336,-80],['강변 공원',295,108]]){const [px,py]=P(x,z);svg.push(`<text x="${px}" y="${py}" class="atlas-district">${name}</text>`)}
   svg.push('<g class="atlas-compass" transform="translate(865 36)"><text y="-9">N</text><path d="M0 0 L-5 14 L0 10 L5 14Z"/></g>');
   art.innerHTML=`<svg viewBox="0 0 900 520" role="img" aria-label="현재 도시 지도. 강, 세 다리, 동물원, 공항, 주거 구역과 지하철역이 표시되어 있어요.">${svg.join('')}<g id="atlas-pins"></g><g id="atlas-player"><circle r="11" class="atlas-player-halo"/><circle r="5" class="atlas-player-dot"/><text y="-16" class="atlas-player-label">내 위치</text></g></svg><div class="atlas-legend"><span><i class="legend-river"></i>강</span><span><i class="legend-road"></i>도로</span><span><i class="legend-metro"></i>지하철 연결</span><span><i class="legend-player"></i>내 위치</span></div>`;
   const toolbar=document.createElement('div');toolbar.className='atlas-zoom';toolbar.setAttribute('aria-label','지도 확대와 축소');art.prepend(toolbar);
-  const viewport=attachMapViewport(art.querySelector('svg'),toolbar);
   function travel(p){if(travelStarted)return;travelStarted=true;if(p.stationId)onStation?.(p.stationId);else onTravel(p)}
-  const stationTravel=id=>travel(places.find(p=>p.stationId===id));
-  const pins=art.querySelector('#atlas-pins'),buttons=[];
-  for(const station of art.querySelectorAll('[data-station]')){station.addEventListener('click',()=>stationTravel(station.dataset.station));station.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();stationTravel(station.dataset.station)}})}
-  // Three central facilities are close together: small leader lines keep targets apart.
-  const offsets={0:[10,20],1:[-16,4],2:[0,-14],8:[-4,-5]};
-  places.forEach(p=>{if(p.listOnly){buttons.push(null);return}if(p.stationId){buttons.push(art.querySelector('[data-station="'+p.stationId+'"]'));return}const [x,y]=P(p.x,p.z),[dx,dy]=offsets[p.index]??[0,0];const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('transform',`translate(${x+dx} ${y+dy})`);g.setAttribute('class','atlas-pin');g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',p.name+' 헬기로 가기');g.innerHTML=`<title>${esc(p.name)}</title>${dx||dy?`<path d="M0 0 L${-dx} ${-dy}" class="atlas-leader"/>`:''}<circle r="15"/><text y="5">${p.icon}</text>`;g.addEventListener('click',()=>select(p.index));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(p.index)}});pins.append(g);buttons.push(g)});
+  const mapSvg=art.querySelector('svg'),pins=art.querySelector('#atlas-pins'),buttons=[];
+  let pinScreens=[];
+  places.forEach(p=>{
+    if(p.listOnly){buttons.push(null);return}
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','atlas-pin atlas-touch-pin');g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',p.name+' 헬기로 가기');
+    g.innerHTML=`<title>${esc(p.name)}</title><path class="atlas-leader"/><g class="atlas-bubble"><circle class="atlas-hit" r="26"/><circle class="atlas-disc" r="21"/><text y="8">${p.icon}</text></g>`;
+    g.addEventListener('click',()=>select(p.index));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(p.index)}});pins.append(g);buttons.push(g);
+  });
+  function layoutPins(){
+    const matrix=mapSvg.getScreenCTM(),bounds=mapSvg.getBoundingClientRect();if(!matrix||!bounds.width||!bounds.height)return;
+    const scale=Math.hypot(matrix.a,matrix.b),inverse=matrix.inverse(),point=(x,y,m)=>new DOMPoint(x,y).matrixTransform(m);
+    const anchors=places.filter(p=>!p.listOnly&&(filter==='전체'||p.category===filter)).map(p=>{const [x,y]=P(p.x,p.z),s=point(x,y,matrix);return {index:p.index,x:s.x,y:s.y,worldX:x,worldY:y}}).filter(p=>p.x>=bounds.left&&p.x<=bounds.right&&p.y>=bounds.top&&p.y<=bounds.bottom);
+    pinScreens=arrangeMapPins(anchors,bounds);
+    for(const b of buttons)if(b)b.style.display='none';
+    for(const pin of pinScreens){
+      const b=buttons[pin.index],world=point(pin.x,pin.y,inverse);b.style.display='';b.setAttribute('transform',`translate(${world.x} ${world.y})`);
+      b.querySelector('.atlas-bubble').setAttribute('transform',`scale(${1/scale})`);
+      b.querySelector('.atlas-leader').setAttribute('d',`M0 0 L${pin.worldX-world.x} ${pin.worldY-world.y}`);
+    }
+  }
+  const viewport=attachMapViewport(mapSvg,toolbar,{
+    findTarget:(x,y)=>nearestMapPin(pinScreens,x,y),onTap:pin=>select(pin.index),onChange:layoutPins,
+    onPress:pin=>buttons.forEach((b,i)=>b?.classList.toggle('is-pressed',i===pin?.index)),
+  });
+  new ResizeObserver(layoutPins).observe(mapSvg);
   const filters=dialog.querySelector('.atlas-filters');
-  for(const cat of ['전체','새 놀이','동물 숲','마을','놀거리','탈것','시설','지하철']){const b=document.createElement('button');b.textContent=({'새 놀이':'🎉','동물 숲':'🌳'}[cat]??'')+cat;b.type='button';b.setAttribute('aria-pressed',cat===filter);b.addEventListener('click',()=>{filter=cat;for(const c of filters.children)c.setAttribute('aria-pressed',c===b);renderList()});filters.append(b)}
-  function renderList(){list.replaceChildren();places.forEach(p=>{const show=filter==='전체'||p.category===filter;buttons[p.index]?.classList.toggle('dimmed',!show);if(!show)return;const b=document.createElement('button');b.className='atlas-place';b.dataset.index=p.index;b.setAttribute('aria-pressed',selected===p.index);b.innerHTML=`<span class="atlas-place-icon">${p.icon}</span><span><strong>${esc(p.name)}</strong><small>${p.category}</small></span><span class="atlas-place-number">${p.index+1}</span>`;b.addEventListener('click',()=>select(p.index));list.append(b)})}
+  for(const cat of ['전체','새 놀이','동물 숲','마을','놀거리','탈것','시설','지하철']){const b=document.createElement('button');b.innerHTML=`<span aria-hidden="true">${{'전체':'🗺️','새 놀이':'🎉','동물 숲':'🌳','마을':'🏡','놀거리':'🛝','탈것':'🚌','시설':'🏥','지하철':'🚇'}[cat]}</span>${cat}`;b.type='button';b.setAttribute('aria-pressed',cat===filter);b.addEventListener('click',()=>{filter=cat;for(const c of filters.children)c.setAttribute('aria-pressed',c===b);renderList()});filters.append(b)}
+  function renderList(){list.replaceChildren();places.forEach(p=>{const show=filter==='전체'||p.category===filter;if(!show)return;const b=document.createElement('button');b.className='atlas-place';b.dataset.index=p.index;b.setAttribute('aria-pressed',selected===p.index);b.innerHTML=`<span class="atlas-place-icon">${p.icon}</span><span><strong>${esc(p.name)}</strong><small>${p.category}</small></span><span class="atlas-place-number" aria-hidden="true">🚁</span>`;b.addEventListener('click',()=>select(p.index));list.append(b)});layoutPins()}
   function select(index){selected=index;travel(places[index])}
   renderList();
-  return {open(actor){travelStarted=false;viewport.reset();const [x,y]=P(actor.x,actor.z);art.querySelector('#atlas-player').setAttribute('transform',`translate(${x} ${y})`);dialog.showModal()}};
+  return {open(actor){travelStarted=false;const [x,y]=P(actor.x,actor.z);art.querySelector('#atlas-player').setAttribute('transform',`translate(${x} ${y})`);dialog.showModal();viewport.reset()}};
 }

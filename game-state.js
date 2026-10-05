@@ -1,6 +1,6 @@
 import {playgroundActions} from './playground-state.js';
 import {adventureActions} from './adventure-state.js';
-import {HOME,CHILD_START,FIRE,FIRE_STOP,findPath,walkable,truckContains,DUMP_HOME,LOAD_STOP,UNLOAD_STOP} from './navigation.js';
+import {HOME,CHILD_START,FIRE,FIRE_STOP,findPath,walkable,truckContains,DUMP_HOME,LOAD_STOP,UNLOAD_STOP,SERVICES} from './navigation.js';
 
 import {busActions} from './bus-state.js';
 import {rescueActions} from './rescue-state.js';
@@ -46,6 +46,9 @@ export class FireGame {
   get drivingDump(){return this.riding&&this.vehicle==='dumptruck'}
   get hasSiren(){return this.riding&&(this.drivingFire||['police','ambulance'].includes(this.vehicle))}
   get carryingPatient(){return ['boarding','transporting','waiting-route','unloading'].includes(this.rescue?.phase)}
+  get carryingThief(){return this.city?.custody?.phase!=='idle'&&!!this.city?.custody}
+  get deliveryDestination(){return this.rescue?.phase==='transporting'?{...SERVICES.ambulance.home,icon:'🏥',name:'병원'}:this.city?.custody?.phase==='transporting'?{...SERVICES.police.home,icon:'👮',name:'경찰서'}:null}
+  get passengerBusy(){return ['boarding','unloading'].includes(this.rescue?.phase)||['boarding','unloading'].includes(this.city?.custody?.phase)}
   get sirenOn(){return this.hasSiren&&!!this.sirens?.[this.vehicle]}
   toggleSiren(){if(!this.hasSiren)return false;this.sirens[this.vehicle]=!this.sirenOn;this.changed('siren');return true}
   get canUseScooter(){return !this.riding&&!this.activityLocked&&['idle','moving'].includes(this.mode)&&!this.boarding&&!this.boardingStage&&!this.fishingMission&&!this.iceMission&&this.busRequest===null&&!this.serviceRequest&&this.transit.metro.phase==='idle'&&this.transit.ferry.phase==='idle'&&this.city.bridge.phase==='idle'}
@@ -77,6 +80,7 @@ export class FireGame {
     this.resetAdventure();this.resetPlayground();this.resetBuses();this.resetServices();this.resetRescue();this.resetRailway();this.resetPets();this.resetCity();this.resetTransit();this.fishingMission=false;this.fishTime=0;this.fishCaught=0;if(notify)this.changed('reset');
   }
   routeTo(target,{boarding=false,fireMission=false,homeMission=false}={}){
+    if(this.passengerBusy)return false;
     if(this.adventureBusy||this.playing||this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge)return false;
     if(this.drivingTrain||this.drivingPlane)return false;
     const path=findPath(this.actor,target,this.options);if(!path)return false;
@@ -87,7 +91,7 @@ export class FireGame {
     this.mode='moving';this.changed('move');return true;
   }
   moveTo(target){
-    if(this.adventureBusy||this.playing||this.carryingPatient)return false;
+    if(this.adventureBusy||this.playing||this.passengerBusy)return false;
     if(this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge)return true;
     if(this.drivingTrain||this.drivingPlane)return true;
     if(['loading','unloading','eating','fishing','fish-celebrate','pulling-over'].includes(this.mode))return false;
@@ -115,7 +119,7 @@ export class FireGame {
   }
   get playing(){return !!this.play&&!['idle','approach'].includes(this.play.phase)}
   get adventureBusy(){return this.adventure?.phase==='action'||this.forest?.phase==='greet'}
-  get activityLocked(){return this.adventureBusy||this.playing||this.carryingPatient||this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge||['eating','fishing','fish-celebrate','pulling-over'].includes(this.mode)}
+  get activityLocked(){return this.adventureBusy||this.playing||this.carryingPatient||this.carryingThief||this.metroTrip||this.ferryTrip||this.helicopterTrip||this.crossingBridge||['eating','fishing','fish-celebrate','pulling-over'].includes(this.mode)}
   startFishing(){
     if(this.riding||this.activityLocked)return false;
     if(this.fishingMission)return true;

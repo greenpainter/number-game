@@ -27,8 +27,12 @@ test('both new fire stations summon, extinguish and return to their own garage',
 });
 test('police encounter, pursuit, capture and cancelling pursuit',()=>{
   const g=new FireGame();assert(!g.chaseThief(0));assert(g.boardService('police'));advance(g,()=>g.riding);
-  assert(g.chaseThief(0));advance(g,()=>g.city.caught===1);assert.equal(g.city.thieves[0].phase,'caught');assert.equal(g.city.chase,null);
+  assert(g.chaseThief(0));advance(g,()=>g.city.caught===1);assert.equal(g.city.thieves[0].phase,'boarding');assert.equal(g.city.chase,null);
+  assert(!g.moveTo(SERVICES.police.home));assert(!g.exitService());assert(!g.chaseThief(1));assert(!g.callHelicopter(layout.destinations[0]));
+  advance(g,()=>g.city.custody.phase==='transporting');const parked={x:g.actor.x,z:g.actor.z};
   for(let i=0;i<90;i++)g.update(1/30);assert.equal(g.city.caught,1);
+  assert.deepEqual({x:g.actor.x,z:g.actor.z},parked);assert.equal(g.path.length,0);assert(!g.chaseThief(1));assert(!g.exitTruck());
+  assert(g.moveTo(SERVICES.police.home));advance(g,()=>g.city.custody.delivered===1);assert.equal(g.city.thieves[0].phase,'caught');assert.equal(g.deliveryDestination,null);
   assert(g.chaseThief(1));assert(g.moveTo({x:-7,z:-17}));assert.equal(g.city.chase,null);
   g.reset();assert.equal(g.city.caught,0);assert(g.city.thieves.every(t=>t.phase==='wandering'));
 });

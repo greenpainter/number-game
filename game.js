@@ -26,6 +26,7 @@ import {riverHeight} from './river-geometry.js';
 import {prepareSurfaces} from './surfaces.js';
 import {zooTapTarget} from './zoo-interaction.js';
 import {createCityMap} from './city-map.js';
+import {createDeliveryView} from './delivery-view.js';
 import {scooterPose,applyScooterPose} from './scooter-pose.js';
 import {createCoast} from './coast.js';
 import {createFamily} from './family.js';
@@ -47,7 +48,7 @@ let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
 const flameParts=[], smokeParts=[];
-let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground,adventure;
+let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground,adventure,deliveryView;
 const tapFeedback=document.createElement('div');tapFeedback.id='tap-feedback';tapFeedback.setAttribute('aria-hidden','true');document.body.append(tapFeedback);
 
 function toast(message){narrator.say(message)}
@@ -86,7 +87,7 @@ function updateUI(){
   $('city-notice').textContent=state.city.notice;$('city-notice').hidden=!state.city.notice;
   $('exit').querySelector('span').textContent='내리기';
 }
-function serviceAction(id){if(!state.ready)return;if(!state.boardService(id))toast(state.riding?'먼저 타고 있는 차에서 내려 주세요.':'잠깐 기다렸다가 다시 눌러 주세요.')}
+function serviceAction(id){if(!state.ready)return;if(state.deliveryDestination&&state.vehicle===id){moveTo(SERVICES[id].home);return}if(!state.boardService(id))toast(state.riding?'먼저 타고 있는 차에서 내려 주세요.':'잠깐 기다렸다가 다시 눌러 주세요.')}
 function iceAction(){if(!state.ready)return;if(!state.getIceCream())toast(state.riding?'차에서 내려서 아이스크림을 받으러 가요.':'냠냠! 아이스크림을 먹고 있어요.')}
 function setRoute(points){
   if(routeLine){scene.remove(routeLine);routeLine.geometry.dispose();routeLine.material.dispose();routeLine=null}
@@ -101,7 +102,7 @@ function moveTo(target){
   return state.moveNear(target);
 }
 function boardTruck(){if(!state.ready)return false;if(!state.boardTruck()){toast('소방서 앞으로 갈 수 없어요. 빈 바닥에서 다시 눌러 주세요.');return false}return true}
-function exitTruck(){if(!state.ready)return false;if(state.carryingPatient){toast('친구를 병원에 데려다준 뒤 내려요.');return false}if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
+function exitTruck(){if(!state.ready)return false;if(state.carryingPatient){toast('친구를 병원에 데려다준 뒤 내려요.');return false}if(state.carryingThief){toast('경찰서까지 안내선을 따라 운전해요.');return false}if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
 function stationAction(){if(!state.ready)return;if(state.riding&&!state.drivingFire){toast('먼저 타고 있는 차에서 내려 주세요.');return}if(state.riding)state.goHome();else boardTruck()}
 function dispatch(){if(!state.ready)return false;if(!state.riding)return boardTruck();return state.dispatch()}
 function fireAction(){if(!state.ready||state.complete)return;if(!state.drivingFire){toast('먼저 소방서 건물을 눌러 소방차를 타요!');return}state.dispatch()}
@@ -149,7 +150,7 @@ function onStateChange(reason){
   if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
   if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
   if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
-  if(['patient-rescued','play-complete','event-complete','forest-meet'].includes(reason))chime();
+  if(['patient-rescued','thief-delivered','play-complete','event-complete','forest-meet'].includes(reason))chime();
   if(reason==='thief-caught'){chime();toast('잡았다! 도둑을 잡았어요!')}
   const newMessages={'train-walk':'승강장으로 기차를 타러 가요.','train-board':'다음 승강장에서 내려요. 조금만 기다려 주세요.','train-exit':'승강장에 도착했어요. 기차 여행 재미있었죠?','dog-follow':'강아지가 친구가 되었어요. 같이 산책해요!','cat-follow':'고양이가 친구가 되었어요. 같이 산책해요!'};
   if(newMessages[reason])toast(newMessages[reason]);
@@ -163,6 +164,7 @@ function prepareModel(root){prepareSurfaces(root);root.traverse(o=>{if(o.isMesh)
   o.castShadow=!(size.y<2&&Math.max(size.x,size.z)>20);o.receiveShadow=true;acceleratePicking(o);
 }});return root}
 function addEffects(){
+  deliveryView=createDeliveryView(scene);
   const ring=new THREE.RingGeometry(.48,.57,40);
   marker=new THREE.Mesh(ring,new THREE.MeshBasicMaterial({color:0xfffbce,side:THREE.DoubleSide,transparent:true,opacity:.9}));marker.rotation.x=-Math.PI/2;marker.visible=false;scene.add(marker);
   childRing=new THREE.Mesh(new THREE.RingGeometry(.48,.58,32),new THREE.MeshBasicMaterial({color:0xffdc55,side:THREE.DoubleSide}));childRing.rotation.x=-Math.PI/2;scene.add(childRing);
@@ -227,6 +229,7 @@ function tick(now){
   const paused=$('help-dialog').open||$('city-map').open;
   if(pendingPress){const action=pendingPress;pendingPress=null;if(!paused)action()}
   if(!paused)state.update(dt);
+  deliveryView?.update(state,paused?0:dt);
   syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);family?.update(state,time,paused?0:dt);followCamera(dt);railway.update(state,time,camera);
   city.update(state);coast?.update(time);playground?.update(state,child,limbs,childRing);adventure?.update(state,child,limbs,childRing,paused,camera);
   flames.visible=state.fireActive;

@@ -15,8 +15,8 @@ export const rescueActions={
   },
   routePatientToHospital(){
     if(!this.carryingPatient)return false;
-    if(!this.routeTo(SERVICES.ambulance.home)){this.rescue.phase='waiting-route';this.rescue.time=0;this.mode='patient-wait';return false}
-    this.rescue.phase='transporting';this.cityNotice(RESCUE_LINES[3]);return true;
+    this.path=[];this.target=null;this.mode='idle';
+    this.rescue.phase='transporting';this.cityNotice('병원까지 안내선을 따라 운전해요.');return true;
   },
   updateRescue(dt){
     const r=this.rescue;
@@ -28,7 +28,7 @@ export const rescueActions={
     if(r.phase==='approach'&&this.mode==='idle'&&Math.hypot(this.actor.x-r.stop.x,this.actor.z-r.stop.z)<.5){r.phase='boarding';r.time=0;p.phase='boarding';this.mode='patient-boarding';this.cityNotice(RESCUE_LINES[2])}
     else if(r.phase==='boarding'&&r.time>=2.2){p.phase='aboard';this.routePatientToHospital()}
     else if(r.phase==='waiting-route'&&r.time>1)this.routePatientToHospital();
-    else if(r.phase==='transporting'&&this.mode==='idle'&&Math.hypot(this.actor.x-SERVICES.ambulance.home.x,this.actor.z-SERVICES.ambulance.home.z)<.5){r.phase='unloading';r.time=0;p.phase='unloading';this.mode='patient-unloading'}
+    else if(r.phase==='transporting'&&Math.hypot(this.actor.x-SERVICES.ambulance.home.x,this.actor.z-SERVICES.ambulance.home.z)<2.5){r.phase='unloading';r.time=0;p.phase='unloading';this.path=[];this.target=null;this.mode='patient-unloading';this.changed('patient-unloading')}
     else if(r.phase==='unloading'&&r.time>=2.5){p.phase='recovered';p.time=0;r.phase='idle';r.delivered++;this.mode='idle';this.cityNotice(RESCUE_LINES[4]);this.changed('patient-rescued')}
   },
 };
