@@ -27,6 +27,8 @@ import {prepareSurfaces} from './surfaces.js';
 import {zooTapTarget} from './zoo-interaction.js';
 import {createCityMap} from './city-map.js';
 import {createDeliveryView} from './delivery-view.js';
+import {createTaxiCustomers} from './taxi.js';
+import {TAXI_LINES} from './taxi-layout.js';
 import {scooterPose,applyScooterPose} from './scooter-pose.js';
 import {createCoast} from './coast.js';
 import {createFamily} from './family.js';
@@ -48,7 +50,7 @@ let viewWidth=1,viewHeight=1;
 const temp=new THREE.Object3D(), vec=new THREE.Vector3(), raycaster=new THREE.Raycaster();
 const ground=new THREE.Plane(new THREE.Vector3(0,1,0),-.12);
 const flameParts=[], smokeParts=[];
-let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground,adventure,deliveryView;
+let pendingPress=null,fishing,railway,city,waterfront,scooter,coast,family,playground,adventure,deliveryView,taxiCustomers;
 const tapFeedback=document.createElement('div');tapFeedback.id='tap-feedback';tapFeedback.setAttribute('aria-hidden','true');document.body.append(tapFeedback);
 
 function toast(message){narrator.say(message)}
@@ -102,7 +104,7 @@ function moveTo(target){
   return state.moveNear(target);
 }
 function boardTruck(){if(!state.ready)return false;if(!state.boardTruck()){toast('소방서 앞으로 갈 수 없어요. 빈 바닥에서 다시 눌러 주세요.');return false}return true}
-function exitTruck(){if(!state.ready)return false;if(state.carryingPatient){toast('친구를 병원에 데려다준 뒤 내려요.');return false}if(state.carryingThief){toast('경찰서까지 안내선을 따라 운전해요.');return false}if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
+function exitTruck(){if(!state.ready)return false;if(state.carryingTaxiCustomer){toast(TAXI_LINES[6]);return false}if(state.carryingPatient){toast('친구를 병원에 데려다준 뒤 내려요.');return false}if(state.carryingThief){toast('경찰서까지 안내선을 따라 운전해요.');return false}if(!state.exitTruck()){toast('내릴 자리가 없어요. 조금 더 넓은 곳으로 이동해요.');return false}return true}
 function stationAction(){if(!state.ready)return;if(state.riding&&!state.drivingFire){toast('먼저 타고 있는 차에서 내려 주세요.');return}if(state.riding)state.goHome();else boardTruck()}
 function dispatch(){if(!state.ready)return false;if(!state.riding)return boardTruck();return state.dispatch()}
 function fireAction(){if(!state.ready||state.complete)return;if(!state.drivingFire){toast('먼저 소방서 건물을 눌러 소방차를 타요!');return}state.dispatch()}
@@ -138,8 +140,8 @@ function onStateChange(reason){
   if(reason==='exit')toast('내렸어요! 소방차가 소방서로 돌아가요.');
   const messages={'dump-walk':'덤프트럭에 타러 가요.','dump-board':'출발! 포크레인에게 흙을 받으러 가요.','dump-dispatch':'포크레인에게 흙을 받으러 가요.','loading':'포크레인이 흙을 퍼서 실어 줄게요.','loaded':'흙을 다 실었어요! 초록 테두리 안에 내려 볼까요?','dump-deliver':'흙을 내릴 곳으로 가요.','unloading':'적재함을 들어 흙을 내려요.','delivered':'흙을 잘 옮겼어요! 다시 흙을 받으러 가 볼까요?','dump-exit':'덤프트럭이 주차장으로 돌아가요.'};
   if(messages[reason])toast(messages[reason]);
-  if(reason==='service-call')toast(SERVICES[state.serviceRequest].kind==='fire'?'소방차가 나와요. 잠깐 기다려 주세요.':SERVICES[state.serviceRequest].name+'가 나와요. 문 앞에서 기다려 주세요.');
-  if(reason==='service-board')toast(state.drivingFire?'다시 탔어요. 불을 눌러 출동해 주세요.':state.vehicle==='police'?'경찰차 출발! 마을을 순찰해요!':'구급차를 타고 아픈 친구를 도와줘요.');
+  if(reason==='service-call')toast(state.serviceRequest==='taxi'?TAXI_LINES[0]:SERVICES[state.serviceRequest].kind==='fire'?'소방차가 나와요. 잠깐 기다려 주세요.':SERVICES[state.serviceRequest].name+'가 나와요. 문 앞에서 기다려 주세요.');
+  if(reason==='service-board')toast(state.vehicle==='taxi'?TAXI_LINES[1]:state.drivingFire?'다시 탔어요. 불을 눌러 출동해 주세요.':state.vehicle==='police'?'경찰차 출발! 마을을 순찰해요!':'구급차를 타고 아픈 친구를 도와줘요.');
   if(reason==='service-exit')toast('내렸어요. 자동차가 자기 차고로 돌아가요.');
   if(reason==='bus-walk')toast(state.buses[state.busRequest].name+'를 타러 가요!');
   if(reason==='bus-board')toast(state.drivingBus.name+'에 탔어요! 마을을 한 바퀴 돌아볼까요?');
@@ -150,7 +152,7 @@ function onStateChange(reason){
   if(reason==='fish-walk')toast('연못으로 낚시하러 가요!');
   if(reason==='fishing')toast('물고기야, 이리 와! 조금만 기다려 볼까요?');
   if(reason==='fish-caught'){chime();toast('우와! 물고기를 잡았어요!')}
-  if(['patient-rescued','thief-delivered','play-complete','event-complete','forest-meet'].includes(reason))chime();
+  if(['taxi-delivered','patient-rescued','thief-delivered','play-complete','event-complete','forest-meet'].includes(reason))chime();
   if(reason==='thief-caught'){chime();toast('잡았다! 도둑을 잡았어요!')}
   const newMessages={'train-walk':'승강장으로 기차를 타러 가요.','train-board':'다음 승강장에서 내려요. 조금만 기다려 주세요.','train-exit':'승강장에 도착했어요. 기차 여행 재미있었죠?','dog-follow':'강아지가 친구가 되었어요. 같이 산책해요!','cat-follow':'고양이가 친구가 되었어요. 같이 산책해요!'};
   if(newMessages[reason])toast(newMessages[reason]);
@@ -231,7 +233,7 @@ function tick(now){
   if(!paused)state.update(dt);
   deliveryView?.update(state,paused?0:dt);
   syncActors(time,paused);expansion.update(state,time,paused?0:dt);services.update(state,time);fishing.update(state,time);family?.update(state,time,paused?0:dt);followCamera(dt);railway.update(state,time,camera);
-  city.update(state);coast?.update(time);playground?.update(state,child,limbs,childRing);adventure?.update(state,child,limbs,childRing,paused,camera);
+  city.update(state);taxiCustomers?.update(state);coast?.update(time);playground?.update(state,child,limbs,childRing);adventure?.update(state,child,limbs,childRing,paused,camera);
   flames.visible=state.fireActive;
   water.visible=state.riding&&state.mode==='extinguishing';
   const strength=.12+.88*(state.hp/100);
@@ -270,6 +272,7 @@ function pickPress({x,y,type}){
     const animal=city.animals.find(a=>belongs(a.root));if(animal)return ()=>state.visitZoo(animal.id);
     if(belongs(city.zoo)){const target=zooTapTarget(point);return ()=>target.animal?state.visitZoo(target.animal):moveTo(target)}
     const thief=city.thieves.findIndex(p=>belongs(p.root));if(thief>=0)return ()=>state.chaseThief(thief);
+    const customer=taxiCustomers.customers.findIndex(p=>belongs(p.root));if(customer>=0)return ()=>state.pickupTaxiCustomer(customer);
     const patient=city.patients.findIndex(p=>belongs(p.root));if(patient>=0)return ()=>state.rescuePatient(patient);
     const stop=railway.platforms.find(p=>belongs(p.root));
     if(stop||railway.cars.some(belongs))return ()=>{if(!state.boardTrain(stop?.id??state.train.targetStation??state.train.stationId??'north')&&state.riding)toast('먼저 타고 있는 차에서 내려 주세요.')};
@@ -286,6 +289,7 @@ function pickPress({x,y,type}){
     if(belongs(wood)||flameParts.includes(object))return ()=>{if(!state.fireMission)fireAction()};
     return null;
   };
+  roots.push(...taxiCustomers.pickRoots.filter(r=>r.visible));
   roots.push(...playground.pickRoots);
   roots.push(...adventure.pickRoots.filter(r=>r.visible));
   roots.push(...waterfront.pickRoots);
@@ -353,7 +357,7 @@ async function init(){
     fishing=createFishing(scene,child,limbs);
     rectGround=prepareModel((await loader.loadAsync('./models/expanded-ground.glb')).scene);scene.add(rectGround);
     railway=await createRailway(loader,scene,prepareModel);railway.update(state,0,camera);
-    city=await createCity(loader,scene,prepareModel);city.update(state);
+    city=await createCity(loader,scene,prepareModel);taxiCustomers=createTaxiCustomers(scene,city.models.citizen,prepareModel);city.update(state);taxiCustomers?.update(state);
     waterfront=await createWaterfront(loader,scene,prepareModel);coast=createCoast(scene);family=await createFamily(loader,scene,prepareModel,child,limbs);
     playground=await createPlayground(loader,scene,prepareModel);
     adventure=await createAdventure(loader,scene,prepareModel,city.models,state);
@@ -434,6 +438,8 @@ function registerGameTools(){
     {name:'board_firetruck',description:'Summon the truck from the garage. Open the door, drive out, then walk the child to board.',inputSchema:empty,execute:()=>{if(!state.ready||state.riding||!boardTruck())throw new Error('Cannot start boarding.');return gameSnapshot()}},
     {name:'exit_firetruck',description:'Dismount safely and send the unattended truck back inside the garage.',inputSchema:empty,execute:()=>{if(!state.ready||!state.riding||!exitTruck())throw new Error('Cannot exit the truck here.');return gameSnapshot()}},
     {name:'board_policecar',description:'Call the police car out of its garage and walk over to board for a patrol.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('police'))throw new Error('Cannot board police car.');return gameSnapshot()}},
+    {name:'board_taxi',description:'Board the yellow taxi at its stand.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('taxi'))throw new Error('Cannot board taxi.');return gameSnapshot()}},
+    {name:'pickup_taxi_customer',description:'While driving the taxi, approach a waiting customer and let them board. Follow the guide manually to their destination.',inputSchema:{type:'object',properties:{id:{type:'integer',minimum:0,maximum:5}},required:['id'],additionalProperties:false},execute:({id})=>{if(!state.ready||!state.pickupTaxiCustomer(id))throw new Error('Choose a waiting customer while driving an empty taxi.');return gameSnapshot()}},
     {name:'board_ambulance',description:'Call the ambulance out of the hospital and board it.',inputSchema:empty,execute:()=>{if(!state.ready||!state.boardService('ambulance'))throw new Error('Cannot board ambulance.');return gameSnapshot()}},
     {name:'get_icecream',description:'Walk to the ice cream van, receive a cone and eat it facing the camera.',inputSchema:empty,execute:()=>{if(!state.ready||!state.getIceCream())throw new Error('Dismount first or finish eating.');return gameSnapshot()}},
     {name:'play_at_park',description:'Walk to a playground activity and play, then return safely to its entrance.',inputSchema:{type:'object',properties:{id:{type:'string',enum:PLAY_ACTIVITIES.map(p=>p.id)}},required:['id'],additionalProperties:false},execute:({id})=>{if(!state.ready||!state.startPlay(id))throw new Error('Finish the current activity or dismount first.');return gameSnapshot()}},

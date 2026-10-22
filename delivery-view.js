@@ -14,7 +14,7 @@ export function createDeliveryView(scene){
     guide.update(state,dt);if(revision===guide.revision)return;revision=guide.revision;
     const d=guide.destination;marker.visible=!!d;ribbon.visible=!!d&&guide.points.length>1;hint.hidden=!d;
     if(!d)return;
-    hint.innerHTML=`<span>${state.vehicle==='police'?'🚓':'🚑'}</span><span class="delivery-arrows">➜ ➜</span><span>${d.icon}</span><small>${d.name}까지 선을 따라 운전해요</small>`;
+    hint.innerHTML=`<span>${state.vehicle==='taxi'?'🚕':state.vehicle==='police'?'🚓':'🚑'}</span><span class="delivery-arrows">➜ ➜</span><span>${d.icon}</span><small>${d.name}까지 선을 따라 운전해요</small>`;
     marker.position.set(d.x,5,d.z);
     if(icon!==d.icon){icon=d.icon;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,256,256);ctx.fillStyle='#fffdf1';ctx.beginPath();ctx.roundRect(12,12,232,232,58);ctx.fill();ctx.font='152px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(icon,128,142);texture.needsUpdate=true}
     const vertices=[],points=guide.points;

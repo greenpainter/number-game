@@ -1,6 +1,7 @@
 import {PLAY_LINES} from './playground-layout.js';
 import {ADVENTURE_LINES} from './adventure-layout.js';
 import {RESCUE_LINES} from './rescue-state.js';
+import {TAXI_LINES} from './taxi-layout.js';
 import layout from './city-layout.js';
 import waterfront from './waterfront-layout.js';
 const replacements={
@@ -20,6 +21,7 @@ const replacements={
   '지금 놀이가 끝나면 헬기를 불러 주세요':'지금 놀이가 끝나면 헬기를 불러 주세요.',
 };
 const direct=[
+  ...TAXI_LINES,
   '병원까지 안내선을 따라 운전해요.','경찰서까지 안내선을 따라 운전해요.','경찰서 도착! 함께 마을을 지켰어요.',
   ...RESCUE_LINES,...PLAY_LINES,...ADVENTURE_LINES,
   '엄마랑 손잡고 걸어요!','아빠랑 손잡고 걸어요!','엄마 아빠랑 손잡고 걸어요!','엄마는 잠깐 기다릴게요.','아빠는 잠깐 기다릴게요.','지금 놀이를 마치고 손을 잡아요.','역 입구를 누르면 다음 역으로 출발해요.',

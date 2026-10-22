@@ -11,12 +11,13 @@ export const serviceActions={
     if(s.phase==='parked')s.phase='opening';
     if(this.truckPhase==='waiting')this.returnTruck();this.changed('service-call');return true;
   },
-  otherVehicles(except){return [...this.buses.filter(b=>b.id!==except).map(b=>b.car),...(except==='dumptruck'?[]:[this.dump]),...(except==='firetruck'||this.truckPhase==='parked'?[]:[this.truck]),...Object.entries(this.services).filter(([id,s])=>id!==except&&s.phase!=='parked').map(([,s])=>s.car)]},
+  otherVehicles(except){return [...this.buses.filter(b=>b.id!==except).map(b=>b.car),...(except==='dumptruck'?[]:[this.dump]),...(except==='firetruck'||this.truckPhase==='parked'?[]:[this.truck]),...Object.entries(this.services).filter(([id,s])=>id!==except&&(s.phase!=='parked'||id==='taxi')).map(([,s])=>s.car)]},
   returnService(id){
     const s=this.services[id],path=findPath(s.car,SERVICES[id].home,{radius:1,vehicles:this.otherVehicles(id)});
     if(!path)return false;s.path=path;s.phase='returning';return true;
   },
   exitService(){
+    if(this.carryingTaxiCustomer){this.cityNotice('손님을 목적지에 데려다준 뒤 내려요.');return false}
     if(this.carryingThief){this.cityNotice('경찰서까지 안내선을 따라 운전해요.');return false}
     if(this.carryingPatient){this.cityNotice('친구를 병원에 데려다준 뒤 내려요.');return false}
     const id=this.vehicle,s=this.services[id];if(!s)return false;

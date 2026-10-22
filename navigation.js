@@ -5,6 +5,7 @@ import layout from './railway-layout.js';
 import city from './city-layout.js';
 import waterfront from './waterfront-layout.js';
 import {riverBlocked} from './river-geometry.js';
+import {TAXI_STAND} from './taxi-layout.js';
 export const HOME = {x:-7,z:.8};
 export const CHILD_START = {x:-7,z:5.7};
 export const FIRE = {x:7,z:6.3};
@@ -18,6 +19,7 @@ export const BUS_SPOTS=[{x:-29.6,z:-8},{x:-25,z:-8},{x:-20.4,z:-8}];
 export const WORLD=city.world;
 export const SERVICES={police:{name:'경찰차',building:{x:-7,z:-24},garage:{x:-7,z:-24},home:{x:-7,z:-17},waiting:{x:-10,z:-15}},ambulance:{name:'앰뷸런스',building:{x:7,z:-24},garage:{x:7,z:-24},home:{x:7,z:-17},waiting:{x:4,z:-15}}};
 for(const station of city.fireStations)SERVICES[station.id]=station;
+SERVICES.taxi=TAXI_STAND;
 export const ICE_VAN={x:3,z:-3.6}, ICE_STOP={x:3.6,z:.3};
 const rectangles = [
   ...EVENT_OBSTACLES,
@@ -39,7 +41,7 @@ const rectangles = [
     const hx=Math.abs(c)*1.4+Math.abs(n)*.5,hz=Math.abs(n)*1.4+Math.abs(c)*.5;
     return [px-hx,px+hx,pz-hz,pz+hz];
   })),
-  ...Object.values(SERVICES).filter(s=>s.kind!=='fire').map(s=>[s.building.x-3.5,s.building.x+3.5,-26.8,-21.2]),
+  ...Object.values(SERVICES).filter(s=>!s.kind).map(s=>[s.building.x-3.5,s.building.x+3.5,-26.8,-21.2]),
   [1.15,4.85,-4.55,-2.65],
   [-11.1,-2.9,-8.5,-2.9], [.2,4.2,-9,-5], [5.9,10.1,-8.8,-4.6],
   [-14.9,-11.1,5.2,9.4], [-3.2,.6,6.9,10.7],

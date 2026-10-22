@@ -9,6 +9,7 @@ import roadConnectors from './road-connectors.js';
 import {attachMapViewport} from './map-viewport.js';
 import {arrangeMapPins,nearestMapPin} from './map-pins.js';
 import {METRO_LOOP} from './metro-loop.js';
+import {TAXI_STAND} from './taxi-layout.js';
 
 const details=[
   ['🏡','마을','익숙한 우리 마을에서 다시 출발해요.'],['🚌','탈것','빨강·파랑·초록 버스가 기다려요.'],
@@ -31,6 +32,7 @@ export function createCityMap({dialog,art,list,onTravel,onStation}){
   places.push({...FOREST.entry,name:FOREST.name,icon:FOREST.icon,category:'동물 숲',index:places.length,description:'숲속을 걷는 동물 친구들에게 인사해요.'});
   for(const h of EVENT_HUBS)places.push({x:h.x,z:h.z+24,name:h.name,icon:h.icon,category:'새 놀이',index:places.length,description:'그림을 누르면 새 놀이를 시작해요.'});
   for(const e of VILLAGE_EVENTS)places.push({...e.entry,eventId:e.id,name:e.name,icon:e.icon,category:'새 놀이',index:places.length,description:e.line,listOnly:true});
+  places.push({...TAXI_STAND.waiting,name:'택시 승강장',icon:'🚕',category:'탈것',index:places.length,description:'노란 택시를 운전하고 손님을 태워요.'});
   dialog.querySelector('.atlas-directory-heading span').textContent=places.length+'곳';
   const svg=[];
   const path=(points,cls,extra='')=>svg.push(`<polyline points="${line(points)}" class="${cls}" ${extra}/>`);

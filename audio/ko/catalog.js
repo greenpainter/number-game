@@ -215,5 +215,12 @@ export const NARRATION_CLIPS = Object.freeze({
   "동물 친구 숲에 왔어요. 동물을 누르면 인사하러 가요.": "./audio/ko/fc20c0e18db0.mp3",
   "병원까지 안내선을 따라 운전해요.": "./audio/ko/0ef5b65ae2d1.mp3",
   "경찰서까지 안내선을 따라 운전해요.": "./audio/ko/d9439039319c.mp3",
-  "경찰서 도착! 함께 마을을 지켰어요.": "./audio/ko/47f22dfa4801.mp3"
+  "경찰서 도착! 함께 마을을 지켰어요.": "./audio/ko/47f22dfa4801.mp3",
+  "노란 택시를 타고 손님을 만나러 가요.": "./audio/ko/691e0d0137de.mp3",
+  "택시 출발! 손을 흔드는 손님을 눌러 주세요.": "./audio/ko/b602dde25619.mp3",
+  "손님을 태우러 가요.": "./audio/ko/a8b2f2a7a296.mp3",
+  "어서 오세요! 택시에 타요.": "./audio/ko/16f63782d1ea.mp3",
+  "목적지까지 안내선을 따라 운전해요.": "./audio/ko/e2df887ddb6c.mp3",
+  "도착했어요! 고맙습니다. 또 만나요!": "./audio/ko/862704eced25.mp3",
+  "손님을 목적지에 데려다준 뒤 내려요.": "./audio/ko/fd61293c5f4d.mp3"
 });

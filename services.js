@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import {SERVICES,ICE_VAN} from './navigation.js';
 import {createEmergencyLights} from './emergency-lights.js';
 export async function createServices(loader,scene,prepare,child,limbs){
-  const names=['civic-ground-rect','police-station','hospital-station','policecar','ambulance','icecream','city-fire-station','firetruck'];
+  const names=['civic-ground-rect','police-station','hospital-station','policecar','ambulance','icecream','city-fire-station','firetruck','taxi','taxi-stand'];
   const assets=await Promise.all(names.map(n=>loader.loadAsync(`./models/${n}.glb`)));
   const models=Object.fromEntries(names.map((n,i)=>{const root=prepare(assets[i].scene);scene.add(root);return[n,root]}));
   const entries={};
   for(const [id,c] of Object.entries(SERVICES)){
-    const building=c.kind==='fire'?prepare(models['city-fire-station'].clone(true)):models[id==='police'?'police-station':'hospital-station'],car=c.kind==='fire'?prepare(models.firetruck.clone(true)):models[id==='police'?'policecar':'ambulance'];
+    const building=id==='taxi'?models['taxi-stand']:c.kind==='fire'?prepare(models['city-fire-station'].clone(true)):models[id==='police'?'police-station':'hospital-station'],car=id==='taxi'?models.taxi:c.kind==='fire'?prepare(models.firetruck.clone(true)):models[id==='police'?'policecar':'ambulance'];
     if(c.kind==='fire')scene.add(building,car);
     building.position.set(c.building.x,.13,c.building.z);
     const lights=createEmergencyLights(car,id);
@@ -23,7 +23,7 @@ export async function createServices(loader,scene,prepare,child,limbs){
   cone.visible=false;const hand=new THREE.Vector3();
   return {entries,van,ground:models['civic-ground-rect'],update(state,time){
     for(const [id,v] of Object.entries(entries)){
-      const s=state.services[id];v.car.position.set(s.car.x,.13+(s.car.height??0),s.car.z);v.car.rotation.y=s.car.angle;v.door.scale.y=Math.max(.025,1-s.door);
+      const s=state.services[id];v.car.position.set(s.car.x,.13+(s.car.height??0),s.car.z);v.car.rotation.y=s.car.angle;if(v.door)v.door.scale.y=Math.max(.025,1-s.door);
       v.lights.update(state,time);
     }
     const eating=state.mode==='eating';cone.visible=eating;
