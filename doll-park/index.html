@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f1df">
+  <title>모여라 놀이터</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%231c594c'/%3E%3Ccircle cx='34' cy='12' r='5' fill='%23ffcf68'/%3E%3Cpath d='M8 35h6l7-17 7 17h10' fill='none' stroke='%23fff4c8' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">
+    {"imports":{"three":"../vendor/three.module.js"}}
+  </script>
+</head>
+<body>
+  <main id="park-stage" aria-label="모여라 놀이터 3D 게임">
+    <canvas id="park-canvas" aria-label="3D 놀이터. 바닥을 누르면 친구가 걸어가고, 놀이기구를 누르면 놀이가 시작됩니다." tabindex="0"></canvas>
+    <div id="ui-shell" class="ui-shell">
+      <header class="topbar">
+        <h1 class="brand" aria-label="모여라 놀이터">
+          <svg class="brand-mark" viewBox="0 0 54 54" aria-hidden="true">
+            <rect x="1.5" y="1.5" width="51" height="51" rx="16" fill="#285d4f" stroke="#194d41" stroke-width="2"/>
+            <circle cx="38.7" cy="14.3" r="5.1" fill="#ffcf70"/>
+            <path d="M7.7 37.9h8.4l8.4-21 8.5 21h12.1" fill="none" stroke="#fff1ce" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+            <path d="m11.2 38.1 4.9-13.7 7 13.7" fill="none" stroke="#f39b7e" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>
+            <path d="M26.7 38v-9.1m0 5.1h4.4" fill="none" stroke="#fdd381" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="brand-type">모여라 <b>놀이터</b></span>
+        </h1>
+        <div class="top-buttons">
+          <a href="../" class="round-control park-home" aria-label="게임 선택으로 돌아가기" title="게임 선택">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h5v-6h4v6h5V10"/></svg>
+          </a>
+          <div id="star-counter" class="counter" aria-label="모은 별 0개">
+            <svg class="counter-star" viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3.1 4.1 7.4 8.3 1.6-5.8 6.1.9 8.5-7.5-3.6-7.5 3.6.9-8.5-5.8-6.1 8.3-1.6Z" fill="#ffc858" stroke="#9c6c20" stroke-width="1.7" stroke-linejoin="round"/><path d="m13.1 12.2 2.6-5" fill="none" stroke="#fff3ba" stroke-linecap="round" stroke-width="2"/></svg>
+            <span id="star-count">0</span>
+          </div>
+          <button id="sound-toggle" class="round-control" aria-pressed="true" aria-label="소리 끄기" title="소리 끄기"></button>
+          <button id="overview-button" class="round-control" aria-label="놀이터 전체 보기" title="놀이터 전체 보기" hidden></button>
+        </div>
+      </header>
+      <div id="park-markers" class="park-markers" aria-label="놀이터 지도"></div>
+      <button id="avatar-selector" class="avatar-selector" aria-haspopup="dialog" aria-expanded="false" title="친구 바꾸기">
+        <span class="avatar-medallion"><img id="active-portrait" alt="" decoding="async"></span>
+        <span class="avatar-caption"><small>친구 바꾸기</small><b id="active-name">가든</b></span>
+        <span id="avatar-chevron" class="avatar-chevron" aria-hidden="true"></span>
+      </button>
+      <div class="bottom-center">
+        <div id="idle-hint" class="idle-hint"><span id="hint-touch" aria-hidden="true"></span><span>가고 싶은 곳을 톡 눌러요</span></div>
+        <section id="activity" class="activity" aria-label="놀이 동작" hidden>
+          <div class="activity-info"><span id="activity-title"></span><p id="activity-hint"></p></div>
+          <button id="action-button" class="action-button"><span class="action-spark" aria-hidden="true"></span><b id="action-label">놀기</b></button>
+        </section>
+        <nav id="ride-dock" class="ride-dock" aria-label="놀이기구 선택"></nav>
+      </div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </div>
+    <section id="load-screen" class="load-screen" aria-label="게임 불러오기">
+      <div class="load-card">
+        <svg class="load-art" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="39" fill="#dfead1"/><circle cx="61" cy="22" r="7" fill="#f9c958"/><path d="M13 66h58" stroke="#618567" stroke-width="3" stroke-linecap="round"/><path d="m20 64 11-45h20l11 45m-21-45v34" fill="none" stroke="#34756c" stroke-width="4.3" stroke-linejoin="round" stroke-linecap="round"/><path d="M37 23v28m11-28v28" stroke="#ac8a59" stroke-width="2.5"/><path d="M32 52h21l-2 6H34Z" fill="#e88967"/></svg>
+        <h2 id="load-label">놀이터 문을 여는 중</h2>
+        <div id="load-progress" class="load-track" role="progressbar" aria-label="불러온 정도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+        <button id="retry-button" class="retry-button" hidden>다시 열기</button>
+      </div>
+    </section>
+    <dialog id="roster-dialog" aria-labelledby="roster-title">
+      <div class="roster-header"><h2 id="roster-title">같이 놀 친구</h2><button id="roster-close" class="round-control" aria-label="친구 선택 닫기"></button></div>
+      <div id="roster-grid" class="roster-grid" role="group" aria-label="캐릭터 선택"></div>
+    </dialog>
+    <div id="live-status" class="sr-only" role="status" aria-live="polite"></div>
+    <noscript>놀이터를 열려면 자바스크립트를 켜 주세요.</noscript>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

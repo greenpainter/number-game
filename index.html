@@ -3,47 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#cce8ec">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="자동차마을">
+  <meta name="theme-color" content="#faf4e7">
+  <meta name="apple-mobile-web-app-title" content="놀이책">
+  <meta name="description" content="자동차를 타고 마을을 둘러보고, 그림으로 영어 단어를 배우고, 놀이터에서 친구와 함께 놀아요.">
+  <title>어떤 놀이를 할까요?</title>
   <link rel="manifest" href="./manifest.json">
-  <meta name="description" content="소방차와 경찰차, 앰뷸런스를 타고 덤프트럭으로 흙을 옮겨요. 아이스크림도 먹는 3D 마을 놀이.">
-  <title>꼬마 자동차 마을</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23e94b35'/%3E%3Cpath d='M7 12h12l6 7v5H7z' fill='white'/%3E%3Cpath d='M20 15l3 4h-5v-4' fill='%234397ac'/%3E%3Ccircle cx='11' cy='24' r='3' fill='%231e3945'/%3E%3Ccircle cx='22' cy='24' r='3' fill='%231e3945'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./city-map.css">
-  <script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/"}}</script>
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="stylesheet" href="./play.css">
 </head>
-<body>
-  <header class="topbar">
-    <button class="home-button" id="home" aria-label="처음으로 돌아가기" title="처음으로 돌아가기"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 15 16 5l12 10M8 13v14h6v-8h4v8h6V13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <div class="top-actions"><div class="mission-badge" id="badge"><span class="status-dot"></span><span id="badge-text">도움이 필요해요</span></div><button class="icon-button" id="sound" aria-label="소리 끄기" aria-pressed="true" title="소리 끄기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 5L6 9H3v6h3l5 4V5Z"/><path id="sound-waves" d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></svg></button><button class="icon-button" id="help" aria-label="놀이 방법" title="놀이 방법">?</button></div>
-  </header>
-  <button id="open-map" class="map-button" aria-label="도시 지도 열기">지도 🗺️</button>
-  <button id="scooter-toggle" class="map-button scooter-button" aria-label="킥보드 타기" aria-pressed="false">킥보드 🛴</button>
-  <button id="mom-toggle" class="family-button" aria-label="엄마 손잡기" aria-pressed="false"><img src="./images/mom-face.png" alt=""><span>엄마</span></button>
-  <button id="dad-toggle" class="family-button" aria-label="아빠 손잡기" aria-pressed="false"><img src="./images/dad-face.png" alt=""><span>아빠</span></button>
-  <div id="city-notice" role="status" hidden></div>
-  <div id="cave-shade" aria-hidden="true"></div>
-  <dialog id="city-map" aria-label="도시 지도">
-    <header class="atlas-header"><div><span class="dialog-eyebrow">우리 동네 탐험 지도</span><h2>오늘은 어디로 갈까요?</h2><div class="atlas-subtitle">동물 친구 숲과 스무 가지 새 놀이! 가고 싶은 그림을 눌러요.</div></div><button id="close-map" class="dialog-close icon-button" aria-label="지도 닫기">×</button></header>
-    <div class="atlas-layout"><section class="atlas-panel" aria-label="마을 지도"><div id="city-map-art"></div><div class="atlas-map-note">그림을 한 번 톡! 🚁 바로 출발해요. 두 손가락으로 확대하고 밀어서 둘러봐요.</div></section><section class="atlas-directory" aria-label="목적지 목록"><div class="atlas-directory-heading"><strong>어디로 떠날까요?</strong><span>29곳</span></div><div class="atlas-filters" aria-label="장소 종류"></div><div id="destinations"></div></section></div>
+<body class="launcher-page">
+  <main class="launcher">
+    <header class="launcher-heading">
+      <h1>어떤 놀이를 할까요<span>?</span></h1>
+      <p>마음에 드는 그림을 눌러요.</p>
+    </header>
 
-  </dialog>
+    <div class="game-choices">
+      <a class="game-choice town-choice" href="./town.html" aria-labelledby="town-title town-play" aria-describedby="town-description">
+        <img class="choice-picture" src="./images/play-town.webp" alt="" width="1536" height="1024">
+        <div class="choice-info">
+          <div>
+            <h2 id="town-title">꼬마 자동차 마을</h2>
+            <p id="town-description">자동차를 타고 마을을 둘러봐요.</p>
+          </div>
+          <span class="play-action" id="town-play">놀이 시작 <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
 
-  <main id="stage" aria-label="3D 소방마을 놀이 공간">
-    <canvas id="game" aria-label="바닥을 누르면 아이가 걸어가요. 왼쪽 주차장의 빨강·파랑·초록 버스도 직접 눌러 타고 운전할 수 있어요. 덤프트럭을 타고 오른쪽 포크레인을 누르면 흙을 실어요. 초록 테두리 하역장을 누르면 흙을 내려요. 소방서, 마을 뒤쪽 경찰서와 병원 건물을 누르면 차가 나와요. 집 앞 분홍색 아이스크림차를 누르면 걸어가서 아이스크림을 먹어요. 동서남북 승강장을 누르면 기차를 타고 다음 정류장으로 가요. 강아지와 고양이를 누르면 아이를 따라와요. 지도에서 공항, 동물원, 산 터널과 새 소방서를 찾아가요. 비행기를 누르면 도시를 날아요. 경찰차로 도둑을 눌러 따라갈 수 있어요. 지도에서 무지개 놀이터로 가면 열 가지 놀이를 그림으로 골라 즐길 수 있어요."></canvas>
-    <div class="loading" id="loading"><span class="loader"></span><strong>자동차 마을 준비 중…</strong></div>
+      <a class="game-choice words-choice" href="./words.html" aria-labelledby="words-title words-play" aria-describedby="words-description">
+        <img class="choice-picture" src="./images/play-words.webp" alt="" width="1536" height="1024">
+        <div class="choice-info">
+          <div>
+            <h2 id="words-title">영어 단어 놀이</h2>
+            <p id="words-description">그림을 누르고 영어 발음을 들어요.</p>
+          </div>
+          <span class="play-action" id="words-play">놀이 시작 <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+      <a class="game-choice park-choice" href="./doll-park/" aria-labelledby="park-title park-play" aria-describedby="park-description">
+        <img class="choice-picture" src="./images/play-park.webp" alt="" width="1080" height="620">
+        <div class="choice-info">
+          <div>
+            <h2 id="park-title">모여라 놀이터</h2>
+            <p id="park-description">친구를 골라 그네와 미끄럼틀을 타요.</p>
+          </div>
+          <span class="play-action" id="park-play">놀이 시작 <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </div>
   </main>
-
-  <nav class="play-controls" aria-label="놀이 조작">
-    <button class="exit-button" id="exit" hidden aria-label="소방차에서 내리기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4H5v16h9M10 12h11m-4-4 4 4-4 4"/></svg><span>내리기</span></button>
-    <button id="siren-toggle" class="siren-button" hidden aria-label="사이렌 켜기" aria-pressed="false"><span aria-hidden="true">🚨</span><small>사이렌</small></button>
-  </nav>
-
-  <dialog id="help-dialog"><button class="dialog-close icon-button" id="close-help" aria-label="닫기">×</button><span class="dialog-eyebrow">반가워요, 꼬마 소방관!</span><h2>우리 마을에서 놀아요!</h2><ol><li><strong>🌳 동물 친구 숲</strong><span>지도에서 숲으로 가요. 돌아다니는 동물을 누르면 가까이 걸어가 인사해요.</span></li><li><strong>🎉 스무 가지 새 놀이</strong><span>지도에서 새 놀이 그림을 고르면 헬기로 가요. 반짝이는 물건이나 아래 그림을 세 번 골라 놀고 별을 모아요.</span></li><li><strong>바닥을 톡!</strong><span>밝은 버킷햇과 초록색 반바지를 입은 아이가 걸어가요.</span></li><li><strong>소방서 건물을 톡!</strong><span>차고 문이 열리고 소방차가 나오면 아이가 타요.</span></li><li><strong>불타는 장작을 톡!</strong><span>소방차를 타면 불이 나요. 불을 직접 누르면 출동해 물을 뿌려요.</span></li><li><strong>내리기를 톡!</strong><span>아이가 내리면 소방차는 혼자 차고로 돌아가요. 다시 타면 새로운 불이 나요.</span></li><li><strong>왼쪽 주차장의 덤프트럭을 톡!</strong><span>아이가 걸어가 덤프트럭을 타요. 빨강·파랑·초록 버스도 누르면 탈 수 있어요. 바닥을 눌러 운전하고, 내리면 원래 주차 칸으로 돌아가요.</span></li><li><strong>오른쪽 모래 공터의 포크레인을 톡!</strong><span>덤프트럭이 다가가면 포크레인이 흙을 퍼서 실어 줘요.</span></li><li><strong>초록 테두리 하역장을 톡!</strong><span>덤프트럭이 이동해서 적재함을 들고 흙을 내려요. 내리면 원래 주차장으로 돌아가요.</span></li><li><strong>마을 뒤쪽 경찰서를 톡!</strong><span>차고에서 나온 경찰차를 타고 사이렌을 울리며 순찰해요.</span></li><li><strong>집 앞 아이스크림차를 톡!</strong><span>차에서 내려 누르면 아이가 걸어가 아이스크림을 받고, 정면을 보며 냠냠 먹어요.</span></li><li><strong>🚕 노란 택시를 톡!</strong><span>주차장 옆 택시를 타고, 머리 위에 Taxi 말풍선이 있는 손님을 눌러요. 손님이 타면 목적지 그림과 안내선이 나타나요. 바닥을 눌러 직접 운전하고 도착하면 손님이 내려요. 지도에서도 택시 승강장을 찾을 수 있어요.</span></li><li><strong>경찰서 옆 병원을 톡!</strong><span>앰뷸런스가 나와요. 🤕 표시가 있는 친구를 태운 뒤, 🏥 그림과 청록색 안내선을 따라 바닥을 눌러 직접 운전해요. 병원 앞에 도착하면 친구가 내려요.</span></li><li><strong>연못과 나무 낚시터를 톡!</strong><span>낚시해서 물고기를 잡고 번쩍 들어 자랑해요.</span></li><li><strong>동서남북 기차 승강장을 톡!</strong><span>승강장을 누르면 기차가 와요. 북쪽 → 서쪽 → 남쪽 → 동쪽 순서로 다음 정류장에 도착하면 자동으로 내려요.</span></li><li><strong>강아지와 고양이를 톡!</strong><span>친구가 되어 아이를 따라와요. 차를 타면 기다리고 내리면 다시 함께 걸어요.</span></li><li><strong>지도 버튼을 톡!</strong><span>공항, 동물원, 산 터널, 동부·서부 소방서로 찾아가요. 공항에서 비행기를 누르면 도시를 돌아 자동으로 내려요.</span></li><li><strong>경찰차로 도둑을 찾아요!</strong><span>줄무늬 옷의 도둑을 누르면 따라가요. 가까이 가서 잡으면 경찰차에 태워요. 👮 그림과 청록색 안내선을 따라 직접 운전해 경찰서에 데려다줘요. 추격 중 바닥을 누르면 추격을 멈춰요.</span></li><li><strong>동물 친구를 톡!</strong><span>동물원에서 코끼리, 기린, 얼룩말, 사자를 눌러 관람 길로 걸어가요.</span></li><li><strong>🚇 역 입구 그림을 톡!</strong><span>짧은 계단 한 층을 내려가 지하철을 타고 다음 역에서 내려요. 중앙마을 → 공항 → 강변공원 → 동물원 → 중앙마을을 순환해요. 지도에서는 가고 싶은 역 그림을 눌러요.</span></li><li><strong>강변 선착장의 배를 톡!</strong><span>유람선을 타고 다리 아래를 지나 강을 둘러봐요. 선착장으로 돌아오면 내려요. 걸어서 강을 건널 때는 세 다리를 이용해요.</span></li><li><strong>왼쪽 위 집 버튼을 톡!</strong><span>어디서든 처음 상태로 돌아가 다시 놀 수 있어요.</span></li></ol><p>아이패드는 손가락으로, 컴퓨터는 마우스로 눌러 주세요. 상황은 한국어 음성으로 알려줘요. 안내 목소리는 AI로 만든 음성이에요. 위의 스피커 버튼으로 소리를 끌 수 있어요.</p><button class="primary-button" id="start-playing">놀러 가기 <span>→</span></button></dialog>
-  <noscript>이 게임을 하려면 브라우저에서 JavaScript를 켜 주세요.</noscript>
-  <script type="module" src="./game.js"></script>
 </body>
 </html>

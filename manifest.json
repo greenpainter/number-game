@@ -8,12 +8,12 @@
     }
   ],
   "scope": "./",
-  "description": "소방차, 경찰차, 앰뷸런스와 덤프트럭을 타고 아이스크림도 먹는 3D 마을 놀이",
+  "description": "자동차를 타고 마을을 둘러보고, 그림으로 영어 단어를 배우고, 놀이터에서 친구와 함께 놀아요.",
   "start_url": "./",
-  "theme_color": "#cce8ec",
+  "theme_color": "#faf4e7",
   "orientation": "any",
-  "background_color": "#cce8ec",
-  "name": "꼬마 자동차 마을",
+  "background_color": "#faf4e7",
+  "name": "어떤 놀이를 할까요?",
   "display": "standalone",
-  "short_name": "자동차마을"
+  "short_name": "놀이책"
 }

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#faf4e7">
+  <meta name="description" content="그림을 눌러 영어 발음을 듣고 우리말 뜻을 배워요.">
+  <title>영어 단어 놀이</title>
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="stylesheet" href="./play.css">
+</head>
+<body class="words-page">
+  <main class="word-game">
+    <header class="word-heading">
+      <a class="back-link" href="./">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        게임 선택
+      </a>
+      <h1>영어 단어 놀이</h1>
+    </header>
+
+    <button class="word-card" id="word-card" type="button" disabled>
+      <span class="word-art">
+        <img id="word-picture" alt="" width="512" height="512">
+      </span>
+      <span class="word-copy">
+        <span class="word-english" id="word-english" lang="en"></span>
+        <span class="word-korean" id="word-korean"></span>
+        <span class="listen-cue">
+          <span class="listen-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9v6h4l5 4V5L7 9H3Zm13-.5a5 5 0 0 1 0 7m3-10a9 9 0 0 1 0 13"/></svg>
+          </span>
+          그림을 눌러 발음을 들어요
+        </span>
+      </span>
+    </button>
+
+    <div class="word-controls">
+      <span class="word-progress"><span class="visually-hidden">단어 순서 </span><span id="word-progress">1 / 100</span></span>
+      <button class="next-word" id="word-next" type="button" disabled>다른 단어 <span aria-hidden="true">→</span></button>
+    </div>
+    <p class="word-status" id="word-status" aria-live="polite"></p>
+    <p class="visually-hidden" id="word-announcement" aria-live="polite"></p>
+    <noscript>영어 단어 놀이를 하려면 브라우저에서 JavaScript를 켜 주세요.</noscript>
+  </main>
+  <script type="module" src="./word-game.js"></script>
+</body>
+</html>

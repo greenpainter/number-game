@@ -1,0 +1,31 @@
+.town-menu-link {
+  display: inline-flex;
+  min-height: 44px;
+  padding: 0 13px;
+  align-items: center;
+  gap: 5px;
+  border-radius: 24px;
+  background: #fffdf5;
+  color: #246372;
+  box-shadow: 0 2px 1px #3159640a;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-decoration: none;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.town-menu-link svg {
+  width: 17px;
+  height: 17px;
+}
+
+.town-menu-link:hover {
+  background: #fff;
+}
+
+.town-menu-link:focus-visible {
+  outline: 3px solid #077594;
+  outline-offset: 3px;
+}
