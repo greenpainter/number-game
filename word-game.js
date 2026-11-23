@@ -34,12 +34,32 @@ export function mountWordGame(doc, host) {
     if (audio) {
       audio.onerror = null;
       audio.pause();
-      audio = undefined;
     }
     if (utterance) {
       utterance.onerror = null;
       host.speechSynthesis.cancel();
       utterance = undefined;
+    }
+  }
+
+  function releaseAudio() {
+    if (!audio) return;
+    audio.onerror = null;
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    audio = undefined;
+  }
+
+  function prepareAudio() {
+    if (audio) return;
+    try {
+      audio = new host.Audio();
+      audio.preload = 'auto';
+      audio.src = deck[index].audio;
+      audio.load();
+    } catch {
+      releaseAudio();
     }
   }
 
@@ -49,6 +69,7 @@ export function mountWordGame(doc, host) {
     english.textContent = word.english;
     korean.textContent = word.korean;
     progress.textContent = `${index + 1} / ${deck.length}`;
+    prepareAudio();
   }
 
   function pronounceWord() {
@@ -67,11 +88,7 @@ export function mountWordGame(doc, host) {
     function speakLocally() {
       if (request !== playback || triedFallback) return;
       triedFallback = true;
-      if (audio) {
-        audio.onerror = null;
-        audio.pause();
-        audio = undefined;
-      }
+      releaseAudio();
 
       try {
         const speech = host.speechSynthesis;
@@ -94,7 +111,12 @@ export function mountWordGame(doc, host) {
     }
 
     try {
-      audio = new host.Audio(word.audio);
+      prepareAudio();
+      if (!audio || audio.error) {
+        speakLocally();
+        return;
+      }
+      if (audio.currentTime > 0) audio.currentTime = 0;
       audio.onerror = speakLocally;
       Promise.resolve(audio.play()).catch(speakLocally);
     } catch {
@@ -103,8 +125,10 @@ export function mountWordGame(doc, host) {
   }
 
   card.addEventListener('click', pronounceWord);
+  doc.addEventListener('contextmenu', event => event.preventDefault());
   next.addEventListener('click', () => {
     stopPronunciation();
+    releaseAudio();
     index++;
     if (index === deck.length) {
       deck = shuffleDeck(WORDS, deck.at(-1));
@@ -114,7 +138,11 @@ export function mountWordGame(doc, host) {
     status.textContent = '';
     announcement.textContent = `${deck[index].english}, ${deck[index].korean}`;
   });
-  host.addEventListener('pagehide', stopPronunciation);
+  host.addEventListener('pagehide', () => {
+    stopPronunciation();
+    releaseAudio();
+  });
+  host.addEventListener('pageshow', prepareAudio);
   doc.addEventListener('visibilitychange', () => {
     if (doc.hidden) stopPronunciation();
   });

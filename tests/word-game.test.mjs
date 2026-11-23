@@ -48,17 +48,24 @@ function setup() {
     return elements.get(id);
   };
   host.Audio = class {
-    constructor(src) {
-      this.src = src;
+    constructor() {
+      this.currentTime = 0;
+      this.playRequests = [];
       audio.push(this);
+    }
+    load() {
+      this.loadedSource = this.src;
     }
     play() {
       return new Promise((resolve, reject) => {
-        this.reject = reject;
+        this.playRequests.push({ resolve, reject });
       });
     }
     pause() {
       this.paused = true;
+    }
+    removeAttribute(name) {
+      delete this[name];
     }
   };
   mountWordGame(doc, host);
@@ -69,6 +76,24 @@ function setup() {
   };
 }
 
+test('the current word preloads without playback and first tap reuses its clip', () => {
+  const { audio, click, element } = setup();
+  const word = WORDS.find(entry => entry.english === element('english').textContent);
+  assert.equal(audio.length, 1);
+  assert.equal(audio[0].preload, 'auto');
+  assert.equal(audio[0].loadedSource, word.audio);
+  assert.equal(audio[0].playRequests.length, 0);
+  click('card');
+  assert.equal(audio.length, 1);
+  assert.equal(audio[0].playRequests.length, 1);
+  click('next');
+  const next = WORDS.find(entry => entry.english === element('english').textContent);
+  assert.equal(audio.length, 2);
+  assert.equal(audio[0].src, undefined);
+  assert.equal(audio[1].loadedSource, next.audio);
+  assert.equal(audio[1].playRequests.length, 0);
+});
+
 test('rapid replays, advancing and exiting stop audio and suppress stale failures', async () => {
   const { audio, click, element, host } = setup();
   assert.equal(element('progress').textContent, '1 / 100');
@@ -76,21 +101,27 @@ test('rapid replays, advancing and exiting stop audio and suppress stale failure
   assert.equal(element('next').disabled, false);
   const firstWord = element('english').textContent;
   click('card');
+  audio[0].currentTime = 0.5;
   click('card');
-  assert.equal(audio[0].src, audio[1].src);
+  assert.equal(audio[0].currentTime, 0);
   assert.equal(audio[0].paused, true);
-  audio[0].reject(Error('stale'));
+  audio[0].playRequests[0].reject(Error('stale'));
   await Promise.resolve();
   assert.equal(element('status').textContent, '');
 
   click('next');
-  assert.equal(audio[1].paused, true);
+  assert.equal(audio[0].paused, true);
   assert.notEqual(element('english').textContent, firstWord);
   assert.equal(element('progress').textContent, '2 / 100');
   assert.match(element('announcement').textContent, /[가-힣]/);
   click('card');
+  const source = audio[1].src;
   host.dispatchEvent(new Event('pagehide'));
-  assert.equal(audio[2].paused, true);
+  assert.equal(audio[1].paused, true);
+  assert.equal(audio[1].src, undefined);
+  host.dispatchEvent(new Event('pageshow'));
+  assert.equal(audio[2].loadedSource, source);
+  assert.equal(audio[2].playRequests.length, 0);
 });
 
 test('the next button completes and restarts a round', () => {
@@ -128,7 +159,7 @@ test('fallback selects an on-device English voice and reports failures once', as
   const mediaFailure = audio[0].onerror;
   mediaFailure();
   const firstUtterance = spoken;
-  audio[0].reject(Error('media failed'));
+  audio[0].playRequests[0].reject(Error('media failed'));
   await Promise.resolve();
   assert.equal(audio[0].paused, true);
   assert.equal(spoken, firstUtterance);
